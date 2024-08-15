@@ -1,5 +1,6 @@
 ﻿using Game;
 using HarmonyLib;
+using OriBFArchipelago.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace OriBFArchipelago.Patches
         static bool Prefix(SkillPointPickup skillPointPickup)
         {
             skillPointPickup.Collected();
-            ArchipelagoManager.CheckLocationByGameObject(skillPointPickup.gameObject);
+            RandomizerManager.Connection.CheckLocationByGameObject(skillPointPickup.gameObject);
             return false;
         }
     }
@@ -25,7 +26,7 @@ namespace OriBFArchipelago.Patches
         static bool Prefix(MaxEnergyContainerPickup energyContainerPickup)
         {
             energyContainerPickup.Collected();
-            ArchipelagoManager.CheckLocationByGameObject(energyContainerPickup.gameObject);
+            RandomizerManager.Connection.CheckLocationByGameObject(energyContainerPickup.gameObject);
             return false;
         }
     }
@@ -36,7 +37,7 @@ namespace OriBFArchipelago.Patches
         static bool Prefix(MaxHealthContainerPickup maxHealthContainerPickup)
         {
             maxHealthContainerPickup.Collected();
-            ArchipelagoManager.CheckLocationByGameObject(maxHealthContainerPickup.gameObject);
+            RandomizerManager.Connection.CheckLocationByGameObject(maxHealthContainerPickup.gameObject);
             return false;
         }
     }
@@ -47,7 +48,7 @@ namespace OriBFArchipelago.Patches
         static bool Prefix(KeystonePickup keystonePickup)
         {
             keystonePickup.Collected();
-            ArchipelagoManager.CheckLocationByGameObject(keystonePickup.gameObject);
+            RandomizerManager.Connection.CheckLocationByGameObject(keystonePickup.gameObject);
             return false;
         }
     }
@@ -58,7 +59,7 @@ namespace OriBFArchipelago.Patches
         static bool Prefix(MapStonePickup mapStonePickup)
         {
             mapStonePickup.Collected();
-            ArchipelagoManager.CheckLocationByGameObject(mapStonePickup.gameObject);
+            RandomizerManager.Connection.CheckLocationByGameObject(mapStonePickup.gameObject);
             return false;
         }
     }
@@ -72,7 +73,7 @@ namespace OriBFArchipelago.Patches
             {
                 // these are spirit light containers
                 expOrbPickup.Collected();
-                ArchipelagoManager.CheckLocationByGameObject(expOrbPickup.gameObject);
+                RandomizerManager.Connection.CheckLocationByGameObject(expOrbPickup.gameObject);
                 return false;
             }
             else

@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using OriBFArchipelago.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace OriBFArchipelago.Patches
     {
         private static void Grant(MapStone mapstone)
         {
-            ArchipelagoManager.CheckLocationByGameObject(mapstone.gameObject);
+            RandomizerManager.Connection.CheckLocationByGameObject(mapstone.gameObject);
         }
 
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)

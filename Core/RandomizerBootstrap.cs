@@ -10,7 +10,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
-namespace OriBFArchipelago
+namespace OriBFArchipelago.Core
 {
     internal static class RandomiserBootstrap
     {
@@ -44,7 +44,7 @@ namespace OriBFArchipelago
             {
                 GameObject lavaStream = sceneRoot.transform.Find(lavaStreamName).gameObject;
                 lavaStream.SetActive(false);
-            }            
+            }
         }
         #endregion
 
@@ -185,7 +185,7 @@ namespace OriBFArchipelago
 
         public override bool Validate(IContext context)
         {
-            return ArchipelagoManager.IsGinsoEscapeComplete() == IsTrue;
+            return RandomizerManager.Connection.IsGinsoEscapeComplete() == IsTrue;
         }
     }
 

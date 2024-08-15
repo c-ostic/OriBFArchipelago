@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using OriBFArchipelago.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace OriBFArchipelago.Patches
         {
             if (__instance.NoHealthLeft && __instance.Entity is PetrifiedPlant)
             {
-                ArchipelagoManager.CheckLocationByGameObject(__instance.Entity.gameObject);
+                RandomizerManager.Connection.CheckLocationByGameObject(__instance.Entity.gameObject);
             }
         }
     }

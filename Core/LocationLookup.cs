@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace OriBFArchipelago
+namespace OriBFArchipelago.Core
 {
     internal class LocationLookup
     {
@@ -26,7 +26,7 @@ namespace OriBFArchipelago
 
             public double DistanceSquared(Position other)
             {
-                double diffX = other.x - this.x, diffY = other.y - this.y;
+                double diffX = other.x - x, diffY = other.y - y;
                 return diffX * diffX + diffY * diffY;
             }
 
@@ -348,6 +348,6 @@ namespace OriBFArchipelago
             { new Position(-168.1, -103.0), "SpiritTreeExp" }
         };
 
-        
+
     }
 }

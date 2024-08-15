@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using OriBFArchipelago.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace OriBFArchipelago.Patches
     {
         private static void Postfix(GetAbilityPedestal __instance)
         {
-            ArchipelagoManager.CheckLocationString(__instance.Ability.ToString() + "SkillTree");
+            RandomizerManager.Connection.CheckLocation(__instance.Ability.ToString() + "SkillTree");
         }
 
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -38,7 +39,7 @@ namespace OriBFArchipelago.Patches
         {
             if (LocationLookup.GetLocationName(__instance.gameObject) == "GlideSkillFeather")
             {
-                ArchipelagoManager.CheckLocationByGameObject(__instance.gameObject);
+                RandomizerManager.Connection.CheckLocationByGameObject(__instance.gameObject);
                 return false;
             }
             return true;

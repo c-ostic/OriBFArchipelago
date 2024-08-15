@@ -8,6 +8,7 @@ using System.Reflection;
 using BepInEx.Logging;
 using OriModding.BF.Core;
 using System.IO;
+using OriBFArchipelago.Core;
 
 namespace OriBFArchipelago
 {
@@ -25,9 +26,8 @@ namespace OriBFArchipelago
             SceneBootstrap.RegisterHandler(RandomiserBootstrap.SetupBootstrap, "Randomizer");
 
             Controllers.Add<RandomizerController>(null, "Randomizer");
-            Controllers.Add<RandomizerMessager>(null, "Randomizer");
-            Controllers.Add<RandomizerReceiver>(null, "Randomizer");
-            Controllers.Add<ArchipelagoManager>(null, "Randomizer");
+            //Controllers.Add<RandomizerMessager>(null, "Randomizer");
+            Controllers.Add<RandomizerManager>(null, "Randomizer");
         }
     }
 }

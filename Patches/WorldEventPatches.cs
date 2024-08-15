@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using OriBFArchipelago.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,22 +15,22 @@ namespace OriBFArchipelago.Patches
             switch (__instance.State)
             { 
                 case WorldState.WaterPurified:
-                    ArchipelagoManager.CheckLocationString("GinsoEscapeExit");
+                    RandomizerManager.Connection.CheckLocation("GinsoEscapeExit");
                     return false;
                 case WorldState.GinsoTreeKey:
-                    ArchipelagoManager.CheckLocationString("WaterVein");
+                    RandomizerManager.Connection.CheckLocation("WaterVein");
                     return false;
                 case WorldState.WindRestored:
-                    ArchipelagoManager.CheckLocationString("ForlornEscape");
+                    RandomizerManager.Connection.CheckLocation("ForlornEscape");
                     return false;
                 case WorldState.ForlornRuinsKey:
-                    ArchipelagoManager.CheckLocationString("GumonSeal");
+                    RandomizerManager.Connection.CheckLocation("GumonSeal");
                     return false;
                 case WorldState.MountHoruKey:
-                    ArchipelagoManager.CheckLocationString("Sunstone");
+                    RandomizerManager.Connection.CheckLocation("Sunstone");
                     return false;
                 case WorldState.WarmthReturned:
-                    ArchipelagoManager.CompleteGame();
+                    RandomizerManager.Connection.SendCompletion();
                     return true;
                 default:
                     return true;

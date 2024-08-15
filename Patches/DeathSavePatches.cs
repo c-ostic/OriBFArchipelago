@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using OriBFArchipelago.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace OriBFArchipelago.Patches
     {
         private static void Postfix(SeinDamageReciever __instance)
         {
-            RandomizerReceiver.OnDeath();
+            RandomizerManager.Receiver.OnDeath();
         }
     }
 
@@ -20,7 +21,7 @@ namespace OriBFArchipelago.Patches
     {
         private static void Postfix(SaveGameController __instance)
         {
-            RandomizerReceiver.OnSave();
+            RandomizerManager.Receiver.OnSave();
         }
     }
 }

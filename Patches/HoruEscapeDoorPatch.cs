@@ -1,5 +1,6 @@
 ﻿using Game;
 using HarmonyLib;
+using OriBFArchipelago.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace OriBFArchipelago.Patches
             if (door.name == "mountHoruExitDoor")
             {
                 // TODO: show ui hint to say door is blocked until all trees are activated
-                return ArchipelagoManager.IsGoalComplete();
+                return RandomizerManager.Connection.IsGoalComplete();
             }
 
             return true;

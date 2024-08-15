@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace OriBFArchipelago
+namespace OriBFArchipelago.Core
 {
     public class RandomizerController : MonoBehaviour, ISuspendable
     {
