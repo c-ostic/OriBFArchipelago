@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace OriBFArchipelago.Core
 {
@@ -52,6 +53,8 @@ namespace OriBFArchipelago.Core
 
                 // Go through rest of data to add to inventory
                 string[] data = sr.ReadToEnd().Split('\n');
+                sr.Close();
+
                 foreach (string line in data)
                 {
                     string[] pair = line.Split('=');
@@ -68,13 +71,11 @@ namespace OriBFArchipelago.Core
                     }
                 }
 
-                sr.Close();
-
                 return true;
             }
-            catch (IOException)
+            catch (IOException e)
             {
-                Console.WriteLine("Could not read save file");
+                Console.WriteLine($"Could not read save file: {e}");
                 inventory = new RandomizerInventory("", "");
                 return false;
             }
@@ -90,25 +91,32 @@ namespace OriBFArchipelago.Core
                 string fileName = $"Slot{saveSlot}.txt";
                 string fullPath = $"{SAVE_FILE_PATH}\\{fileName}";
 
-                StreamWriter sw = new StreamWriter(fullPath);
+                StringBuilder sb = new StringBuilder();
 
                 // Save the version and slotname first
-                sw.WriteLine($"Version={inventory.Version}");
-                sw.WriteLine($"SlotName={inventory.SlotName}");
+                sb.AppendLine($"Version={inventory.Version}");
+                sb.AppendLine($"SlotName={inventory.SlotName}");
 
                 // Go through rest of inventory to save to file
                 foreach (InventoryItem itemType in Enum.GetValues(typeof(InventoryItem)))
                 {
-                    sw.WriteLine($"{itemType}={inventory.Get(itemType)}");
+                    sb.AppendLine($"{itemType}={inventory.Get(itemType)}");
                 }
+
+                // remove last new line character
+                sb.Remove(sb.Length - 1, 1);
+
+                StreamWriter sw = new StreamWriter(fullPath);
+
+                sw.Write(sb.ToString());
 
                 sw.Close();
 
                 return true;
             }
-            catch (IOException)
+            catch (IOException e)
             {
-                Console.WriteLine("Could not write to save file");
+                Console.WriteLine($"Could not write to save file: {e}");
                 return false;
             }
         }
@@ -143,21 +151,22 @@ namespace OriBFArchipelago.Core
                 string fileName = $"SlotData.txt";
                 string fullPath = $"{SAVE_FILE_PATH}\\{fileName}";
 
-                StreamReader sr = new StreamReader(fullPath);
-
                 // Special case if file does not exist, create a new file
                 if (!File.Exists(fullPath))
                 {
                     data = CreateSlotData();
-                    WriteSlotData(data);
-                    return true;
+                    return WriteSlotData(data);
                 }
 
                 // Otherwise, continue and read the file
                 data = new Dictionary<int, SlotData>();
 
+                StreamReader sr = new StreamReader(fullPath);
+
                 // Read each line which has separate slot data
                 string[] lines = sr.ReadToEnd().Split('\n');
+
+                sr.Close();
 
                 foreach (string line in lines)
                 {
@@ -173,9 +182,9 @@ namespace OriBFArchipelago.Core
 
                 return true;
             }
-            catch (IOException)
+            catch (IOException e)
             {
-                Console.WriteLine("Could not read slot data file");
+                Console.WriteLine($"Could not read slot data file: {e}");
                 data = CreateSlotData();
                 return false;
             }
@@ -207,22 +216,37 @@ namespace OriBFArchipelago.Core
                 string fileName = $"SlotData.txt";
                 string fullPath = $"{SAVE_FILE_PATH}\\{fileName}";
 
-                StreamWriter sw = new StreamWriter(fullPath);
+                if (!Directory.Exists(SAVE_FILE_PATH))
+                {
+                    Directory.CreateDirectory(SAVE_FILE_PATH);
+                }
+
+                StringBuilder sb = new StringBuilder();
+                
 
                 foreach (KeyValuePair<int, SlotData> pair in data)
                 {
-                    sw.Write($"{pair.Key},");
-                    sw.Write($"{pair.Value.serverName},");
-                    sw.Write($"{pair.Value.slotName},");
-                    sw.Write($"{pair.Value.port},");
-                    sw.WriteLine($"{pair.Value.password}");
+                    sb.Append($"{pair.Key},");
+                    sb.Append($"{pair.Value.serverName},");
+                    sb.Append($"{pair.Value.slotName},");
+                    sb.Append($"{pair.Value.port},");
+                    sb.Append($"{pair.Value.password}\n");
                 }
+
+                // remove the last new line character
+                sb.Remove(sb.Length - 1, 1);
+
+                StreamWriter sw = new StreamWriter(fullPath);
+
+                sw.Write(sb.ToString());
+
+                sw.Close();
 
                 return true;
             }
-            catch (IOException)
+            catch (IOException e)
             {
-                Console.WriteLine("Could not write to slot data file");
+                Console.WriteLine($"Could not write to slot data file: {e}");
                 return false;
             }
         }

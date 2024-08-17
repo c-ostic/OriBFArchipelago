@@ -37,6 +37,17 @@ namespace OriBFArchipelago.Core
         }
 
         /**
+         * 
+         */
+        public void Disconnect()
+        {
+            if (Connected)
+            {
+                session.Socket.Disconnect();
+            }
+        }
+
+        /**
          * Tries to connect to a slot on the Archipelago server
          */
         private bool Connect(string server, string user, string password)
@@ -95,7 +106,7 @@ namespace OriBFArchipelago.Core
         {
             string itemName = helper.PeekItem().ItemName;
 
-            //receiver.ReceiveItem(itemName);
+            RandomizerManager.Receiver.ReceiveItem((InventoryItem) Enum.Parse(typeof(InventoryItem), itemName));
 
             helper.DequeueItem();
         }

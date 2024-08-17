@@ -39,6 +39,8 @@ namespace OriBFArchipelago.Core
          */
         public bool Init(bool isNew, int saveSlot, string apSlotName)
         {
+            this.saveSlot = saveSlot;
+
             SuspensionManager.Register(this);
 
             itemQueue = new Queue<InventoryItem>();
@@ -160,7 +162,9 @@ namespace OriBFArchipelago.Core
             }
             else
             {
-                // Otherwise, add the item to the queue
+                // Otherwise, add to both inventories and the queue
+                onLoadInventory.Add(item);
+                savedInventory.Add(item);
                 itemQueue.Enqueue(item);
             }
         }
@@ -190,22 +194,20 @@ namespace OriBFArchipelago.Core
          */
         private void Resync()
         {
-            while (savedInventory.Get(InventoryItem.AbilityCell) > Characters.Sein.Inventory.SkillPointsCollected)
-                ReceiveAbilityCell();
+            int abilityPointsRemaining = savedInventory.Get(InventoryItem.AbilityCell) - savedInventory.Get(InventoryItem.AbilityCellUsed);
+            Characters.Sein.Level.SkillPoints = abilityPointsRemaining;
+            Characters.Sein.Inventory.SkillPointsCollected = savedInventory.Get(InventoryItem.AbilityCell);
 
-            while (savedInventory.Get(InventoryItem.EnergyCell) > Characters.Sein.Energy.Max)
-                ReceiveEnergyCell();
+            Characters.Sein.Energy.Max = savedInventory.Get(InventoryItem.EnergyCell);
 
-            while (savedInventory.Get(InventoryItem.HealthCell) > Characters.Sein.Mortality.Health.HealthUpgradesCollected)
-                ReceiveHealthCell();
+            // each max health container is 4 health points, and ori starts with 3 full health containers
+            Characters.Sein.Mortality.Health.MaxHealth = (savedInventory.Get(InventoryItem.HealthCell) + 3) * 4;
 
             int keyStonesRemaining = savedInventory.Get(InventoryItem.KeyStone) - savedInventory.Get(InventoryItem.KeyStoneUsed);
-            while (keyStonesRemaining > Characters.Sein.Inventory.Keystones)
-                ReceiveKeyStones();
+            Characters.Sein.Inventory.Keystones = keyStonesRemaining;
 
             int mapStonesRemaining = savedInventory.Get(InventoryItem.MapStone) - savedInventory.Get(InventoryItem.MapStoneUsed);
-            while (mapStonesRemaining > Characters.Sein.Inventory.MapStones)
-                ReceiveMapStones();
+            Characters.Sein.Inventory.MapStones = mapStonesRemaining;
 
             // using >= here instead of == just in case player somehow receives more than one (due to bugs or future changes)
             Sein.World.Keys.GinsoTree = savedInventory.Get(InventoryItem.GinsoKey) >= 1;

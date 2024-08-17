@@ -26,7 +26,7 @@ namespace OriBFArchipelago.Core
         private Dictionary<int, SlotData> saveSlots;
 
         // strings associated with the gui buttons in OnGUI
-        private string slotName, server, port, password;
+        private string slotName = "", server = "", port = "", password = "";
 
         /**
          * Called at game launch
@@ -77,32 +77,32 @@ namespace OriBFArchipelago.Core
             // Only display this UI when on the save select screen
             if (inSaveSelect)
             {
-                GUILayout.BeginArea(new Rect(5, 5, 100, 100));
+                GUILayout.BeginArea(new Rect(5, 5, 300, 100));
 
                 GUILayout.BeginVertical();
 
                 // Create an area for slot name
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Slot Name");
-                slotName = GUILayout.TextField(slotName);
+                slotName = GUILayout.TextField(slotName, 50);
                 GUILayout.EndHorizontal();
 
                 // Create an area for server name
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Server");
-                server = GUILayout.TextField(server);
+                server = GUILayout.TextField(server, 50);
                 GUILayout.EndHorizontal();
 
                 // Create an area for port number
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Port");
-                port = GUILayout.TextField(port);
+                port = GUILayout.TextField(port, 50);
                 GUILayout.EndHorizontal();
 
                 // Create an area for password
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Password");
-                password = GUILayout.TextField(password);
+                password = GUILayout.TextField(password, 50);
                 GUILayout.EndHorizontal();
 
                 GUILayout.EndVertical();
@@ -116,11 +116,14 @@ namespace OriBFArchipelago.Core
         public void InspectSaveSlot(int index)
         {
             Console.WriteLine($"Inspecting save slot {index}");
-            SlotData data = saveSlots[index];
-            slotName = data.slotName;
-            server = data.serverName;
-            port = data.port + "";
-            password = data.password;
+            if (SaveSlotsUI.Instance is not null && index >= 0 && index < saveSlots.Count)
+            {
+                SlotData data = saveSlots[index];
+                slotName = data.slotName;
+                server = data.serverName;
+                port = data.port + "";
+                password = data.password;
+            }
         }
 
         /**
@@ -129,22 +132,23 @@ namespace OriBFArchipelago.Core
          */
         public bool StartSaveSlot(bool isNew)
         {
-            Console.WriteLine($"Starting save slot {SaveSlotsManager.CurrentSlotIndex}");
+            int saveSlot = SaveSlotsUI.Instance.CurrentSlotIndex;
+            Console.WriteLine($"Starting save slot {saveSlot}");
 
             bool canStart = true;
 
             // Attempt to load the this slots data first
             receiver = new RandomizerReceiver();
-            if (!receiver.Init(isNew, SaveSlotsManager.CurrentSlotIndex, slotName))
+            if (!receiver.Init(isNew, saveSlot, slotName))
             {
                 canStart = false;
                 Console.WriteLine("Slot name provided does not match save file");
             }
 
-            // Attempt to connect to archipelago
+            // Attempt to connect to archipelago only if the save slot was loaded correctly
             connection = new ArchipelagoConnection();
             int.TryParse(port, out int parsedPort);
-            if (!connection.Init(server, parsedPort, slotName, password))
+            if (!canStart || !connection.Init(server, parsedPort, slotName, password))
             {
                 canStart = false;
                 Console.WriteLine("Could not connect to archipelago server");
@@ -163,7 +167,7 @@ namespace OriBFArchipelago.Core
                 updatedData.port = parsedPort;
                 updatedData.password = password;
 
-                saveSlots[SaveSlotsManager.CurrentSlotIndex] = updatedData;
+                saveSlots[saveSlot] = updatedData;
                 RandomizerIO.WriteSlotData(saveSlots);
             }
             else
@@ -183,8 +187,10 @@ namespace OriBFArchipelago.Core
             Console.WriteLine($"Quitting save slot {SaveSlotsManager.CurrentSlotIndex}");
             inGame = false;
             inSaveSelect = true;
-            receiver = null;
+            connection.Disconnect();
             connection = null;
+            receiver.OnSave();
+            receiver = null;
         }
 
         /**
@@ -224,7 +230,7 @@ namespace OriBFArchipelago.Core
     /**
      * Patch into the function that determines which save is currently selected
      */
-    [HarmonyPatch(typeof(SaveSlotUI), nameof(SaveSlotUI.ChangeSelectionIndex))]
+    [HarmonyPatch(typeof(SaveSlotsUI), nameof(SaveSlotsUI.SetCurrentItem), typeof(int))]
     internal class InspectSavePatch
     {
         private static bool Prefix(int index)

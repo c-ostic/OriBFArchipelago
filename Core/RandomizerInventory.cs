@@ -9,6 +9,7 @@ namespace OriBFArchipelago.Core
     internal enum InventoryItem
     {
         AbilityCell,
+        AbilityCellUsed,
         HealthCell,
         EnergyCell,
         KeyStone,
@@ -95,6 +96,7 @@ namespace OriBFArchipelago.Core
         {
             Version = version;
             SlotName = slotName;
+            inventory = new Dictionary<InventoryItem, int>();
             Reset();
         }
 
