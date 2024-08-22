@@ -18,6 +18,10 @@ namespace OriBFArchipelago.Core
         // the inventory loaded from file
         private RandomizerInventory savedInventory;
 
+        // used for keeping track of what items were used (keystones, mapstones, ability cells, enemy xp)
+        // so they can be correctly tracked after death rollbacks
+        private RandomizerInventory unsavedInventory;
+
         // the inventory used for when the user reopens the game and archipelago resends previously granted items
         // compares against savedInventory to make sure items aren't duplicated
         private RandomizerInventory onLoadInventory;
@@ -47,6 +51,7 @@ namespace OriBFArchipelago.Core
             resyncedOnLoad = false;
 
             onLoadInventory = new RandomizerInventory(VERSION, apSlotName);
+            unsavedInventory = new RandomizerInventory(VERSION, apSlotName);
 
             if (isNew)
             {
@@ -96,6 +101,7 @@ namespace OriBFArchipelago.Core
             while (itemQueue.Count > 0)
             {
                 InventoryItem itemName = itemQueue.Peek();
+                itemQueue.Dequeue();
 
                 switch (itemName)
                 {
@@ -142,29 +148,38 @@ namespace OriBFArchipelago.Core
                     case InventoryItem.EX100:
                     case InventoryItem.EX200:
                         ReceiveSpiritLight(itemName); break;
+                    default:
+                        return; // skip the console write when receiving something else
                 }
 
                 Console.WriteLine("Received " + itemName);
-
-                itemQueue.Dequeue();
             }
         }
 
         /** 
          * Called when receiving an item from archipelago
          */
-        public void ReceiveItem(InventoryItem item)
+        public void ReceiveItem(InventoryItem item, int count = 1)
         {
-            if (onLoadInventory.CompareOn(savedInventory, item) < 0)
+            // first check if it is one of these items which are received internally
+            // otherwise the item is from archipelago and should be checked against the onload inventory
+            if (item == InventoryItem.AbilityCellUsed ||
+                item == InventoryItem.KeyStoneUsed ||
+                item == InventoryItem.MapStoneUsed ||
+                item == InventoryItem.EnemyEX)
+            {
+                unsavedInventory.Add(item, count);
+            }
+            else if (onLoadInventory.CompareOn(savedInventory, item) < 0)
             {
                 // if onLoadInventory isn't caught up to savedInventory, this is a previously received item
-                onLoadInventory.Add(item);
+                onLoadInventory.Add(item, count);
             }
             else
             {
                 // Otherwise, add to both inventories and the queue
-                onLoadInventory.Add(item);
-                savedInventory.Add(item);
+                onLoadInventory.Add(item, count);
+                savedInventory.Add(item, count);
                 itemQueue.Enqueue(item);
             }
         }
@@ -175,8 +190,10 @@ namespace OriBFArchipelago.Core
         public void OnDeath()
         {
             // Resync items to bypass the death rollback
-            Console.WriteLine("Resyncing items...");
             Resync();
+
+            // Remove any tracking of used items
+            unsavedInventory.Reset();
         }
 
         /**
@@ -185,6 +202,12 @@ namespace OriBFArchipelago.Core
         public void OnSave()
         {
             Console.WriteLine("Saving...");
+
+            // Add used items to saved inventory and reset to start tracking again
+            savedInventory.AddAll(unsavedInventory);
+            onLoadInventory.AddAll(unsavedInventory);
+            unsavedInventory.Reset();
+
             RandomizerIO.WriteSaveFile(saveSlot, savedInventory);
             Resync();
         }
@@ -194,7 +217,11 @@ namespace OriBFArchipelago.Core
          */
         private void Resync()
         {
-            int abilityPointsRemaining = savedInventory.Get(InventoryItem.AbilityCell) - savedInventory.Get(InventoryItem.AbilityCellUsed);
+            Console.WriteLine("Resyncing items...");
+
+            int abilityPointsRemaining = savedInventory.Get(InventoryItem.AbilityCell) +
+                Characters.Sein.Level.Current -
+                savedInventory.Get(InventoryItem.AbilityCellUsed);
             Characters.Sein.Level.SkillPoints = abilityPointsRemaining;
             Characters.Sein.Inventory.SkillPointsCollected = savedInventory.Get(InventoryItem.AbilityCell);
 
@@ -235,7 +262,7 @@ namespace OriBFArchipelago.Core
         }
 
         /**
-         * All of the functions to receive items
+         * All of the internal functions to receive items and grant them to the player in-game
          */
         #region Receive Functions
 

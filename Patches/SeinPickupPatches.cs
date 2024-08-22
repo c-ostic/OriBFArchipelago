@@ -20,6 +20,21 @@ namespace OriBFArchipelago.Patches
         }
     }
 
+    [HarmonyPatch(typeof(SkillTreeManager), nameof(SkillTreeManager.OnMenuItemPressed))]
+    internal class SpendAbilityCellPatch
+    {
+        static bool Prefix()
+        {
+            if (SkillTreeManager.Instance.CurrentSkillItem.CanEarnSkill)
+            {
+                int cost = SkillTreeManager.Instance.CurrentSkillItem.ActualRequiredSkillPoints;
+                RandomizerManager.Receiver.ReceiveItem(InventoryItem.AbilityCellUsed, cost);
+                Console.WriteLine("Ability point used: " + cost);
+            }
+            return true;
+        }
+    }
+
     [HarmonyPatch(typeof(SeinPickupProcessor), nameof(SeinPickupProcessor.OnCollectMaxEnergyContainerPickup))]
     internal class EnergyCellPatch
     {
@@ -53,6 +68,28 @@ namespace OriBFArchipelago.Patches
         }
     }
 
+    [HarmonyPatch(typeof(SeinInventory), nameof(SeinInventory.SpendKeystones))]
+    internal class SpendKeyStonePatch
+    {
+        static bool Prefix(int cost)
+        {
+            RandomizerManager.Receiver.ReceiveItem(InventoryItem.KeyStoneUsed, cost);
+            return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(DoorWithSlots), nameof(DoorWithSlots.RestoreOrbs))]
+    internal class RestoreKeyStonePatch
+    {
+        static bool Prefix(DoorWithSlots __instance)
+        {
+            // sending a negative number to receive will effectively decrement the item count
+            int amount = __instance.NumberOfOrbsUsed;
+            RandomizerManager.Receiver.ReceiveItem(InventoryItem.KeyStoneUsed, amount * -1);
+            return true;
+        }
+    }
+
     [HarmonyPatch(typeof(SeinPickupProcessor), nameof(SeinPickupProcessor.OnCollectMapStonePickup))]
     internal class MapStoneFragmentPatch
     {
@@ -61,6 +98,17 @@ namespace OriBFArchipelago.Patches
             mapStonePickup.Collected();
             RandomizerManager.Connection.CheckLocationByGameObject(mapStonePickup.gameObject);
             return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(AchievementsLogic), nameof(AchievementsLogic.OnMapStoneActivated))]
+    internal class SpendMapStonePatch
+    {
+        static bool Prefix()
+        {
+            RandomizerManager.Receiver.ReceiveItem(InventoryItem.MapStoneUsed);
+            Console.WriteLine("Mapstone used");
+            return true;
         }
     }
 
@@ -78,8 +126,18 @@ namespace OriBFArchipelago.Patches
             }
             else
             {
-                // these are exp orbs dropped by enemies, so normal execution should continue
+                // these are exp orbs dropped by enemies, so normal execution should continue to postfix
                 return true;
+            }
+        }
+
+        static void Postfix(ExpOrbPickup expOrbPickup)
+        {
+            if (expOrbPickup.MessageType == ExpOrbPickup.ExpOrbMessageType.None)
+            {
+                // these are exp orbs dropped by enemies, so add to inventory to track when gaining enemy exp
+                int num = expOrbPickup.Amount * ((!Characters.Sein.PlayerAbilities.SoulEfficiency.HasAbility) ? 1 : 2);
+                RandomizerManager.Receiver.ReceiveItem(InventoryItem.EnemyEX, num);
             }
         }
     }

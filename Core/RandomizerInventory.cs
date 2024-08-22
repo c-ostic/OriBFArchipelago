@@ -96,7 +96,6 @@ namespace OriBFArchipelago.Core
         {
             Version = version;
             SlotName = slotName;
-            inventory = new Dictionary<InventoryItem, int>();
             Reset();
         }
 
@@ -105,6 +104,7 @@ namespace OriBFArchipelago.Core
          */
         public void Reset()
         {
+            inventory = new Dictionary<InventoryItem, int>();
             foreach (InventoryItem itemType in Enum.GetValues(typeof(InventoryItem)))
             {
                 inventory.Add(itemType, 0);
@@ -117,6 +117,17 @@ namespace OriBFArchipelago.Core
         public void Add(InventoryItem item, int count = 1)
         {
             inventory[item] += count;
+        }
+
+        /**
+         * Add all items from the given inventory into this one
+         */
+        public void AddAll(RandomizerInventory other)
+        {
+            foreach (InventoryItem itemType in Enum.GetValues(typeof(InventoryItem)))
+            {
+                inventory[itemType] += other.Get(itemType);
+            }
         }
 
         /**
