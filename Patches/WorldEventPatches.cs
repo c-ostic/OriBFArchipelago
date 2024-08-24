@@ -29,12 +29,19 @@ namespace OriBFArchipelago.Patches
                 case WorldState.MountHoruKey:
                     RandomizerManager.Connection.CheckLocation("Sunstone");
                     return false;
-                case WorldState.WarmthReturned:
-                    RandomizerManager.Connection.SendCompletion();
-                    return true;
                 default:
                     return true;
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(AchievementsLogic), nameof(AchievementsLogic.OnAct3End))]
+    internal class GameCompletePatch
+    {
+        private static bool Prefix()
+        {
+            RandomizerManager.Connection.SendCompletion();
+            return true;
         }
     }
 }
