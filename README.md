@@ -10,4 +10,4 @@ Additionally, this project specifically uses https://github.com/ori-community/bf
 Server side AP World fork: https://github.com/c-ostic/Archipelago
 
 ## Setup Instructions
-COMING SOON
+[Setup Instructions Here](Setup.md)
