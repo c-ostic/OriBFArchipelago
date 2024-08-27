@@ -90,13 +90,6 @@ namespace OriBFArchipelago.Core
             if (Characters.Sein is null || IsSuspended)
                 return;
 
-            // The first time the player loads, resync
-            if (!resyncedOnLoad)
-            {
-                Resync();
-                resyncedOnLoad = true;
-            }
-
             // If there are any items in the queue, process them one by one
             while (itemQueue.Count > 0)
             {
@@ -153,6 +146,13 @@ namespace OriBFArchipelago.Core
                 }
 
                 Console.WriteLine("Received " + itemName);
+            }
+
+            // The first time the player loads, resync
+            if (!resyncedOnLoad)
+            {
+                Resync();
+                resyncedOnLoad = true;
             }
         }
 

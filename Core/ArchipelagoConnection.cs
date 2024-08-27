@@ -78,12 +78,14 @@ namespace OriBFArchipelago.Core
                     errorMessage += $"\n    {error}";
                 }
                 Console.WriteLine(errorMessage);
+                RandomizerMessager.instance.AddMessage($"Failed to connect to {server} as {user}");
             }
             else
             {
                 // Successfully connected, `ArchipelagoSession` (assume statically defined as `session` from now on) can now be used to interact with the server and the returned `LoginSuccessful` contains some useful information about the initial connection (e.g. a copy of the slot data as `loginSuccess.SlotData`)
                 var loginSuccess = (LoginSuccessful)result;
                 Console.WriteLine($"Successfully connected to {server} as {user}");
+                RandomizerMessager.instance.AddMessage($"Successfully connected to {server} as {user}");
             }
 
             Connected = result.Successful;
@@ -95,8 +97,8 @@ namespace OriBFArchipelago.Core
          */
         private void OnMessageReceived(LogMessage message)
         {
-            //messager.AddMessage(message.ToString());
             Console.WriteLine(message.ToString());
+            RandomizerMessager.instance.AddMessage(message.ToString());
         }
 
         /**
@@ -180,6 +182,7 @@ namespace OriBFArchipelago.Core
             {
                 bool hasMetGoal = true;
                 ReadOnlyCollection<long> checkedLocations = session.Locations.AllLocationsChecked;
+                int countTrees = 0;
                 foreach (string goalLocation in goalLocations)
                 {
                     long id = session.Locations.GetLocationIdFromName(GAME_NAME, goalLocation);
@@ -188,7 +191,12 @@ namespace OriBFArchipelago.Core
                         hasMetGoal = false;
                         Console.WriteLine("Missing tree: " + goalLocation);
                     }
+                    else
+                    {
+                        countTrees++;
+                    }
                 }
+                RandomizerMessager.instance.AddMessage($"{countTrees} of out 9 trees checked");
                 return hasMetGoal;
             }
             else

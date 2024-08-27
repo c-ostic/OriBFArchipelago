@@ -26,7 +26,7 @@ namespace OriBFArchipelago
             SceneBootstrap.RegisterHandler(RandomiserBootstrap.SetupBootstrap, "Randomizer");
 
             Controllers.Add<RandomizerController>(null, "Randomizer");
-            //Controllers.Add<RandomizerMessager>(null, "Randomizer");
+            Controllers.Add<RandomizerMessager>(null, "Randomizer");
             Controllers.Add<RandomizerManager>(null, "Randomizer");
         }
     }

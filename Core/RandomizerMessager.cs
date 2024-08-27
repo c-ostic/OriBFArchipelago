@@ -10,6 +10,8 @@ namespace OriBFArchipelago.Core
 {
     public class RandomizerMessager : MonoBehaviour
     {
+        public static RandomizerMessager instance;
+
         public struct RandomizerMessage
         {
             public readonly string message;
@@ -27,11 +29,9 @@ namespace OriBFArchipelago.Core
         private BasicMessageProvider messageProvider;
         private float remainingDuration;
 
-        public void AddMessage(string message, float duration = 3f)
+        private void Awake()
         {
-            messageQueue.Enqueue(new RandomizerMessage(message, duration));
-            if (remainingDuration <= 0)
-                ShowNext();
+            instance = this;
         }
 
         private void Update()
@@ -57,6 +57,13 @@ namespace OriBFArchipelago.Core
             messageProvider.SetMessage(nextMessage.message);
             UI.Hints.Show(messageProvider, HintLayer.Gameplay, nextMessage.duration);
             remainingDuration = nextMessage.duration;
+        }
+
+        public void AddMessage(string message, float duration = 3f)
+        {
+            messageQueue.Enqueue(new RandomizerMessage(message, duration));
+            if (remainingDuration <= 0)
+                ShowNext();
         }
     }
 }
