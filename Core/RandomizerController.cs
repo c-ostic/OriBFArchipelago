@@ -88,6 +88,20 @@ namespace OriBFArchipelago.Core
                     OpenTeleportMenu();
                 }
             }
+
+            if (UnityEngine.Input.GetKey(KeyCode.LeftAlt) && UnityEngine.Input.GetKeyDown(KeyCode.M))
+            {
+                if (RandomizerMessager.instance.IsActive)
+                {
+                    RandomizerMessager.instance.AddMessage("Message system deactivated");
+                    RandomizerMessager.instance.SetActive(false);
+                }
+                else
+                {
+                    RandomizerMessager.instance.SetActive(true);
+                    RandomizerMessager.instance.AddMessage("Message system activated");
+                }
+            }
         }
     }
 }

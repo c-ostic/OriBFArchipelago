@@ -24,6 +24,8 @@ namespace OriBFArchipelago.Core
             }
         }
 
+        public bool IsActive { get; private set; }
+
         private readonly Queue<RandomizerMessage> messageQueue = new Queue<RandomizerMessage>();
 
         private BasicMessageProvider messageProvider;
@@ -32,6 +34,7 @@ namespace OriBFArchipelago.Core
         private void Awake()
         {
             instance = this;
+            IsActive = true;
         }
 
         private void Update()
@@ -61,9 +64,16 @@ namespace OriBFArchipelago.Core
 
         public void AddMessage(string message, float duration = 3f)
         {
+            if (!IsActive) return;
+
             messageQueue.Enqueue(new RandomizerMessage(message, duration));
             if (remainingDuration <= 0)
                 ShowNext();
+        }
+
+        public void SetActive(bool isActive)
+        {
+            IsActive = isActive;
         }
     }
 }
