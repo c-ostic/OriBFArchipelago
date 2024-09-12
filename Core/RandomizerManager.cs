@@ -199,6 +199,15 @@ namespace OriBFArchipelago.Core
         public void DeleteSaveSlot(int index)
         {
             Console.WriteLine($"Deleting save slot {index}");
+
+            // Delete connection data
+            saveSlots[index] = new SlotData();
+            RandomizerIO.WriteSlotData(saveSlots);
+
+            // Reinspect the save slot to clear out the previous data
+            InspectSaveSlot(SaveSlotsUI.Instance.CurrentSlotIndex);
+
+            // Delete slot data
             RandomizerIO.DeleteSaveFile(index);
         }
     }

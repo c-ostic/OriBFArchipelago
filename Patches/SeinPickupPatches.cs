@@ -25,7 +25,9 @@ namespace OriBFArchipelago.Patches
     {
         static bool Prefix()
         {
-            if (SkillTreeManager.Instance.CurrentSkillItem.CanEarnSkill)
+            if (SkillTreeManager.Instance.CurrentSkillItem != null && 
+                !SkillTreeManager.Instance.CurrentSkillItem.HasSkillItem &&
+                SkillTreeManager.Instance.CurrentSkillItem.CanEarnSkill)
             {
                 int cost = SkillTreeManager.Instance.CurrentSkillItem.ActualRequiredSkillPoints;
                 RandomizerManager.Receiver.ReceiveItem(InventoryItem.AbilityCellUsed, cost);
