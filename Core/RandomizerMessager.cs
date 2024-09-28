@@ -10,65 +10,91 @@ namespace OriBFArchipelago.Core
 {
     public class RandomizerMessager : MonoBehaviour
     {
+        public static int MAX_MESSAGES = 20;
+
         public static RandomizerMessager instance;
 
-        public struct RandomizerMessage
+        public bool IsActive { get; private set; }
+
+        public class RandomizerMessage
         {
-            public readonly string message;
-            public readonly float duration;
+            public string message;
+            public float initDuration;
+            public float currentDuration;
 
             public RandomizerMessage(string message, float duration)
             {
                 this.message = message;
-                this.duration = duration;
+                this.initDuration = duration;
+                this.currentDuration = duration;
+            }
+
+            public float GetDurationPercent()
+            {
+                return currentDuration / initDuration;
             }
         }
 
-        public bool IsActive { get; private set; }
+        private Queue<RandomizerMessage> messageQueue;
 
-        private readonly Queue<RandomizerMessage> messageQueue = new Queue<RandomizerMessage>();
-
-        private BasicMessageProvider messageProvider;
-        private float remainingDuration;
+        private GUIStyle messageStyle;
 
         private void Awake()
         {
             instance = this;
-            IsActive = true;
+            messageQueue = new Queue<RandomizerMessage>();
+
+            messageStyle = new GUIStyle();
+            messageStyle.fontSize = 20;
+            messageStyle.wordWrap = true;
+            messageStyle.fontStyle = FontStyle.Bold;
+        }
+
+        private void OnGUI()
+        {
+            GUILayout.BeginArea(new Rect(5, 5, Screen.width / 3, Screen.height));
+
+            GUILayout.BeginVertical();
+
+            foreach (var message in messageQueue)
+            {
+                messageStyle.normal.textColor = new Color(0.9f, 0.9f, 0.9f, message.GetDurationPercent());
+                GUILayout.Label(message.message, messageStyle);
+            }
+
+            GUILayout.EndVertical();
+
+            GUILayout.EndArea();
         }
 
         private void Update()
         {
-            if (remainingDuration > 0)
+            // dont want to clog up screen with messages, so remove oldest until under max
+            while (messageQueue.Count > MAX_MESSAGES)
             {
-                remainingDuration -= Time.deltaTime;
-                if (remainingDuration <= 0)
-                    ShowNext();
+                messageQueue.Dequeue();
+            }
+
+            // update the time on each message
+            foreach (var message in messageQueue)
+            {
+                message.currentDuration -= Time.deltaTime;
+            }
+
+            // remove the first in the queue if it is out of time
+            // since this is a queue, the first will always have the least time
+            if (messageQueue.Count() > 0 && messageQueue.Peek().currentDuration < 0.0f)
+            {
+                messageQueue.Dequeue();
             }
         }
 
-        private void ShowNext()
+        public void AddMessage(string message, float duration = 5f)
         {
-            if (messageQueue.Count == 0)
-                return;
-
-            if (messageProvider == null)
-                messageProvider = ScriptableObject.CreateInstance<BasicMessageProvider>();
-
-            var nextMessage = messageQueue.Dequeue();
-
-            messageProvider.SetMessage(nextMessage.message);
-            UI.Hints.Show(messageProvider, HintLayer.Gameplay, nextMessage.duration);
-            remainingDuration = nextMessage.duration;
-        }
-
-        public void AddMessage(string message, float duration = 3f)
-        {
-            if (!IsActive) return;
-
-            messageQueue.Enqueue(new RandomizerMessage(message, duration));
-            if (remainingDuration <= 0)
-                ShowNext();
+            if (IsActive)
+            {
+                messageQueue.Enqueue(new RandomizerMessage(message, duration));
+            }
         }
 
         public void SetActive(bool isActive)
