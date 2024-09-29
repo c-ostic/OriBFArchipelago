@@ -42,6 +42,7 @@ namespace OriBFArchipelago.Core
         private void Awake()
         {
             instance = this;
+            IsActive = true;
             messageQueue = new Queue<RandomizerMessage>();
 
             messageStyle = new GUIStyle();

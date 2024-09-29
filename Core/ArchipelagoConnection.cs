@@ -6,6 +6,7 @@ using Archipelago.MultiClient.Net.Packets;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace OriBFArchipelago.Core
@@ -116,14 +117,14 @@ namespace OriBFArchipelago.Core
         /**
          * Send a message to the server that a location has been checked
          */
-        public void CheckLocation(string location)
+        public async void CheckLocation(string location)
         {
             if (Connected)
             {
                 if (location is not null)
                 {
                     long locationId = session.Locations.GetLocationIdFromName(GAME_NAME, location);
-                    session.Locations.CompleteLocationChecks(locationId);
+                    await Task.Factory.StartNew(() => session.Locations.CompleteLocationChecks(locationId));
                     Console.WriteLine("Checked " + location);
                 }
                 else
