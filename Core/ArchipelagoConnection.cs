@@ -229,5 +229,26 @@ namespace OriBFArchipelago.Core
                 return false;
             }
         }
+
+        public bool IsForlornEscapeComplete()
+        {
+            if (Connected)
+            {
+                ReadOnlyCollection<long> checkedLocations = session.Locations.AllLocationsChecked;
+                long id = session.Locations.GetLocationIdFromName(GAME_NAME, "ForlornEscape");
+                if (checkedLocations.Contains(id))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

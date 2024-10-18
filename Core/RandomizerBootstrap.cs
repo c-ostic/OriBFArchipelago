@@ -31,6 +31,10 @@ namespace OriBFArchipelago.Core
                 ["ginsoTreeWaterRisingBtm"] = BootstrapGinsoEscapeStart,
                 ["ginsoTreeResurrection"] = BootstrapGinsoTreeResurrection,
                 ["thornfeltSwampActTwoStart"] = BootstrapThornfeltSwampActTwoStart,
+
+                // Forlorn Fixes
+                ["forlornRuinsResurrection"] = BootstrapForlornRuinsResurrection,
+
             };
         }
 
@@ -155,6 +159,21 @@ namespace OriBFArchipelago.Core
         }
         #endregion
 
+        #region Forlorn Fixes
+        private static void BootstrapForlornRuinsResurrection(SceneRoot sceneRoot)
+        {
+            // Make the rocks blocking access to Folorn final room dependent on ForlornEscape location instead 
+            var backtrackingBlockOffTrigger = sceneRoot.transform.Find("*backtrackingBlockOff").GetComponent<ActivationBasedOnCondition>();
+            UnityEngine.Object.Destroy(backtrackingBlockOffTrigger.Condition);
+            var backtrackingBlockOffCondition = backtrackingBlockOffTrigger.gameObject.AddComponent<FinishedForlornEscapeCondition>();
+            backtrackingBlockOffTrigger.Condition = backtrackingBlockOffCondition;
+
+            // For wind inside the final room
+            bool hasEscaped = RandomizerManager.Connection.IsForlornEscapeComplete();
+            sceneRoot.transform.Find("floatZone").gameObject.SetActive(hasEscaped);
+        }
+        #endregion
+
         #region Stomp Triggers
         private static void BootstrapValleyOfTheWindBackground(SceneRoot sceneRoot)
         {
@@ -186,6 +205,16 @@ namespace OriBFArchipelago.Core
         public override bool Validate(IContext context)
         {
             return RandomizerManager.Connection.IsGinsoEscapeComplete() == IsTrue;
+        }
+    }
+
+    public class FinishedForlornEscapeCondition : Condition
+    {
+        public bool IsTrue = true;
+
+        public override bool Validate(IContext context)
+        {
+            return RandomizerManager.Connection.IsForlornEscapeComplete() == IsTrue;
         }
     }
 
