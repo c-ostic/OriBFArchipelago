@@ -130,13 +130,20 @@ namespace OriBFArchipelago.Core
             }
 
             {
-                // Elemental kill door blocking spirit well
-                var door = sceneRoot.transform.Find("*turretEnemyPuzzle/*enemyPuzzle/doorSetup").gameObject;
-                var doorActivator = door.AddComponent<ActivateBasedOnCondition>();
-                var doorCondition = door.AddComponent<ConstantCondition>();
-                doorActivator.Condition = doorCondition;
-                doorActivator.Target = door.transform.Find("sidewaysDoor").gameObject;
-                doorCondition.IsTrue = false;
+                // Elemental kill doors blocking spirit well and entry
+                var door1 = sceneRoot.transform.Find("*turretEnemyPuzzle/*doorASetup").gameObject;
+                var door1Activator = door1.AddComponent<ActivateBasedOnCondition>();
+                var door1Condition = door1.AddComponent<ConstantCondition>();
+                door1Activator.Condition = door1Condition;
+                door1Activator.Target = door1.transform.Find("triggerCollider").gameObject;
+                door1Condition.IsTrue = false;
+
+                var door2 = sceneRoot.transform.Find("*turretEnemyPuzzle/*enemyPuzzle/doorSetup").gameObject;
+                var door2Activator = door2.AddComponent<ActivateBasedOnCondition>();
+                var door2Condition = door2.AddComponent<ConstantCondition>();
+                door2Activator.Condition = door2Condition;
+                door2Activator.Target = door2.transform.Find("sidewaysDoor").gameObject;
+                door2Condition.IsTrue = false;
             }
         }
 
