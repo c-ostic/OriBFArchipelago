@@ -4,6 +4,7 @@ using Game;
 using OriModding.BF.Core;
 using System;
 using System.Collections.Generic;
+using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -14,17 +15,26 @@ namespace OriBFArchipelago.Core
     {
         // maximum number of messages before old messages are deleted so they don't flood the screen
         public const int MAX_MESSAGES = 20;
-        // default total duration that messages last
-        public const float DEFAULT_DURATION = 8f;
-        // percentage of total duration when fade begins
-        public const float FADE_PERCENT_THRESHOLD = 0.4f;
+        // message duration constants
+        public const float DEFAULT_DURATION = 6f;
+        public const float MIN_DURATION = 2f;
+        public const float MAX_DURATION = 10f;
+        // amount of duration time left when fade should begin (should not be larger than min duration
+        public const float FADE_THRESHOLD = 2f;
 
         public static RandomizerMessager instance;
 
         // controls whether messages are added to the queue
         public bool IsActive { get; private set; }
+
         // controls how long messages remain on the screen
         public float MessageDuration { get; private set; }
+
+        // controls when to show message options
+        public bool IsPaused { get; set; }
+
+        // controls whether to show all or only some messages
+        public bool IsVerbose { get; private set; }
 
         public class RandomizerMessage
         {
@@ -38,34 +48,63 @@ namespace OriBFArchipelago.Core
                 this.initDuration = duration;
                 this.currentDuration = duration;
             }
-
-            // Represents the percentage of duration left
-            public float GetDurationPercent()
-            {
-                return currentDuration / initDuration;
-            }
         }
 
         private Queue<RandomizerMessage> messageQueue;
 
-        private GUIStyle messageStyle;
+        private GUIStyle messageStyle, optionsStyle;
 
         private void Awake()
         {
             instance = this;
             IsActive = true;
             MessageDuration = DEFAULT_DURATION;
+            IsPaused = false;
+            IsVerbose = true;
             messageQueue = new Queue<RandomizerMessage>();
 
             messageStyle = new GUIStyle();
             messageStyle.fontSize = 20;
             messageStyle.wordWrap = true;
             messageStyle.fontStyle = FontStyle.Bold;
+
+            optionsStyle = new GUIStyle();
+            optionsStyle.fontSize = 20;
+            optionsStyle.wordWrap = false;
+            optionsStyle.fontStyle = FontStyle.Bold;
+            optionsStyle.normal.textColor = new Color(1f, 1f, 1f);
         }
 
         private void OnGUI()
         {
-            GUILayout.BeginArea(new Rect(5, 5, Screen.width / 3, Screen.height));
+            int optionsOffset = 0;
+
+            // Show options
+            if (IsPaused)
+            {
+                optionsOffset = 100;
+                GUILayout.BeginArea(new Rect(5, 5, Screen.width / 3, 100));
+
+                GUILayout.BeginVertical();
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Message Duration: ", optionsStyle, GUILayout.ExpandWidth(false));
+                MessageDuration = GUILayout.HorizontalSlider(MessageDuration, MIN_DURATION, MAX_DURATION);
+                GUILayout.Label((int)MessageDuration + "", optionsStyle);
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Show all messages: ", optionsStyle, GUILayout.ExpandWidth(false));
+                IsVerbose = GUILayout.Toggle(IsVerbose, "");
+                GUILayout.EndHorizontal();
+
+                GUILayout.EndVertical();
+
+                GUILayout.EndArea();
+            }
+
+            // Show messages
+            GUILayout.BeginArea(new Rect(5, 5 + optionsOffset, Screen.width / 3, Screen.height));
 
             GUILayout.BeginVertical();
 
@@ -73,10 +112,10 @@ namespace OriBFArchipelago.Core
             {
                 float opacity = 1;
 
-                // only start to fade once the duration percent has passed the threshold
-                if (message.GetDurationPercent() < FADE_PERCENT_THRESHOLD)
+                // only start to fade once the duration has passed the threshold
+                if (message.currentDuration < FADE_THRESHOLD)
                 {
-                    opacity = message.GetDurationPercent() / FADE_PERCENT_THRESHOLD;
+                    opacity = message.currentDuration / FADE_THRESHOLD;
                 }
 
                 string opacityHex = ((int)(opacity * 255)).ToString("X2");
@@ -129,6 +168,8 @@ namespace OriBFArchipelago.Core
         {
             string result = "";
 
+            bool showMessage = false;
+
             foreach(MessagePart part in message.Parts)
             {
                 // i'm unsure what messages has background color, but i'll check for it just to be safe
@@ -144,9 +185,20 @@ namespace OriBFArchipelago.Core
                 {
                     result += part.Text;
                 }
+
+                // always show the message if in verbose mode
+                // or, if not verbose, check for a player message part with the active player
+                if (IsVerbose ||
+                    part is PlayerMessagePart && ((PlayerMessagePart)part).IsActivePlayer)
+                {
+                    showMessage = true;
+                }
             }
 
-            AddMessage(result);
+            if (showMessage)
+            {
+                AddMessage(result);
+            }
         }
 
         private string ConvertColor(Archipelago.MultiClient.Net.Models.Color color)
@@ -158,11 +210,6 @@ namespace OriBFArchipelago.Core
         public void SetActive(bool isActive)
         {
             IsActive = isActive;
-        }
-
-        public void SetMessageDuration(float messageDuration)
-        {
-            MessageDuration = messageDuration;
         }
     }
 }
