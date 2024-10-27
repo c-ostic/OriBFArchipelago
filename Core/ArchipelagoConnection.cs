@@ -102,7 +102,7 @@ namespace OriBFArchipelago.Core
         private void OnMessageReceived(LogMessage message)
         {
             Console.WriteLine(message.ToString());
-            RandomizerMessager.instance.AddMessage(message.ToString());
+            RandomizerMessager.instance.AddMessage(message);
         }
 
         /**
