@@ -400,6 +400,11 @@ namespace OriBFArchipelago.Core
                     case WorldArea.Sorrow:
                         keystoneCount = savedInventory.Get(InventoryItem.SorrowKeyStone) - unsavedInventory.Get(InventoryItem.SorrowKeyStoneUsed) - savedInventory.Get(InventoryItem.SorrowKeyStoneUsed);
                         break;
+                    case WorldArea.Void:
+                        break;
+                    default:
+                        keystoneCount = 0;
+                        break;
                 }
             }
             else
