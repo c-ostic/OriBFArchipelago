@@ -16,11 +16,14 @@ namespace OriBFArchipelago.Core
         public static RandomizerReceiver Receiver { get { return instance.receiver; } }
         public static ArchipelagoConnection Connection { get { return instance.connection; } }
 
+        public static RandomizerOptions Options { get { return instance.options; } }
+
         public static RandomizerManager instance;
 
         // references to both the receiver and the connection
         private RandomizerReceiver receiver;
         private ArchipelagoConnection connection;
+        private RandomizerOptions options;
 
         private bool inGame, inSaveSelect, failedToStart;
         private Dictionary<int, SlotData> saveSlots;
@@ -169,6 +172,8 @@ namespace OriBFArchipelago.Core
 
                 saveSlots[saveSlot] = updatedData;
                 RandomizerIO.WriteSlotData(saveSlots);
+
+                options = new RandomizerOptions(connection.SlotData);
             }
             else
             {
