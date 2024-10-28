@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using OriBFArchipelago.Core;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
+﻿using OriBFArchipelago.Core;
 
 namespace OriBFArchipelago.Extensions
 {
