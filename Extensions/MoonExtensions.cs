@@ -1,4 +1,5 @@
-﻿using OriBFArchipelago.Core;
+﻿using Core;
+using OriBFArchipelago.Core;
 
 namespace OriBFArchipelago.Extensions
 {
@@ -7,7 +8,7 @@ namespace OriBFArchipelago.Extensions
         //Taken from original rando: https://github.com/ori-community/bf-rando/blob/main/Randomiser/Extensions/MoonExtensions.cs
         public static WorldArea CurrentWorldArea(this SeinCharacter sein)
         {
-            return GameWorld.Instance.WorldAreaAtPosition(sein.Position)?.AsWorldArea() ?? WorldArea.Void;
+            return GameWorld.Instance.WorldAreaAtPosition(sein.Position)?.AsWorldArea() ?? GetAreaByScenes();
         }
 
         public static WorldArea AsWorldArea(this GameWorldArea area)
@@ -25,8 +26,19 @@ namespace OriBFArchipelago.Extensions
                 case "forlornRuins": return WorldArea.Forlorn;
                 case "mangrove": return WorldArea.Blackroot;
                 case "mountHoru": return WorldArea.Horu;
-                default: return WorldArea.Void;
+                default:
+                    return WorldArea.Void;
             }
+        }
+
+        private static WorldArea GetAreaByScenes()
+        {
+            // Annoyingly, there is no area identifier at Horu Mapstone. Instead, look up by scene at that mapstone.
+            if (Scenes.Manager.CurrentScene?.Scene == "mountHoruHubTop")
+            {
+                return WorldArea.Horu;
+            }
+            return WorldArea.Void;
         }
     }
 }

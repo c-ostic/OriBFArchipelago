@@ -77,7 +77,7 @@ namespace OriBFArchipelago.Patches
         static bool Prefix(int cost)
         {
             InventoryItem keystoneUsed = InventoryItem.KeyStoneUsed;
-            if (RandomizerManager.Options.UseLocalKeystones)
+            if (RandomizerManager.Options.KeyStoneLogic == KeyStoneOptions.AreaSpecific)
             {
                 WorldArea currentWorldArea = Characters.Sein.CurrentWorldArea();
                 switch (currentWorldArea)
@@ -122,7 +122,7 @@ namespace OriBFArchipelago.Patches
             int amount = __instance.NumberOfOrbsUsed;
             InventoryItem keystoneUsed = InventoryItem.KeyStoneUsed;
 
-            if (RandomizerManager.Options.UseLocalKeystones)
+            if (RandomizerManager.Options.KeyStoneLogic == KeyStoneOptions.AreaSpecific)
             {
                 WorldArea currentWorldArea = Characters.Sein.CurrentWorldArea();
                 switch (currentWorldArea)
@@ -174,7 +174,45 @@ namespace OriBFArchipelago.Patches
     {
         static bool Prefix()
         {
-            RandomizerManager.Receiver.ReceiveItem(InventoryItem.MapStoneUsed);
+            InventoryItem mapstoneUsed = InventoryItem.MapStoneUsed;
+            if (RandomizerManager.Options.MapStoneLogic == MapStoneOptions.AreaSpecific)
+            {
+                WorldArea currentWorldArea = Characters.Sein.CurrentWorldArea();
+                switch (currentWorldArea)
+                {
+                    case WorldArea.Glades:
+                        mapstoneUsed = InventoryItem.GladesMapStoneUsed;
+                        break;
+                    case WorldArea.Grove:
+                        mapstoneUsed = InventoryItem.GroveMapStoneUsed;
+                        break;
+                    case WorldArea.Grotto:
+                        mapstoneUsed = InventoryItem.GrottoMapStoneUsed;
+                        break;
+                    case WorldArea.Swamp:
+                        mapstoneUsed = InventoryItem.SwampMapStoneUsed;
+                        break;
+                    case WorldArea.Valley:
+                        mapstoneUsed = InventoryItem.ValleyMapStoneUsed;
+                        break;
+                    case WorldArea.Forlorn:
+                        mapstoneUsed = InventoryItem.ForlornMapStoneUsed;
+                        break;
+                    case WorldArea.Sorrow:
+                        mapstoneUsed = InventoryItem.SorrowMapStoneUsed;
+                        break;
+                    case WorldArea.Horu:
+                        mapstoneUsed = InventoryItem.HoruMapStoneUsed;
+                        break;
+                    case WorldArea.Blackroot:
+                        mapstoneUsed = InventoryItem.BlackrootMapStoneUsed;
+                        break;
+                    default:
+                        // If we somehow are in an invalid area, then we should not do anything.
+                        return false;
+                }
+            }
+            RandomizerManager.Receiver.ReceiveItem(mapstoneUsed);
             Console.WriteLine("Mapstone used");
             return true;
         }
@@ -226,7 +264,6 @@ namespace OriBFArchipelago.Patches
 
                 if (codes[i].LoadsField(seinField) && codes[i + 2].LoadsField(field))
                 {
-                    //CodeInstruction keystonesInstruction = CodeInstruction.LoadField(typeof(ArchipelagoGameState), nameof(ArchipelagoGameState.GladesKeystones));
                     CodeInstruction keystonesInstruction = CodeInstruction.Call(typeof(DoorWithSlotsKeystonesPatch), nameof(DoorWithSlotsKeystonesPatch.GetCurrentKeystonesCount));
                     keystonesInstruction.MoveLabelsFrom(codes[i]);
                     i += 2;
@@ -246,6 +283,16 @@ namespace OriBFArchipelago.Patches
         private static bool Prefix(ref float __result)
         {
             __result = (float) RandomizerManager.Receiver.GetCurrentKeystonesCount();
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(SeinMapstonesFloatProvider), nameof(SeinMapstonesFloatProvider.GetFloatValue))]
+    internal class SeinMapstonesFloatProviderPatch
+    {
+        private static bool Prefix(ref float __result)
+        {
+            __result = (float)RandomizerManager.Receiver.GetCurrentMapstonesCount();
             return false;
         }
     }

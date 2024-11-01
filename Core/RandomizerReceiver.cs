@@ -38,9 +38,10 @@ namespace OriBFArchipelago.Core
 
         public bool IsSuspended { get; set; }
 
-        private List<InventoryItem> localInventoryItems = new List<InventoryItem> { InventoryItem.AbilityCellUsed, InventoryItem.KeyStoneUsed, InventoryItem.MapStoneUsed, InventoryItem.EnemyEX, InventoryItem.GladesKeyStoneUsed, InventoryItem.GrottoKeyStoneUsed, InventoryItem.GinsoKeyStoneUsed, InventoryItem.SwampKeyStoneUsed, InventoryItem.MistyKeyStoneUsed, InventoryItem.ForlornKeyStoneUsed, InventoryItem.SorrowKeyStoneUsed };
+        private List<InventoryItem> localInventoryItems = new List<InventoryItem> { InventoryItem.AbilityCellUsed, InventoryItem.KeyStoneUsed, InventoryItem.MapStoneUsed, InventoryItem.EnemyEX, InventoryItem.GladesKeyStoneUsed, InventoryItem.GrottoKeyStoneUsed, InventoryItem.GinsoKeyStoneUsed, InventoryItem.SwampKeyStoneUsed, InventoryItem.MistyKeyStoneUsed, InventoryItem.ForlornKeyStoneUsed, InventoryItem.SorrowKeyStoneUsed, InventoryItem.GladesMapStoneUsed, InventoryItem.GroveMapStoneUsed, InventoryItem.GrottoMapStoneUsed, InventoryItem.SwampMapStoneUsed, InventoryItem.ValleyMapStoneUsed, InventoryItem.ForlornMapStoneUsed, InventoryItem.SorrowMapStoneUsed, InventoryItem.HoruMapStoneUsed, InventoryItem.BlackrootMapStoneUsed };
 
         private int keystoneCount = 0;
+        private int mapstoneCount = 0;
 
         /**
          * Initialize the randomizer reciever
@@ -119,6 +120,15 @@ namespace OriBFArchipelago.Core
                     case InventoryItem.SorrowKeyStone:
                         ReceiveKeyStones(); break;
                     case InventoryItem.MapStone:
+                    case InventoryItem.GladesMapStone:
+                    case InventoryItem.GroveMapStone:
+                    case InventoryItem.GrottoMapStone:
+                    case InventoryItem.SwampMapStone:
+                    case InventoryItem.ValleyMapStone:
+                    case InventoryItem.ForlornMapStone:
+                    case InventoryItem.SorrowMapStone:
+                    case InventoryItem.HoruMapStone:
+                    case InventoryItem.BlackrootMapStone:
                         ReceiveMapStones(); break;
                     case InventoryItem.GinsoKey:
                     case InventoryItem.ForlornKey:
@@ -371,10 +381,12 @@ namespace OriBFArchipelago.Core
 
         #region Peek Fuctions
 
+        // Peek functions for information of current inventories
+
         // Need to know this for Keystones patch
         public int GetCurrentKeystonesCount()
         {
-            if (RandomizerManager.Options.UseLocalKeystones)
+            if (RandomizerManager.Options.KeyStoneLogic == KeyStoneOptions.AreaSpecific)
             {
                 WorldArea currentArea = Characters.Sein.CurrentWorldArea();
                 switch (currentArea)
@@ -413,6 +425,56 @@ namespace OriBFArchipelago.Core
             }
 
             return keystoneCount;
+        }
+
+        public int GetCurrentMapstonesCount()
+        {
+
+            if (RandomizerManager.Options.MapStoneLogic == MapStoneOptions.AreaSpecific)
+            {
+                WorldArea currentArea = Characters.Sein.CurrentWorldArea();
+                switch (currentArea)
+                {
+                    case WorldArea.Glades:
+                        mapstoneCount = savedInventory.Get(InventoryItem.GladesMapStone) - unsavedInventory.Get(InventoryItem.GladesMapStoneUsed) - savedInventory.Get(InventoryItem.GladesMapStoneUsed);
+                        break;
+                    case WorldArea.Grove:
+                        mapstoneCount = savedInventory.Get(InventoryItem.GroveMapStone) - unsavedInventory.Get(InventoryItem.GroveMapStoneUsed) - savedInventory.Get(InventoryItem.GroveMapStoneUsed);
+                        break;
+                    case WorldArea.Grotto:
+                        mapstoneCount = savedInventory.Get(InventoryItem.GrottoMapStone) - unsavedInventory.Get(InventoryItem.GrottoMapStoneUsed) - savedInventory.Get(InventoryItem.GrottoMapStoneUsed);
+                        break;
+                    case WorldArea.Swamp:
+                        mapstoneCount = savedInventory.Get(InventoryItem.SwampMapStone) - unsavedInventory.Get(InventoryItem.SwampMapStoneUsed) - savedInventory.Get(InventoryItem.SwampMapStoneUsed);
+                        break;
+                    case WorldArea.Valley:
+                        mapstoneCount = savedInventory.Get(InventoryItem.ValleyMapStone) - unsavedInventory.Get(InventoryItem.ValleyMapStoneUsed) - savedInventory.Get(InventoryItem.ValleyMapStoneUsed);
+                        break;
+                    case WorldArea.Forlorn:
+                        mapstoneCount = savedInventory.Get(InventoryItem.ForlornMapStone) - unsavedInventory.Get(InventoryItem.ForlornMapStoneUsed) - savedInventory.Get(InventoryItem.ForlornMapStoneUsed);
+                        break;
+                    case WorldArea.Sorrow:
+                        mapstoneCount = savedInventory.Get(InventoryItem.SorrowMapStone) - unsavedInventory.Get(InventoryItem.SorrowMapStoneUsed) - savedInventory.Get(InventoryItem.SorrowMapStoneUsed);
+                        break;
+                    case WorldArea.Horu:
+                        mapstoneCount = savedInventory.Get(InventoryItem.HoruMapStone) - unsavedInventory.Get(InventoryItem.HoruMapStoneUsed) - savedInventory.Get(InventoryItem.HoruMapStoneUsed);
+                        break;
+                    case WorldArea.Blackroot:
+                        mapstoneCount = savedInventory.Get(InventoryItem.BlackrootMapStone) - unsavedInventory.Get(InventoryItem.BlackrootMapStoneUsed) - savedInventory.Get(InventoryItem.BlackrootMapStoneUsed);
+                        break;
+                    case WorldArea.Void:
+                        break;
+                    default:
+                        mapstoneCount = 0;
+                        break;
+                }
+            }
+            else
+            {
+                mapstoneCount = savedInventory.Get(InventoryItem.MapStone) - unsavedInventory.Get(InventoryItem.MapStoneUsed) - savedInventory.Get(InventoryItem.MapStoneUsed);
+            }
+
+            return mapstoneCount;
         }
 
         #endregion
