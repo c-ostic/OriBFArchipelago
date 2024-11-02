@@ -24,6 +24,8 @@ namespace OriBFArchipelago.Core
 
         public bool Connected { get; private set; }
 
+        public Dictionary<string, object> SlotData { get; private set; }
+
         /**
          * Creates an Archipelago session and sets up events to listen to
          */
@@ -87,6 +89,7 @@ namespace OriBFArchipelago.Core
                 var loginSuccess = (LoginSuccessful)result;
                 Console.WriteLine($"Successfully connected to {server} as {user}");
                 RandomizerMessager.instance.AddMessage($"Successfully connected to {server} as {user}");
+                SlotData = loginSuccess.SlotData;
             }
 
             Connected = result.Successful;

@@ -16,14 +16,26 @@ namespace OriBFArchipelago.Patches
             RandomizerManager.Connection.CheckLocationByGameObject(mapstone.gameObject);
         }
 
+        private static int GetCurrentMapstonesCount() => RandomizerManager.Receiver.GetCurrentMapstonesCount();
+
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> codes = instructions.ToList();
 
             var field = AccessTools.Field(typeof(MapStone), nameof(MapStone.CurrentState));
 
+            var seinField = AccessTools.Field(typeof(Game.Characters), nameof(Game.Characters.Sein));
+            var mapstonesField = AccessTools.Field(typeof(SeinInventory), nameof(SeinInventory.MapStones));
+
             for (int i = 0; i < codes.Count; i++)
             {
+                if (codes[i].LoadsField(seinField) && codes[i + 2].LoadsField(mapstonesField) && codes[i + 3].LoadsConstant(0))
+                {
+                    yield return CodeInstruction.Call(typeof(MapStonePatch), nameof(MapStonePatch.GetCurrentMapstonesCount));
+                    i += 2;
+                    continue;
+                }
+
                 yield return codes[i];
 
                 if (codes[i].StoresField(field) && codes[i - 1].LoadsConstant((int)MapStone.State.Activated)) // this.CurrentState = State.Activated

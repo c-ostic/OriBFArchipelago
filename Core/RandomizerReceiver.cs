@@ -1,4 +1,5 @@
 ﻿using Game;
+using OriBFArchipelago.Extensions;
 using System;
 using System.Collections.Generic;
 
@@ -36,6 +37,11 @@ namespace OriBFArchipelago.Core
         public string SlotName { get { return savedInventory.SlotName; } }
 
         public bool IsSuspended { get; set; }
+
+        private List<InventoryItem> localInventoryItems = new List<InventoryItem> { InventoryItem.AbilityCellUsed, InventoryItem.KeyStoneUsed, InventoryItem.MapStoneUsed, InventoryItem.EnemyEX, InventoryItem.GladesKeyStoneUsed, InventoryItem.GrottoKeyStoneUsed, InventoryItem.GinsoKeyStoneUsed, InventoryItem.SwampKeyStoneUsed, InventoryItem.MistyKeyStoneUsed, InventoryItem.ForlornKeyStoneUsed, InventoryItem.SorrowKeyStoneUsed, InventoryItem.GladesMapStoneUsed, InventoryItem.GroveMapStoneUsed, InventoryItem.GrottoMapStoneUsed, InventoryItem.SwampMapStoneUsed, InventoryItem.ValleyMapStoneUsed, InventoryItem.ForlornMapStoneUsed, InventoryItem.SorrowMapStoneUsed, InventoryItem.HoruMapStoneUsed, InventoryItem.BlackrootMapStoneUsed };
+
+        private int keystoneCount = 0;
+        private int mapstoneCount = 0;
 
         /**
          * Initialize the randomizer reciever
@@ -105,8 +111,24 @@ namespace OriBFArchipelago.Core
                     case InventoryItem.EnergyCell:
                         ReceiveEnergyCell(); break;
                     case InventoryItem.KeyStone:
+                    case InventoryItem.GladesKeyStone:
+                    case InventoryItem.GrottoKeyStone:
+                    case InventoryItem.GinsoKeyStone:
+                    case InventoryItem.SwampKeyStone:
+                    case InventoryItem.MistyKeyStone:
+                    case InventoryItem.ForlornKeyStone:
+                    case InventoryItem.SorrowKeyStone:
                         ReceiveKeyStones(); break;
                     case InventoryItem.MapStone:
+                    case InventoryItem.GladesMapStone:
+                    case InventoryItem.GroveMapStone:
+                    case InventoryItem.GrottoMapStone:
+                    case InventoryItem.SwampMapStone:
+                    case InventoryItem.ValleyMapStone:
+                    case InventoryItem.ForlornMapStone:
+                    case InventoryItem.SorrowMapStone:
+                    case InventoryItem.HoruMapStone:
+                    case InventoryItem.BlackrootMapStone:
                         ReceiveMapStones(); break;
                     case InventoryItem.GinsoKey:
                     case InventoryItem.ForlornKey:
@@ -163,10 +185,7 @@ namespace OriBFArchipelago.Core
         {
             // first check if it is one of these items which are received internally
             // otherwise the item is from archipelago and should be checked against the onload inventory
-            if (item == InventoryItem.AbilityCellUsed ||
-                item == InventoryItem.KeyStoneUsed ||
-                item == InventoryItem.MapStoneUsed ||
-                item == InventoryItem.EnemyEX)
+            if (localInventoryItems.Contains(item))
             {
                 unsavedInventory.Add(item, count);
             }
@@ -356,6 +375,106 @@ namespace OriBFArchipelago.Core
         private void ReceiveTeleporter(InventoryItem teleporterName)
         {
             TeleporterController.Activate(tpMap[teleporterName]);
+        }
+
+        #endregion
+
+        #region Peek Fuctions
+
+        // Peek functions for information of current inventories
+
+        // Need to know this for Keystones patch
+        public int GetCurrentKeystonesCount()
+        {
+            if (RandomizerManager.Options.KeyStoneLogic == KeyStoneOptions.AreaSpecific)
+            {
+                WorldArea currentArea = Characters.Sein.CurrentWorldArea();
+                switch (currentArea)
+                {
+                    case WorldArea.Glades:
+                        keystoneCount = savedInventory.Get(InventoryItem.GladesKeyStone) - unsavedInventory.Get(InventoryItem.GladesKeyStoneUsed) - savedInventory.Get(InventoryItem.GladesKeyStoneUsed);
+                        break;
+                    case WorldArea.Grotto:
+                        keystoneCount = savedInventory.Get(InventoryItem.GrottoKeyStone) - unsavedInventory.Get(InventoryItem.GrottoKeyStoneUsed) - savedInventory.Get(InventoryItem.GrottoKeyStoneUsed);
+                        break;
+                    case WorldArea.Ginso:
+                        keystoneCount = savedInventory.Get(InventoryItem.GinsoKeyStone) - unsavedInventory.Get(InventoryItem.GinsoKeyStoneUsed) - savedInventory.Get(InventoryItem.GinsoKeyStoneUsed);
+                        break;
+                    case WorldArea.Swamp:
+                        keystoneCount = savedInventory.Get(InventoryItem.SwampKeyStone) - unsavedInventory.Get(InventoryItem.SwampKeyStoneUsed) - savedInventory.Get(InventoryItem.SwampKeyStoneUsed);
+                        break;
+                    case WorldArea.Misty:
+                        keystoneCount = savedInventory.Get(InventoryItem.MistyKeyStone) - unsavedInventory.Get(InventoryItem.MistyKeyStoneUsed) - savedInventory.Get(InventoryItem.MistyKeyStoneUsed);
+                        break;
+                    case WorldArea.Forlorn:
+                        keystoneCount = savedInventory.Get(InventoryItem.ForlornKeyStone) - unsavedInventory.Get(InventoryItem.ForlornKeyStoneUsed) - savedInventory.Get(InventoryItem.ForlornKeyStoneUsed);
+                        break;
+                    case WorldArea.Sorrow:
+                        keystoneCount = savedInventory.Get(InventoryItem.SorrowKeyStone) - unsavedInventory.Get(InventoryItem.SorrowKeyStoneUsed) - savedInventory.Get(InventoryItem.SorrowKeyStoneUsed);
+                        break;
+                    case WorldArea.Void:
+                        break;
+                    default:
+                        keystoneCount = 0;
+                        break;
+                }
+            }
+            else
+            {
+                keystoneCount = savedInventory.Get(InventoryItem.KeyStone) - unsavedInventory.Get(InventoryItem.KeyStoneUsed) - savedInventory.Get(InventoryItem.KeyStoneUsed);
+            }
+
+            return keystoneCount;
+        }
+
+        public int GetCurrentMapstonesCount()
+        {
+
+            if (RandomizerManager.Options.MapStoneLogic == MapStoneOptions.AreaSpecific)
+            {
+                WorldArea currentArea = Characters.Sein.CurrentWorldArea();
+                switch (currentArea)
+                {
+                    case WorldArea.Glades:
+                        mapstoneCount = savedInventory.Get(InventoryItem.GladesMapStone) - unsavedInventory.Get(InventoryItem.GladesMapStoneUsed) - savedInventory.Get(InventoryItem.GladesMapStoneUsed);
+                        break;
+                    case WorldArea.Grove:
+                        mapstoneCount = savedInventory.Get(InventoryItem.GroveMapStone) - unsavedInventory.Get(InventoryItem.GroveMapStoneUsed) - savedInventory.Get(InventoryItem.GroveMapStoneUsed);
+                        break;
+                    case WorldArea.Grotto:
+                        mapstoneCount = savedInventory.Get(InventoryItem.GrottoMapStone) - unsavedInventory.Get(InventoryItem.GrottoMapStoneUsed) - savedInventory.Get(InventoryItem.GrottoMapStoneUsed);
+                        break;
+                    case WorldArea.Swamp:
+                        mapstoneCount = savedInventory.Get(InventoryItem.SwampMapStone) - unsavedInventory.Get(InventoryItem.SwampMapStoneUsed) - savedInventory.Get(InventoryItem.SwampMapStoneUsed);
+                        break;
+                    case WorldArea.Valley:
+                        mapstoneCount = savedInventory.Get(InventoryItem.ValleyMapStone) - unsavedInventory.Get(InventoryItem.ValleyMapStoneUsed) - savedInventory.Get(InventoryItem.ValleyMapStoneUsed);
+                        break;
+                    case WorldArea.Forlorn:
+                        mapstoneCount = savedInventory.Get(InventoryItem.ForlornMapStone) - unsavedInventory.Get(InventoryItem.ForlornMapStoneUsed) - savedInventory.Get(InventoryItem.ForlornMapStoneUsed);
+                        break;
+                    case WorldArea.Sorrow:
+                        mapstoneCount = savedInventory.Get(InventoryItem.SorrowMapStone) - unsavedInventory.Get(InventoryItem.SorrowMapStoneUsed) - savedInventory.Get(InventoryItem.SorrowMapStoneUsed);
+                        break;
+                    case WorldArea.Horu:
+                        mapstoneCount = savedInventory.Get(InventoryItem.HoruMapStone) - unsavedInventory.Get(InventoryItem.HoruMapStoneUsed) - savedInventory.Get(InventoryItem.HoruMapStoneUsed);
+                        break;
+                    case WorldArea.Blackroot:
+                        mapstoneCount = savedInventory.Get(InventoryItem.BlackrootMapStone) - unsavedInventory.Get(InventoryItem.BlackrootMapStoneUsed) - savedInventory.Get(InventoryItem.BlackrootMapStoneUsed);
+                        break;
+                    case WorldArea.Void:
+                        break;
+                    default:
+                        mapstoneCount = 0;
+                        break;
+                }
+            }
+            else
+            {
+                mapstoneCount = savedInventory.Get(InventoryItem.MapStone) - unsavedInventory.Get(InventoryItem.MapStoneUsed) - savedInventory.Get(InventoryItem.MapStoneUsed);
+            }
+
+            return mapstoneCount;
         }
 
         #endregion
