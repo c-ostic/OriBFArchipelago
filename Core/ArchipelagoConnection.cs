@@ -1,8 +1,10 @@
 ﻿using Archipelago.MultiClient.Net;
+using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Packets;
+using Game;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,6 +23,13 @@ namespace OriBFArchipelago.Core
 
         // The archipelago session
         private ArchipelagoSession session;
+        private DeathLinkService deathLinkService;
+        private string slotName;
+
+        // boolean used to ignore the death caused by deathlink as to not send another
+        private bool ignoreNextDeath;
+        // boolean used to queue a death from death link if player is in menu or cutscene
+        private bool queueDeath;
 
         public bool Connected { get; private set; }
 
@@ -31,16 +40,21 @@ namespace OriBFArchipelago.Core
          */
         public bool Init(string hostname, int port, string user, string password)
         {
+            slotName = user;
+
             session = ArchipelagoSessionFactory.CreateSession(hostname, port);
 
             session.MessageLog.OnMessageReceived += OnMessageReceived;
             session.Items.ItemReceived += OnItemReceived;
 
+            deathLinkService = session.CreateDeathLinkService();
+            deathLinkService.OnDeathLinkReceived += OnDeathLinkRecieved;
+
             return Connect(hostname, user, password);
         }
 
         /**
-         * 
+         * Disconnects from the archipelago server
          */
         public void Disconnect()
         {
@@ -96,6 +110,20 @@ namespace OriBFArchipelago.Core
             return Connected;
         }
 
+        public void Update()
+        {
+            if (queueDeath &&
+                Characters.Sein.Active && 
+                !Characters.Sein.IsSuspended && 
+                Characters.Sein.Controller.CanMove && 
+                !UI.MainMenuVisible)
+            {
+                queueDeath = false;
+                Damage damage = new Damage(10000f, Vector2.zero, Vector2.zero, DamageType.Lava, Characters.Sein.gameObject);
+                Characters.Sein.Controller.OnRecieveDamage(damage);
+            }
+        }
+
         /**
          * Upon receiving a message from the server, forward to this class's message event
          */
@@ -115,6 +143,30 @@ namespace OriBFArchipelago.Core
             RandomizerManager.Receiver.ReceiveItem((InventoryItem) Enum.Parse(typeof(InventoryItem), itemName));
 
             helper.DequeueItem();
+        }
+
+        /**
+         * Upon receiving a death link from the server, kill the player
+         */
+        private void OnDeathLinkRecieved(DeathLink deathLink)
+        {
+            // Send a message about the death
+            if (deathLink.Cause != null)
+            {
+                RandomizerMessager.instance.AddMessage(deathLink.Cause);
+            }
+            else
+            {
+                RandomizerMessager.instance.AddMessage(deathLink.Source + " died");
+            }
+
+            // A death caused by death link on full will trigger another death link; this is to prevent that
+            if (RandomizerManager.Options.DeathLinkLogic == DeathLinkOptions.Full)
+            {
+                ignoreNextDeath = true;
+            }
+
+            queueDeath = true;
         }
 
         /**
@@ -161,6 +213,34 @@ namespace OriBFArchipelago.Core
                 session.Socket.SendPacket(statusUpdatePacket);
                 Console.WriteLine("Complete Goal");
             }
+        }
+
+        /**
+         * Enabled or disabled deathlink
+         */
+        public void EnableDeathLink(bool enable)
+        {
+            if (enable)
+            {
+                deathLinkService.EnableDeathLink();
+            }
+            else
+            {
+                deathLinkService.DisableDeathLink();
+            }
+        }
+
+        /**
+         * Sends a death link to the archipelago server
+         */
+        public void SendDeathLink()
+        {
+            if (!ignoreNextDeath)
+            {
+                deathLinkService.SendDeathLink(new DeathLink(slotName, slotName + " perished in the Blind Forest"));
+            }
+
+            ignoreNextDeath = false;
         }
 
         // List of required locations for the All Trees goal
