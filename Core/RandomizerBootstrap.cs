@@ -31,6 +31,7 @@ namespace OriBFArchipelago.Core
                 ["ginsoTreeWaterRisingBtm"] = BootstrapGinsoEscapeStart,
                 ["ginsoTreeResurrection"] = BootstrapGinsoTreeResurrection,
                 ["thornfeltSwampActTwoStart"] = BootstrapThornfeltSwampActTwoStart,
+                ["kuroMomentCutscene"] = BootstrapKuroMomentCutscene,
 
                 // Forlorn Fixes
                 ["forlornRuinsResurrection"] = BootstrapForlornRuinsResurrection,
@@ -59,6 +60,11 @@ namespace OriBFArchipelago.Core
             ReplaceCondition(sceneRoot.transform.Find("*setups").GetComponent<OnSceneStartRunAction>());
             ReplaceCondition(sceneRoot.transform.Find("*objectiveSetup/objectiveSetupTrigger").GetComponent<OnSceneStartRunAction>());
 
+            ActionSequence gumoCutsceneActionSequence = sceneRoot.transform.Find("*objectiveSetup/objectiveSetupTrigger/objectiveSetupAction").GetComponent<ActionSequence>();
+
+            var ginsoCompleteAction = InsertAction<SendLocalAPItemsAction>(gumoCutsceneActionSequence, 45, new MoonGuid(-1289149174, 680822595, 558787450, 1729667918), sceneRoot);
+            ginsoCompleteAction.Item = InventoryItem.GinsoEscapeComplete;
+
             // Hide gumo until you do the escape
             var gumoSavesSein = sceneRoot.transform.Find("*gumoSavesSein");
             var condition = gumoSavesSein.gameObject.AddComponent<FinishedGinsoEscapeCondition>();
@@ -77,7 +83,7 @@ namespace OriBFArchipelago.Core
 
         private static void ReplaceCondition(OnSceneStartRunAction action)
         {
-            var condition = action.gameObject.AddComponent<FinishedGinsoEscapeCondition>();
+            var condition = action.gameObject.AddComponent<LeftGinsoCondition>();
             UnityEngine.Object.Destroy(action.Condition);
             action.Condition = condition;
         }
@@ -147,6 +153,12 @@ namespace OriBFArchipelago.Core
             }
         }
 
+        private static void BootstrapKuroMomentCutscene(SceneRoot sceneRoot)
+        {
+            var action = InsertAction<SendLocalAPItemsAction>(sceneRoot.transform.Find("masterTimelineSequence/actionSequence").GetComponent<ActionSequence>(), 0, new MoonGuid(307071171, -850108097, -1715582487, 2063130120), sceneRoot);
+            action.Item = InventoryItem.GinsoEscapeExit;
+        }
+
         private static void AddActivator(Transform root, GameObject target, Condition condition)
         {
             var activator1 = root.gameObject.AddComponent<ActivateBasedOnCondition>();
@@ -164,6 +176,19 @@ namespace OriBFArchipelago.Core
 
             UnityEngine.Object.Destroy(musicZones.GetComponent<SeinWorldStateCondition>());
         }
+
+        private static T InsertAction<T>(ActionSequence sequence, int index, MoonGuid guid, SceneRoot sceneRoot) where T : ActionMethod
+        {
+            var go = new GameObject();
+            go.transform.SetParent(sequence.transform);
+            var action = go.AddComponent<T>();
+            action.MoonGuid = guid;
+            action.RegisterToSaveSceneManager(sceneRoot.SaveSceneManager);
+            sequence.Actions.Insert(index, action);
+            ActionSequence.Rename(sequence.Actions);
+            return action;
+        }
+
         #endregion
 
         #region Forlorn Fixes
@@ -211,7 +236,7 @@ namespace OriBFArchipelago.Core
 
         public override bool Validate(IContext context)
         {
-            return RandomizerManager.Connection.IsGinsoEscapeComplete() == IsTrue;
+            return ((RandomizerManager.Receiver?.HasItem(InventoryItem.GinsoEscapeExit) ?? false) || (RandomizerManager.Receiver?.HasItem(InventoryItem.GinsoEscapeComplete) ?? false)) == IsTrue;
         }
     }
 
@@ -221,7 +246,7 @@ namespace OriBFArchipelago.Core
 
         public override bool Validate(IContext context)
         {
-            return RandomizerManager.Connection.IsForlornEscapeComplete() == IsTrue;
+            return (RandomizerManager.Connection?.IsForlornEscapeComplete() ?? false) == IsTrue;
         }
     }
 
@@ -232,6 +257,26 @@ namespace OriBFArchipelago.Core
         public override bool Validate(IContext context)
         {
             return IsTrue;
+        }
+    }
+
+    internal class SendLocalAPItemsAction : ActionMethod
+    {
+        internal InventoryItem Item { get; set; }
+
+        public override void Perform(IContext context)
+        {
+            RandomizerManager.Receiver.ReceiveItem(Item);   
+        }
+    }
+
+    public class LeftGinsoCondition : Condition
+    {
+        public bool IsTrue = true;
+
+        public override bool Validate(IContext context)
+        {
+            return RandomizerManager.Receiver.HasItem(InventoryItem.GinsoEscapeExit) == IsTrue;
         }
     }
 }

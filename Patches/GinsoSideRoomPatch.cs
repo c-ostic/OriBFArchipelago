@@ -15,7 +15,7 @@ namespace OriBFArchipelago.Patches
         {
             // I'll be honest I don't know how but this fixes a bug at the side rooms next to the ginso core
             //  where the areas don't load if you finish the escape, come back and don't have clean water
-            if (__instance.WorldEvents.UniqueID == 26 && RandomizerManager.Connection.IsGinsoEscapeComplete())
+            if (__instance.WorldEvents.UniqueID == 26 && (RandomizerManager.Receiver?.HasItem(InventoryItem.GinsoEscapeComplete) ?? false))
             {
                 __result = __instance.State != 21;
                 return false;

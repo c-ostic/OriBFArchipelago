@@ -27,6 +27,9 @@ namespace OriBFArchipelago.Core
         // compares against savedInventory to make sure items aren't duplicated
         private RandomizerInventory onLoadInventory;
 
+        // inventory for temporary items whice are never saved
+        private RandomizerInventory tempInventory;
+
         // the number of the associated save slot in Ori
         private int saveSlot;
 
@@ -38,7 +41,10 @@ namespace OriBFArchipelago.Core
 
         public bool IsSuspended { get; set; }
 
-        private List<InventoryItem> localInventoryItems = new List<InventoryItem> { InventoryItem.AbilityCellUsed, InventoryItem.KeyStoneUsed, InventoryItem.MapStoneUsed, InventoryItem.EnemyEX, InventoryItem.GladesKeyStoneUsed, InventoryItem.GrottoKeyStoneUsed, InventoryItem.GinsoKeyStoneUsed, InventoryItem.SwampKeyStoneUsed, InventoryItem.MistyKeyStoneUsed, InventoryItem.ForlornKeyStoneUsed, InventoryItem.SorrowKeyStoneUsed, InventoryItem.GladesMapStoneUsed, InventoryItem.GroveMapStoneUsed, InventoryItem.GrottoMapStoneUsed, InventoryItem.SwampMapStoneUsed, InventoryItem.ValleyMapStoneUsed, InventoryItem.ForlornMapStoneUsed, InventoryItem.SorrowMapStoneUsed, InventoryItem.HoruMapStoneUsed, InventoryItem.BlackrootMapStoneUsed };
+        private List<InventoryItem> localInventoryItems = new List<InventoryItem> { InventoryItem.AbilityCellUsed, InventoryItem.KeyStoneUsed, InventoryItem.MapStoneUsed, InventoryItem.EnemyEX, InventoryItem.GladesKeyStoneUsed, InventoryItem.GrottoKeyStoneUsed, InventoryItem.GinsoKeyStoneUsed, InventoryItem.SwampKeyStoneUsed, InventoryItem.MistyKeyStoneUsed, InventoryItem.ForlornKeyStoneUsed, InventoryItem.SorrowKeyStoneUsed, InventoryItem.GladesMapStoneUsed, InventoryItem.GroveMapStoneUsed, InventoryItem.GrottoMapStoneUsed, InventoryItem.SwampMapStoneUsed, InventoryItem.ValleyMapStoneUsed, InventoryItem.ForlornMapStoneUsed, InventoryItem.SorrowMapStoneUsed, InventoryItem.HoruMapStoneUsed, InventoryItem.BlackrootMapStoneUsed, InventoryItem.GinsoEscapeComplete };
+
+        // These items will not be saved unless staged
+        private List<InventoryItem> tempInventoryItems = new List<InventoryItem> { InventoryItem.GinsoEscapeExit };
 
         private int keystoneCount = 0;
         private int mapstoneCount = 0;
@@ -58,6 +64,7 @@ namespace OriBFArchipelago.Core
 
             onLoadInventory = new RandomizerInventory(VERSION, apSlotName);
             unsavedInventory = new RandomizerInventory(VERSION, apSlotName);
+            tempInventory = new RandomizerInventory(VERSION, apSlotName);
 
             if (isNew)
             {
@@ -189,6 +196,10 @@ namespace OriBFArchipelago.Core
             {
                 unsavedInventory.Add(item, count);
             }
+            else if (tempInventoryItems.Contains(item))
+            {
+                tempInventory.Add(item, count);
+            }
             else if (onLoadInventory.CompareOn(savedInventory, item) < 0)
             {
                 // if onLoadInventory isn't caught up to savedInventory, this is a previously received item
@@ -237,6 +248,13 @@ namespace OriBFArchipelago.Core
         private void Resync()
         {
             Console.WriteLine("Resyncing items...");
+
+            // Fix issue when exit immediately during prologue since Sein is null.
+            if (Characters.Sein == null)
+            {
+                Console.WriteLine("Sein is null. Skip Resync.");
+                return;
+            }
 
             int abilityPointsRemaining = savedInventory.Get(InventoryItem.AbilityCell) +
                 Characters.Sein.Level.Current -
@@ -475,6 +493,16 @@ namespace OriBFArchipelago.Core
             }
 
             return mapstoneCount;
+        }
+
+        public int GetItemCount(InventoryItem item)
+        {
+            return savedInventory.Get(item) + unsavedInventory.Get(item) + tempInventory.Get(item);
+        }
+
+        public bool HasItem(InventoryItem item)
+        {
+            return GetItemCount(item) > 0;
         }
 
         #endregion
