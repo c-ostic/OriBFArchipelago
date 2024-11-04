@@ -62,6 +62,7 @@ namespace OriBFArchipelago.Core
             if (inGame)
             {
                 receiver.Update();
+                connection.Update();
             }
 
             // If loading into a level failed to start, re-enable the save slots ui
@@ -174,6 +175,11 @@ namespace OriBFArchipelago.Core
                 RandomizerIO.WriteSlotData(saveSlots);
 
                 options = new RandomizerOptions(connection.SlotData);
+
+                if (options.DeathLinkLogic != DeathLinkOptions.Disabled)
+                {
+                    connection.EnableDeathLink(true);
+                }
             }
             else
             {

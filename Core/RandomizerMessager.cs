@@ -22,6 +22,9 @@ namespace OriBFArchipelago.Core
         // amount of duration time left when fade should begin (should not be larger than min duration
         public const float FADE_THRESHOLD = 2f;
 
+        // used as a basis to dynamically change the font size
+        public Vector2 baseScreenSize = new Vector2(1920, 1080);
+
         public static RandomizerMessager instance;
 
         // controls whether messages are added to the queue
@@ -64,12 +67,10 @@ namespace OriBFArchipelago.Core
             messageQueue = new Queue<RandomizerMessage>();
 
             messageStyle = new GUIStyle();
-            messageStyle.fontSize = 20;
             messageStyle.wordWrap = true;
             messageStyle.fontStyle = FontStyle.Bold;
 
             optionsStyle = new GUIStyle();
-            optionsStyle.fontSize = 20;
             optionsStyle.wordWrap = false;
             optionsStyle.fontStyle = FontStyle.Bold;
             optionsStyle.normal.textColor = new Color(1f, 1f, 1f);
@@ -78,6 +79,9 @@ namespace OriBFArchipelago.Core
         private void OnGUI()
         {
             int optionsOffset = 0;
+
+            messageStyle.fontSize = (int)(25 * (Screen.width / baseScreenSize.x));
+            optionsStyle.fontSize = (int)(25 * (Screen.width / baseScreenSize.x));
 
             // Show options
             if (IsPaused)
