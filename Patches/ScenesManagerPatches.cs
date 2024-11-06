@@ -38,7 +38,7 @@ namespace OriBFArchipelago.Patches
 
         public override bool Validate(IContext context)
         {
-            return ((RandomizerManager.Receiver?.HasItem(InventoryItem.GinsoEscapeExit) ?? false) && !(RandomizerManager.Receiver?.HasItem(InventoryItem.GinsoEscapeComplete) ?? false)) == IsTrue;
+            return (LocalGameState.IsGinsoExit && !(RandomizerManager.Receiver?.HasItem(InventoryItem.GinsoEscapeComplete) ?? false)) == IsTrue;
         }
     }
 }

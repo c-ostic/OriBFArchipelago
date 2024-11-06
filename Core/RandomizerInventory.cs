@@ -85,7 +85,6 @@ namespace OriBFArchipelago.Core
         EX200,
         EnemyEX,
 
-        GinsoEscapeExit,
         GinsoEscapeComplete,
     }
 
