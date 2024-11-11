@@ -13,17 +13,24 @@ namespace OriBFArchipelago.Patches
     [HarmonyPatch(typeof(TeleporterController))]
     internal static class TeleporterControllerPatches
     {
-        [HarmonyPrefix, HarmonyPatch(nameof(TeleporterController.OnFadedToBlack))]
-        private static bool OnFadedToBlackPrefix()
+        [HarmonyPostfix, HarmonyPatch(nameof(TeleporterController.OnFadedToBlack))]
+        private static void OnFadedToBlackPostfix()
         {
+            // Reset misty woods
+            var mistyEvents = WorldEventsHelper.MistyWorldEvents;
+            int value = mistyEvents?.Value ?? 10;
+            if (value != 1 && value != 8)
+            {
+                mistyEvents.Value = 10;
+            }
 
             // Reset ginso tree
-            var ginsoSim = new WorldEvents();
-            ginsoSim.MoonGuid = new MoonGuid(687998245, 1199897005, -1787166542, 576748618);
-            int ginsoEventsValue = World.Events.Find(ginsoSim).Value;
-            Console.WriteLine(ginsoEventsValue);
-            if (ginsoEventsValue == 21 && !(LocalGameState.IsGinsoExit) && !(RandomizerManager.Receiver?.HasItem(InventoryItem.GinsoEscapeComplete) ?? true))
+            WorldEventsRuntime ginsoEvents = WorldEventsHelper.GinsoWorldEvents;
+            int ginsoEventsValue = ginsoEvents?.Value ?? 23;
+
+            if ((ginsoEventsValue == 25 || ginsoEventsValue == 21) && !(LocalGameState.IsGinsoExit) && !(RandomizerManager.Receiver?.HasItem(InventoryItem.GinsoEscapeComplete) ?? true))
             {
+                Sein.World.Events.WaterPurified = false;
 
                 var ginsoTreeResurrectionSceneManagerScene = Scenes.Manager.GetSceneManagerScene("ginsoTreeResurrection");
                 var ginsoTreeResurrectionScene = ginsoTreeResurrectionSceneManagerScene.SceneRoot;
@@ -39,7 +46,6 @@ namespace OriBFArchipelago.Patches
                 ginsoTreeResurrectionScene.transform.Find("surfaceColliders/surfaceColliderAfterResurrection").gameObject.SetActive(false);
                 ginsoTreeResurrectionScene.transform.Find("*heartResurrection/chainReactionSetup/spiritLanternPlaceholders/middle").GetChild(0).Find("spiritLantern").gameObject.SetActive(false);
                 ginsoTreeResurrectionScene.transform.Find("*heartResurrection/chainReactionSetup/spiritLanternPlaceholders/middle").GetChild(0).Find("lock").gameObject.SetActive(true);
-
                 ginsoTreeResurrectionScene.transform.Find("*heartResurrection/restoringHeartWaterRising/triggerWaterSequence").gameObject.SetActive(true);
 
                 BaseAnimatorAction reverseTimelineSequenceAction = new BaseAnimatorAction();
@@ -74,6 +80,8 @@ namespace OriBFArchipelago.Patches
 
                 ginsoTreeWaterRisingBackgroundScene.transform.Find("particles").gameObject.SetActive(false);
 
+                // Resetting upper doors
+
                 var blockingWallsAnimator = ginsoTreeResurrectionScene.transform.Find("*heartResurrection/restoringHeartWaterRising/blockingWalls").GetComponentsInChildren<LegacyAnimator>();
 
                 foreach (LegacyAnimator animator in blockingWallsAnimator)
@@ -82,25 +90,49 @@ namespace OriBFArchipelago.Patches
                     animator.StopAndSampleAtStart();
                 }
 
-                World.Events.Find(ginsoSim).Value = 23;
+                var risingWater = risingWaterGameObject.GetComponent<RisingWater>();
+                risingWater.Speed = 5;
+
+                // Resetting "vents" (as the game called them) in ginso escape end section
+                var ginsoTreeWaterRisingEndSceneManagerScene = Scenes.Manager.GetSceneManagerScene("ginsoTreeWaterRisingEnd");
+
+                if (ginsoTreeWaterRisingEndSceneManagerScene != null)
+                {
+                    var ginsoTreeWaterRisingEndSceneroot = ginsoTreeWaterRisingEndSceneManagerScene.SceneRoot;
+                    var ginsoTreeWaterRisingEndParticleSteamVentTransform = ginsoTreeWaterRisingEndSceneroot.transform.Find("artBefore/artBefore/*particleSteamVent");
+                    for (int i = 0; i < ginsoTreeWaterRisingEndParticleSteamVentTransform.childCount; i++)
+                    {
+                        var ventTransform = ginsoTreeWaterRisingEndParticleSteamVentTransform.GetChild(i);
+                        var setupTransform = ventTransform.Find("setup");
+                        if (setupTransform.gameObject.activeSelf)
+                        {
+                            setupTransform.Find("explosion").gameObject.SetActive(true);
+                            setupTransform.gameObject.SetActive(false);
+                        }
+                    };
+                    Scenes.Manager.UnloadScene(ginsoTreeWaterRisingEndSceneManagerScene, false, true);
+                }
+
+                // Set this flag back to pre trigger
+                ginsoEvents.Value = 23;
 
                 // Unloaing scenes seems to cleared up random debris on second trigger after TP
-                // OriCore.Scenes.Manager.UnloadScene(ginsoTreeResurrectionSceneManagerScene, false, true);
-                Scenes.Manager.UnloadAllScenes();
+                Scenes.Manager.UnloadScene(ginsoTreeResurrectionSceneManagerScene, false, true);
+                Scenes.Manager.UnloadScene(ginsoTreeWaterRisingBackgroundSceneManagerScene, false, true);
+
+                // Need to create checkpoint on TP keep surrounding area loaded
+                LocalGameState.IsPendingCheckpoint = true;
             }
-            return true;
         }
 
-        [HarmonyPostfix, HarmonyPatch(nameof(TeleporterController.OnFadedToBlack))]
-        private static void OnFadedToBlackPostfix()
+        [HarmonyPostfix, HarmonyPatch(nameof(TeleporterController.OnFinishedTeleporting))]
+        private static void OnFinishedTeleportingPostfix()
         {
-            // Reset misty woods
-            var mistySim = new WorldEvents();
-            mistySim.MoonGuid = new MoonGuid(1061758509, 1206015992, 824243626, -2026069462);
-            int value = World.Events.Find(mistySim).Value;
-            if (value != 1 && value != 8)
+            if (LocalGameState.IsPendingCheckpoint)
             {
-                World.Events.Find(mistySim).Value = 10;
+                GameController.Instance.CreateCheckpoint();
+
+                LocalGameState.IsPendingCheckpoint = false;
             }
         }
     }

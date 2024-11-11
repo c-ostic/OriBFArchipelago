@@ -104,6 +104,22 @@ namespace OriBFArchipelago.Core
             sceneRoot.transform.Find("artAfter/artAfter/surfaceColliders").gameObject.SetActive(false);
 
             PatchMusicZones(sceneRoot.transform.Find("musiczones"));
+
+            // Prevent teleporting animation near the exit from triggering the exit and avoid potential softlock. Ask me how I know.
+            var triggerTransform = sceneRoot.transform.Find("*exit/trigger");
+            var condition = triggerTransform.gameObject.AddComponent<IsTeleportingCondition>();
+            var triggerAction = triggerTransform.GetComponent<PlayerCollisionTrigger>();
+            triggerAction.Condition = condition;
+
+            var artBeforeTransform = sceneRoot.transform.Find("artBefore");
+            var artBeforeNewCondition = artBeforeTransform.gameObject.AddComponent<FinishedGinsoEscapeCondition>();
+            var artBeforeAction = artBeforeTransform.GetComponent<ActivateBasedOnCondition>();
+            artBeforeAction.Condition = artBeforeNewCondition;
+
+            var artAfterTransform = sceneRoot.transform.Find("artAfter");
+            var artAfterNewCondition = artAfterTransform.gameObject.AddComponent<FinishedGinsoEscapeCondition>();
+            var artAfterAction = artAfterTransform.GetComponent<ActivateBasedOnCondition>();
+            artAfterAction.Condition = artAfterNewCondition;
         }
 
         private static void BootstrapGinsoEscapeMid(SceneRoot sceneRoot)
@@ -114,6 +130,19 @@ namespace OriBFArchipelago.Core
         private static void BootstrapGinsoEscapeStart(SceneRoot sceneRoot)
         {
             PatchMusicZones(sceneRoot.transform.Find("artBefore/musiczones"));
+
+            // Reset enemies needed for bash
+            var enemiesTransform = sceneRoot.transform.Find("enemies");
+            var jumperEnemy1 = enemiesTransform.GetChild(0).GetComponent<JumperEnemyPlaceholder>();
+            var jumperEnemy2 = enemiesTransform.GetChild(1).GetComponent<JumperEnemyPlaceholder>();
+
+            jumperEnemy1.RespawnTime = 15;
+            jumperEnemy2.RespawnTime = 15;
+
+            var waterRisingSpeedTrigger = sceneRoot.transform.Find("waterChangePropertiesTriggers/waterChangePropertiesTrigger").GetComponent<PlayerCollisionTrigger>();
+            waterRisingSpeedTrigger.TriggerOnce = false;
+            waterRisingSpeedTrigger.Active = true;
+
         }
 
         private static void BootstrapGinsoTreeResurrection(SceneRoot sceneRoot)
@@ -137,6 +166,16 @@ namespace OriBFArchipelago.Core
                 // Make it so we can retrigger the escape sequence
                 var interestTrigger = sceneRoot.transform.Find("*heartResurrection/restoringHeartWaterRising/triggerWaterSequence").GetComponent<OriInterestTriggerB>();
                 interestTrigger.RunOnce = false;
+
+                // Walls should not be disabled based on clean water
+                var blockingWallsTransform = sceneRoot.transform.Find("*heartResurrection/restoringHeartWaterRising/blockingWalls");
+
+                var newWallCondition = blockingWallsTransform.gameObject.AddComponent<FinishedGinsoEscapeCondition>();
+
+                foreach (ActivateBasedOnCondition wallActivator in blockingWallsTransform.GetComponents<ActivateBasedOnCondition>())
+                {
+                    wallActivator.Condition = newWallCondition;
+                }
             }
 
             {
@@ -288,6 +327,14 @@ namespace OriBFArchipelago.Core
         public override bool Validate(IContext context)
         {
             return LocalGameState.IsGinsoExit == IsTrue;
+        }
+    }
+
+    public class IsTeleportingCondition : Condition
+    {
+        public override bool Validate(IContext context) 
+        {
+            return !LocalGameState.IsTeleporting;
         }
     }
 }
