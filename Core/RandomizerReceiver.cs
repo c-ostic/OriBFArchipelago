@@ -38,7 +38,7 @@ namespace OriBFArchipelago.Core
 
         public bool IsSuspended { get; set; }
 
-        private List<InventoryItem> localInventoryItems = new List<InventoryItem> { InventoryItem.AbilityCellUsed, InventoryItem.KeyStoneUsed, InventoryItem.MapStoneUsed, InventoryItem.EnemyEX, InventoryItem.GladesKeyStoneUsed, InventoryItem.GrottoKeyStoneUsed, InventoryItem.GinsoKeyStoneUsed, InventoryItem.SwampKeyStoneUsed, InventoryItem.MistyKeyStoneUsed, InventoryItem.ForlornKeyStoneUsed, InventoryItem.SorrowKeyStoneUsed, InventoryItem.GladesMapStoneUsed, InventoryItem.GroveMapStoneUsed, InventoryItem.GrottoMapStoneUsed, InventoryItem.SwampMapStoneUsed, InventoryItem.ValleyMapStoneUsed, InventoryItem.ForlornMapStoneUsed, InventoryItem.SorrowMapStoneUsed, InventoryItem.HoruMapStoneUsed, InventoryItem.BlackrootMapStoneUsed };
+        private List<InventoryItem> localInventoryItems = new List<InventoryItem> { InventoryItem.AbilityCellUsed, InventoryItem.KeyStoneUsed, InventoryItem.MapStoneUsed, InventoryItem.EnemyEX, InventoryItem.GladesKeyStoneUsed, InventoryItem.GrottoKeyStoneUsed, InventoryItem.GinsoKeyStoneUsed, InventoryItem.SwampKeyStoneUsed, InventoryItem.MistyKeyStoneUsed, InventoryItem.ForlornKeyStoneUsed, InventoryItem.SorrowKeyStoneUsed, InventoryItem.GladesMapStoneUsed, InventoryItem.GroveMapStoneUsed, InventoryItem.GrottoMapStoneUsed, InventoryItem.SwampMapStoneUsed, InventoryItem.ValleyMapStoneUsed, InventoryItem.ForlornMapStoneUsed, InventoryItem.SorrowMapStoneUsed, InventoryItem.HoruMapStoneUsed, InventoryItem.BlackrootMapStoneUsed, InventoryItem.GinsoEscapeComplete };
 
         private int keystoneCount = 0;
         private int mapstoneCount = 0;
@@ -237,6 +237,13 @@ namespace OriBFArchipelago.Core
         private void Resync()
         {
             Console.WriteLine("Resyncing items...");
+
+            // Fix issue when exit immediately during prologue since Sein is null.
+            if (Characters.Sein == null)
+            {
+                Console.WriteLine("Sein is null. Skip Resync.");
+                return;
+            }
 
             int abilityPointsRemaining = savedInventory.Get(InventoryItem.AbilityCell) +
                 Characters.Sein.Level.Current -
@@ -475,6 +482,16 @@ namespace OriBFArchipelago.Core
             }
 
             return mapstoneCount;
+        }
+
+        public int GetItemCount(InventoryItem item)
+        {
+            return savedInventory.Get(item) + unsavedInventory.Get(item);
+        }
+
+        public bool HasItem(InventoryItem item)
+        {
+            return GetItemCount(item) > 0;
         }
 
         #endregion

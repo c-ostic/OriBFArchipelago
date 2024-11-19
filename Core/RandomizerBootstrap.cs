@@ -31,6 +31,7 @@ namespace OriBFArchipelago.Core
                 ["ginsoTreeWaterRisingBtm"] = BootstrapGinsoEscapeStart,
                 ["ginsoTreeResurrection"] = BootstrapGinsoTreeResurrection,
                 ["thornfeltSwampActTwoStart"] = BootstrapThornfeltSwampActTwoStart,
+                ["kuroMomentCutscene"] = BootstrapKuroMomentCutscene,
 
                 // Forlorn Fixes
                 ["forlornRuinsResurrection"] = BootstrapForlornRuinsResurrection,
@@ -59,6 +60,11 @@ namespace OriBFArchipelago.Core
             ReplaceCondition(sceneRoot.transform.Find("*setups").GetComponent<OnSceneStartRunAction>());
             ReplaceCondition(sceneRoot.transform.Find("*objectiveSetup/objectiveSetupTrigger").GetComponent<OnSceneStartRunAction>());
 
+            ActionSequence gumoCutsceneActionSequence = sceneRoot.transform.Find("*objectiveSetup/objectiveSetupTrigger/objectiveSetupAction").GetComponent<ActionSequence>();
+
+            var ginsoCompleteAction = InsertAction<SendLocalAPItemsAction>(gumoCutsceneActionSequence, 45, new MoonGuid(-1289149174, 680822595, 558787450, 1729667918), sceneRoot);
+            ginsoCompleteAction.Item = InventoryItem.GinsoEscapeComplete;
+
             // Hide gumo until you do the escape
             var gumoSavesSein = sceneRoot.transform.Find("*gumoSavesSein");
             var condition = gumoSavesSein.gameObject.AddComponent<FinishedGinsoEscapeCondition>();
@@ -77,7 +83,7 @@ namespace OriBFArchipelago.Core
 
         private static void ReplaceCondition(OnSceneStartRunAction action)
         {
-            var condition = action.gameObject.AddComponent<FinishedGinsoEscapeCondition>();
+            var condition = action.gameObject.AddComponent<LeftGinsoCondition>();
             UnityEngine.Object.Destroy(action.Condition);
             action.Condition = condition;
         }
@@ -98,6 +104,22 @@ namespace OriBFArchipelago.Core
             sceneRoot.transform.Find("artAfter/artAfter/surfaceColliders").gameObject.SetActive(false);
 
             PatchMusicZones(sceneRoot.transform.Find("musiczones"));
+
+            // Prevent teleporting animation near the exit from triggering the exit and avoid potential softlock. Ask me how I know.
+            var triggerTransform = sceneRoot.transform.Find("*exit/trigger");
+            var condition = triggerTransform.gameObject.AddComponent<IsTeleportingCondition>();
+            var triggerAction = triggerTransform.GetComponent<PlayerCollisionTrigger>();
+            triggerAction.Condition = condition;
+
+            var artBeforeTransform = sceneRoot.transform.Find("artBefore");
+            var artBeforeNewCondition = artBeforeTransform.gameObject.AddComponent<FinishedGinsoEscapeCondition>();
+            var artBeforeAction = artBeforeTransform.GetComponent<ActivateBasedOnCondition>();
+            artBeforeAction.Condition = artBeforeNewCondition;
+
+            var artAfterTransform = sceneRoot.transform.Find("artAfter");
+            var artAfterNewCondition = artAfterTransform.gameObject.AddComponent<FinishedGinsoEscapeCondition>();
+            var artAfterAction = artAfterTransform.GetComponent<ActivateBasedOnCondition>();
+            artAfterAction.Condition = artAfterNewCondition;
         }
 
         private static void BootstrapGinsoEscapeMid(SceneRoot sceneRoot)
@@ -108,6 +130,19 @@ namespace OriBFArchipelago.Core
         private static void BootstrapGinsoEscapeStart(SceneRoot sceneRoot)
         {
             PatchMusicZones(sceneRoot.transform.Find("artBefore/musiczones"));
+
+            // Reset enemies needed for bash
+            var enemiesTransform = sceneRoot.transform.Find("enemies");
+            var jumperEnemy1 = enemiesTransform.GetChild(0).GetComponent<JumperEnemyPlaceholder>();
+            var jumperEnemy2 = enemiesTransform.GetChild(1).GetComponent<JumperEnemyPlaceholder>();
+
+            jumperEnemy1.RespawnTime = 15;
+            jumperEnemy2.RespawnTime = 15;
+
+            var waterRisingSpeedTrigger = sceneRoot.transform.Find("waterChangePropertiesTriggers/waterChangePropertiesTrigger").GetComponent<PlayerCollisionTrigger>();
+            waterRisingSpeedTrigger.TriggerOnce = false;
+            waterRisingSpeedTrigger.Active = true;
+
         }
 
         private static void BootstrapGinsoTreeResurrection(SceneRoot sceneRoot)
@@ -127,6 +162,20 @@ namespace OriBFArchipelago.Core
                 AddActivator(artAfter, artAfter.Find("heartClean").gameObject, condition);
                 AddActivator(artAfter, artAfter.Find("rotatingLightraysA").gameObject, condition);
                 AddActivator(artAfter, artAfter.Find("rotatingLightraysB").gameObject, condition);
+
+                // Make it so we can retrigger the escape sequence
+                var interestTrigger = sceneRoot.transform.Find("*heartResurrection/restoringHeartWaterRising/triggerWaterSequence").GetComponent<OriInterestTriggerB>();
+                interestTrigger.RunOnce = false;
+
+                // Walls should not be disabled based on clean water
+                var blockingWallsTransform = sceneRoot.transform.Find("*heartResurrection/restoringHeartWaterRising/blockingWalls");
+
+                var newWallCondition = blockingWallsTransform.gameObject.AddComponent<FinishedGinsoEscapeCondition>();
+
+                foreach (ActivateBasedOnCondition wallActivator in blockingWallsTransform.GetComponents<ActivateBasedOnCondition>())
+                {
+                    wallActivator.Condition = newWallCondition;
+                }
             }
 
             {
@@ -147,6 +196,11 @@ namespace OriBFArchipelago.Core
             }
         }
 
+        private static void BootstrapKuroMomentCutscene(SceneRoot sceneRoot)
+        {
+            var action = InsertAction<SetGinsoExitAction>(sceneRoot.transform.Find("masterTimelineSequence/actionSequence").GetComponent<ActionSequence>(), 0, new MoonGuid(307071171, -850108097, -1715582487, 2063130120), sceneRoot);
+        }
+
         private static void AddActivator(Transform root, GameObject target, Condition condition)
         {
             var activator1 = root.gameObject.AddComponent<ActivateBasedOnCondition>();
@@ -164,6 +218,19 @@ namespace OriBFArchipelago.Core
 
             UnityEngine.Object.Destroy(musicZones.GetComponent<SeinWorldStateCondition>());
         }
+
+        private static T InsertAction<T>(ActionSequence sequence, int index, MoonGuid guid, SceneRoot sceneRoot) where T : ActionMethod
+        {
+            var go = new GameObject();
+            go.transform.SetParent(sequence.transform);
+            var action = go.AddComponent<T>();
+            action.MoonGuid = guid;
+            action.RegisterToSaveSceneManager(sceneRoot.SaveSceneManager);
+            sequence.Actions.Insert(index, action);
+            ActionSequence.Rename(sequence.Actions);
+            return action;
+        }
+
         #endregion
 
         #region Forlorn Fixes
@@ -211,7 +278,7 @@ namespace OriBFArchipelago.Core
 
         public override bool Validate(IContext context)
         {
-            return RandomizerManager.Connection.IsGinsoEscapeComplete() == IsTrue;
+            return (LocalGameState.IsGinsoExit || (RandomizerManager.Receiver?.HasItem(InventoryItem.GinsoEscapeComplete) ?? false)) == IsTrue;
         }
     }
 
@@ -221,7 +288,7 @@ namespace OriBFArchipelago.Core
 
         public override bool Validate(IContext context)
         {
-            return RandomizerManager.Connection.IsForlornEscapeComplete() == IsTrue;
+            return (RandomizerManager.Connection?.IsForlornEscapeComplete() ?? false) == IsTrue;
         }
     }
 
@@ -232,6 +299,42 @@ namespace OriBFArchipelago.Core
         public override bool Validate(IContext context)
         {
             return IsTrue;
+        }
+    }
+
+    internal class SendLocalAPItemsAction : ActionMethod
+    {
+        internal InventoryItem Item { get; set; }
+
+        public override void Perform(IContext context)
+        {
+            RandomizerManager.Receiver.ReceiveItem(Item);   
+        }
+    }
+
+    internal class SetGinsoExitAction : ActionMethod
+    {
+        public override void Perform(IContext context)
+        {
+            LocalGameState.IsGinsoExit = true;
+        }
+    }
+
+    public class LeftGinsoCondition : Condition
+    {
+        public bool IsTrue = true;
+
+        public override bool Validate(IContext context)
+        {
+            return LocalGameState.IsGinsoExit == IsTrue;
+        }
+    }
+
+    public class IsTeleportingCondition : Condition
+    {
+        public override bool Validate(IContext context) 
+        {
+            return !LocalGameState.IsTeleporting;
         }
     }
 }
