@@ -81,7 +81,7 @@ namespace OriBFArchipelago.Core
             if (IsSuspended)
                 return;
 
-            if (UnityEngine.Input.GetKey(KeyCode.LeftAlt) && UnityEngine.Input.GetKeyDown(KeyCode.T))
+            if (Keybinder.OnPressed(Keybinder.Action.OpenTeleport))
             {
                 if (PlayerHasControl)
                 {
