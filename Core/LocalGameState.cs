@@ -20,6 +20,11 @@ namespace OriBFArchipelago.Core
                 return (bool)value;
             }
         }
+
+        public static bool QueueDoubleBash = false;
+        public static bool WasDoubleBashQueued = false;
+        public static bool QueueGrenadeJump = false;
+
         public static void Reset()
         {
             IsGinsoExit = false;

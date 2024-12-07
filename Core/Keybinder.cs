@@ -1,4 +1,5 @@
 ﻿using Core;
+using HarmonyLib;
 using OriModding.BF.InputLib;
 using SmartInput;
 using System;
@@ -10,6 +11,16 @@ using Input = Core.Input;
 
 namespace OriBFArchipelago.Core
 {
+    [HarmonyPatch(typeof(PlayerInput), nameof(PlayerInput.RefreshControls))]
+    internal class PlayerInputPatch
+    {
+        private static void Postfix()
+        {
+            Keybinder.Instance.UpdateState();
+        }
+    }
+
+
     /**
      * Links custom randomizer actions to keybinds
      */
@@ -168,7 +179,6 @@ namespace OriBFArchipelago.Core
         private class SingleBind
         {
             List<SingleInput> inputs = new List<SingleInput>();
-            SingleInput activator; // used for determining when OnPressed event triggers; always last key named in sequence
 
             public SingleBind(string data)
             {
@@ -188,14 +198,11 @@ namespace OriBFArchipelago.Core
                         throw new ArgumentException();
                     }
                 }
-
-                activator = inputs.Last();
             }
 
             public SingleBind(List<SingleInput> inputs)
             {
                 this.inputs = inputs;
-                activator = inputs.Last();
             }
 
             /**
@@ -233,7 +240,9 @@ namespace OriBFArchipelago.Core
             {
                 get
                 {
-                    return inputs.Where(i => i != activator).All(j => j.IsPressed) && activator.OnPressed;
+                    // At least one of the inputs was pressed this frame
+                    // and the others were also just pressed or were already pressed
+                    return inputs.Any(j => j.OnPressed) && inputs.All(i => i.OnPressed || i.IsPressed);
                 }
             }
         }
@@ -358,9 +367,10 @@ namespace OriBFArchipelago.Core
         }
 
         /**
-         * Called every frame to update the state of each keybind
+         * Called every frame to update the state of each keybind. 
+         * Linked to PlayerInput update instead of using its own so controls are updated at the same time as the base game
          */
-        private void Update()
+        public void UpdateState()
         {
             foreach (BindSet set in keybinds.Values)
             {
