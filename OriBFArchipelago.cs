@@ -29,6 +29,7 @@ namespace OriBFArchipelago
             Controllers.Add<RandomizerMessager>(null, "Randomizer");
             Controllers.Add<RandomizerManager>(null, "Randomizer");
             Controllers.Add<Keybinder>(null, "Randomizer");
+            Controllers.Add<RandomizerSettings>(null, "Randomizer");
         }
     }
 }

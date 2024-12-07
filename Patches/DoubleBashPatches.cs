@@ -85,8 +85,10 @@ namespace OriBFArchipelago.Patches
 
         private static void Postfix()
         {
-            // Queue a double bash if the button is pressed and a double bash wasn't previously queued
-            if (Keybinder.IsPressed(Keybinder.Action.DoubleBash) && !LocalGameState.WasDoubleBashQueued)
+            // Queue a double bash if the setting is enabled, the button is pressed, and a double bash wasn't previously queued
+            if (RandomizerSettings.Get(RandomizerSettings.Setting.DoubleBashAssist) == 1 && 
+                Keybinder.IsPressed(Keybinder.Action.DoubleBash) && 
+                !LocalGameState.WasDoubleBashQueued)
             {
                 LocalGameState.QueueDoubleBash = true;
             }

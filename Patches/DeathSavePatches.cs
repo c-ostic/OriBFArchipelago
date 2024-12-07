@@ -29,6 +29,7 @@ namespace OriBFArchipelago.Patches
         private static void Postfix(SaveGameController __instance)
         {
             RandomizerManager.Receiver.OnSave();
+            RandomizerSettings.Save();
         }
     }
 }
