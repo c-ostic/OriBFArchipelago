@@ -115,9 +115,9 @@ namespace OriBFArchipelago.Core
 
         public void AddMessage(string message)
         {
-            if (RandomizerSettings.Get(RandomizerSettings.Setting.MessagerState) != 0)
+            if (RandomizerSettings.Get(RandomizerSetting.MessagerState) != 0)
             {
-                messageQueue.Enqueue(new RandomizerMessage(message, RandomizerSettings.Get(RandomizerSettings.Setting.MessageDuration)));
+                messageQueue.Enqueue(new RandomizerMessage(message, RandomizerSettings.Get(RandomizerSetting.MessageDuration)));
             }
         }
 
@@ -145,7 +145,7 @@ namespace OriBFArchipelago.Core
 
                 // always show the message if in verbose mode
                 // or, if not verbose, check for a player message part with the active player
-                if (RandomizerSettings.Get(RandomizerSettings.Setting.MessagerState) == 2 ||
+                if (RandomizerSettings.Get(RandomizerSetting.MessagerState) == 2 ||
                     part is PlayerMessagePart && ((PlayerMessagePart)part).IsActivePlayer)
                 {
                     showMessage = true;

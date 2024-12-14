@@ -86,13 +86,38 @@ namespace OriBFArchipelago.Patches
         private static void Postfix()
         {
             // Queue a double bash if the setting is enabled, the button is pressed, and a double bash wasn't previously queued
-            if (RandomizerSettings.Get(RandomizerSettings.Setting.DoubleBashAssist) == 1 && 
-                Keybinder.IsPressed(Keybinder.Action.DoubleBash) && 
+            if (RandomizerSettings.Get(RandomizerSetting.DoubleBashAssist) == 1 && 
+                Keybinder.IsPressed(KeybindAction.DoubleBash) && 
                 !LocalGameState.WasDoubleBashQueued)
             {
                 LocalGameState.QueueDoubleBash = true;
             }
             LocalGameState.WasDoubleBashQueued = false;
+        }
+    }
+
+    /**
+     * Modifed from https://github.com/sparkle-preference/OriDERandomizer/blob/master/modified_classes/BashAttackGame.cs
+     */
+    [HarmonyPatch]
+    internal class BashAttackGamePlayingStatePatch
+    {
+        // Need to use this method because BashAttackGame is an internal class
+        static MethodBase TargetMethod()
+        {
+            return AccessTools.TypeByName("BashAttackGame").GetMethod("UpdatePlayingState", AccessTools.allDeclared);
+        }
+
+        private static void Postfix(Object __instance)
+        {
+            // If Bash Tap is enabled and the button is pressed, end the bash game
+            if (!Input.Bash.Released &&
+                (RandomizerSettings.Get(RandomizerSetting.BashTap) == 1 &&
+                Keybinder.OnPressed(KeybindAction.DoubleBash)))
+            {
+                AccessTools.TypeByName("BashAttackGame").GetMethod("GameFinished", AccessTools.allDeclared)
+                    .Invoke(__instance, []);
+            }
         }
     }
 }

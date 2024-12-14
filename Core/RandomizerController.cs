@@ -81,7 +81,7 @@ namespace OriBFArchipelago.Core
             if (IsSuspended)
                 return;
 
-            if (Keybinder.OnPressed(Keybinder.Action.OpenTeleport))
+            if (Keybinder.OnPressed(KeybindAction.OpenTeleport))
             {
                 if (PlayerHasControl)
                 {

@@ -20,6 +20,15 @@ namespace OriBFArchipelago.Core
         }
     }
 
+    /**
+     * Define the custom randomizer actions
+     */
+    internal enum KeybindAction
+    {
+        OpenTeleport,
+        DoubleBash,
+        GrenadeJump
+    }
 
     /**
      * Links custom randomizer actions to keybinds
@@ -51,23 +60,13 @@ namespace OriBFArchipelago.Core
         };
 
         /**
-         * Define the custom randomizer actions
-         */
-        internal enum Action
-        {
-            OpenTeleport,
-            DoubleBash,
-            GrenadeJump
-        }
-
-        /**
          * Default keybinds for the above actions
          */ 
-        private static Dictionary<Action, string> defaultKeybinds = new Dictionary<Action, string>
+        private static Dictionary<KeybindAction, string> defaultKeybinds = new Dictionary<KeybindAction, string>
         {
-            { Action.OpenTeleport, "LeftAlt+T, RightAlt+T" },
-            { Action.DoubleBash, "Grenade" },
-            { Action.GrenadeJump, "Grenade+Jump" }
+            { KeybindAction.OpenTeleport, "LeftAlt+T, RightAlt+T" },
+            { KeybindAction.DoubleBash, "Grenade" },
+            { KeybindAction.GrenadeJump, "Grenade+Jump" }
         };
 
         /**
@@ -320,31 +319,25 @@ namespace OriBFArchipelago.Core
          * Creates a dictionary of bindsets using a provided dictionary of keybind strings
          * If any actions are not set, they are filled with the defaults
          */
-        private static Dictionary<Action, BindSet> parseBindSets(Dictionary<Action, string> keybindStrings)
+        private static Dictionary<KeybindAction, BindSet> parseBindSets(Dictionary<KeybindAction, string> keybindStrings)
         {
-            List<Action> unusedActions = Enum.GetValues(typeof(Action)).Cast<Action>().ToList();
+            Dictionary<KeybindAction, BindSet> keybinds = new Dictionary<KeybindAction, BindSet>();
 
-            Dictionary<Action, BindSet> keybinds = new Dictionary<Action, BindSet>();
-
-            // Try to add all from the provided dictionary
-            if (keybindStrings != null)
+            // Look for each action in the keybindsStrings; add from default if not present
+            foreach (KeybindAction action in Enum.GetValues(typeof(KeybindAction)))
             {
-                foreach(Action action in keybindStrings.Keys)
+                if (keybindStrings.ContainsKey(action))
                 {
-                    unusedActions.Remove(action);
-
                     keybinds.Add(action, new BindSet(keybindStrings[action]));
+                }
+                else
+                {
+                    keybinds.Add(action, new BindSet(defaultKeybinds[action]));
                 }
             }
 
-            // Fill any remaining actions from the default
-            foreach (Action action in unusedActions)
-            {
-                keybinds.Add(action, new BindSet(defaultKeybinds[action]));
-            }
-
             Console.WriteLine("Keybinder: Loaded the following keybinds");
-            foreach (Action action in keybinds.Keys)
+            foreach (KeybindAction action in keybinds.Keys)
             {
                 Console.WriteLine(action.ToString() + ": " + keybinds[action]);
             }
@@ -352,7 +345,7 @@ namespace OriBFArchipelago.Core
             return keybinds;
         }
 
-        private Dictionary<Action, BindSet> keybinds = new Dictionary<Action, BindSet>();
+        private Dictionary<KeybindAction, BindSet> keybinds = new Dictionary<KeybindAction, BindSet>();
 
         public static Keybinder Instance { get; private set; }
 
@@ -360,10 +353,17 @@ namespace OriBFArchipelago.Core
         {
             Instance = this;
 
-            // TODO: add a call to RandomizerIO to get a dictionary read from file
-            // TODO: add a call to RandomizerIO to write file if it didn't exist
-
-            keybinds = parseBindSets(null);
+            // read keybinds from file, or (if it doesn't exist) write the defaults to a file
+            Dictionary<KeybindAction, string> fileKeybinds;
+            if (RandomizerIO.ReadKeybinds(out fileKeybinds))
+            {
+                keybinds = parseBindSets(fileKeybinds);
+            }
+            else
+            {
+                RandomizerIO.WriteKeybinds(defaultKeybinds);
+                keybinds = parseBindSets(defaultKeybinds);
+            }
         }
 
         /**
@@ -381,7 +381,7 @@ namespace OriBFArchipelago.Core
         /**
          * Checks if one of the bindsets is pressed
          */
-        public static bool IsPressed(Action action)
+        public static bool IsPressed(KeybindAction action)
         {
             return Instance.keybinds[action].IsPressed;
         }
@@ -389,7 +389,7 @@ namespace OriBFArchipelago.Core
         /**
          * Checks if one of the bindsets was pressed this frame
          */
-        public static bool OnPressed(Action action)
+        public static bool OnPressed(KeybindAction action)
         {
             return Instance.keybinds[action].OnPressed;
         }
