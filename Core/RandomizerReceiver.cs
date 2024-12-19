@@ -11,7 +11,7 @@ namespace OriBFArchipelago.Core
     internal class RandomizerReceiver : ISuspendable
     {
         // Version of this randomizer (probably move this to an outer class)
-        private const string VERSION = "0.1.0";
+        private const string VERSION = PluginInfo.PLUGIN_VERSION;
 
         // queue to make sure items are only granted to the player when the player is active and has control
         private Queue<InventoryItem> itemQueue;

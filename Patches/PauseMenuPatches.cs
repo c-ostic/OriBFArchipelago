@@ -9,7 +9,7 @@ namespace OriBFArchipelago.Patches
     {
         static bool Prefix()
         {
-            RandomizerMessager.instance.IsPaused = true;
+            RandomizerSettings.ShowSettings = true;
             return true;
         }
     }
@@ -19,7 +19,7 @@ namespace OriBFArchipelago.Patches
     {
         static bool Prefix()
         {
-            RandomizerMessager.instance.IsPaused = false;
+            RandomizerSettings.ShowSettings = false;
             return true;
         }
     }

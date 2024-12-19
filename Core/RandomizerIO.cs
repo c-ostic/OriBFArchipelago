@@ -143,6 +143,7 @@ namespace OriBFArchipelago.Core
 
         /**
          * Read the dictionary of archipelago slot data associated with all the game's save slots
+         * If the file is not found, it creates a file
          */
         public static bool ReadSlotData(out Dictionary<int, SlotData> data)
         {
@@ -247,6 +248,183 @@ namespace OriBFArchipelago.Core
             catch (IOException e)
             {
                 Console.WriteLine($"Could not write to slot data file: {e}");
+                return false;
+            }
+        }
+
+        /**
+         * Read settings from file
+         * If the file is not found, an empty dictionary is returned and the function returns false
+         */
+        public static bool ReadSettings(out Dictionary<RandomizerSetting, int> settings)
+        {
+            try
+            {
+                string fileName = $"Settings.txt";
+                string fullPath = $"{SAVE_FILE_PATH}\\{fileName}";
+
+                settings = new Dictionary<RandomizerSetting, int>();
+
+                // If file does not exist, return false without error
+                if (!File.Exists(fullPath))
+                {
+                    return false;
+                }
+
+                // otherwise, continue to read the file
+                StreamReader sr = new StreamReader(fullPath);
+
+                // Read each line which has separate slot data
+                string[] lines = sr.ReadToEnd().Split('\n');
+
+                sr.Close();
+
+                foreach (string line in lines)
+                {
+                    string[] pair = line.Split('=');
+
+                    try
+                    {
+                        RandomizerSetting setting = (RandomizerSetting)Enum.Parse(typeof(RandomizerSetting), pair[0].Trim());
+                        int value = int.Parse(pair[1].Trim());
+                        settings.Add(setting, value);
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine($"Invalid inventory data: {pair[0].Trim()}={pair[1].Trim()}");
+                    }
+                }
+
+                return true;
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine($"Could not read settings file: {e}");
+                settings = new Dictionary<RandomizerSetting, int>();
+                return false;
+            }
+        }
+
+        /**
+         * Write setting to file
+         */
+        public static bool WriteSettings(Dictionary<RandomizerSetting, int> settings)
+        {
+            try
+            {
+                string fileName = $"Settings.txt";
+                string fullPath = $"{SAVE_FILE_PATH}\\{fileName}";
+
+                StringBuilder sb = new StringBuilder();
+
+                // Go through rest of inventory to save to file
+                foreach (RandomizerSetting setting in settings.Keys)
+                {
+                    sb.AppendLine($"{setting}={settings[setting]}");
+                }
+
+                // remove last new line character
+                sb.Remove(sb.Length - 1, 1);
+
+                StreamWriter sw = new StreamWriter(fullPath);
+
+                sw.Write(sb.ToString());
+
+                sw.Close();
+
+                return true;
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine($"Could not write to settings file: {e}");
+                return false;
+            }
+        }
+
+        /**
+         * Read keybinds from file
+         * If the file is not found, an empty dictionary is returned and the function returns false
+         */
+        public static bool ReadKeybinds(out Dictionary<KeybindAction, string> keybinds)
+        {
+            try
+            {
+                string fileName = $"Keybinds.txt";
+                string fullPath = $"{SAVE_FILE_PATH}\\{fileName}";
+
+                keybinds = new Dictionary<KeybindAction, string>();
+
+                // If file does not exist, return false without error
+                if (!File.Exists(fullPath))
+                {
+                    return false;
+                }
+
+                // otherwise, continue to read the file
+                StreamReader sr = new StreamReader(fullPath);
+
+                // Read each line which has separate slot data
+                string[] lines = sr.ReadToEnd().Split('\n');
+
+                sr.Close();
+
+                foreach (string line in lines)
+                {
+                    string[] pair = line.Split('=');
+
+                    try
+                    {
+                        KeybindAction keybind = (KeybindAction)Enum.Parse(typeof(KeybindAction), pair[0].Trim());
+                        keybinds.Add(keybind, pair[1].Trim());
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine($"Invalid inventory data: {pair[0].Trim()}={pair[1].Trim()}");
+                    }
+                }
+
+                return true;
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine($"Could not read settings file: {e}");
+                keybinds = new Dictionary<KeybindAction, string>();
+                return false;
+            }
+        }
+
+        /**
+         * Write setting to file
+         */
+        public static bool WriteKeybinds(Dictionary<KeybindAction, string> keybinds)
+        {
+            try
+            {
+                string fileName = $"Keybinds.txt";
+                string fullPath = $"{SAVE_FILE_PATH}\\{fileName}";
+
+                StringBuilder sb = new StringBuilder();
+
+                // Go through rest of inventory to save to file
+                foreach (KeybindAction action in keybinds.Keys)
+                {
+                    sb.AppendLine($"{action}={keybinds[action]}");
+                }
+
+                // remove last new line character
+                sb.Remove(sb.Length - 1, 1);
+
+                StreamWriter sw = new StreamWriter(fullPath);
+
+                sw.Write(sb.ToString());
+
+                sw.Close();
+
+                return true;
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine($"Could not write to keybinds file: {e}");
                 return false;
             }
         }
