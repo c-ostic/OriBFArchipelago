@@ -87,8 +87,8 @@ namespace OriBFArchipelago.Core
                 buttonStyle.fontStyle = FontStyle.Bold;
                 buttonStyle.normal.textColor = new Color(1f, 1f, 1f);
 
-                // display in the top right corner
-                GUILayout.BeginArea(new Rect(5, Screen.height * 3 / 4, Screen.width / 3, Screen.height / 4));
+                // display in the bottom left corner
+                GUILayout.BeginArea(new Rect(5, Screen.height * 4 / 5, Screen.width / 3, Screen.height / 5));
 
                 GUILayout.BeginVertical();
 

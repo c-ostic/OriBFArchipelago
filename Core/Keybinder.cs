@@ -27,7 +27,9 @@ namespace OriBFArchipelago.Core
     {
         OpenTeleport,
         DoubleBash,
-        GrenadeJump
+        GrenadeJump,
+        ListStones,
+        GoalProgress
     }
 
     /**
@@ -60,13 +62,15 @@ namespace OriBFArchipelago.Core
         };
 
         /**
-         * Default keybinds for the above actions
+         * Default keybinds for the KeybindActions
          */ 
         private static Dictionary<KeybindAction, string> defaultKeybinds = new Dictionary<KeybindAction, string>
         {
             { KeybindAction.OpenTeleport, "LeftAlt+T, RightAlt+T" },
             { KeybindAction.DoubleBash, "Grenade" },
-            { KeybindAction.GrenadeJump, "Grenade+Jump" }
+            { KeybindAction.GrenadeJump, "Grenade+Jump" },
+            { KeybindAction.ListStones, "LeftAlt+S, RightAlt+S" },
+            { KeybindAction.GoalProgress, "LeftAlt+G, RightAlt+G" }
         };
 
         /**
