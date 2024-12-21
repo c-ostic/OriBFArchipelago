@@ -13,10 +13,21 @@ namespace OriBFArchipelago.Patches
     [HarmonyPatch(typeof(SeinBashAttack), nameof(SeinBashAttack.UpdateNormalState))]
     internal class BashAttackUpdateStatePatch
     {
+        
+        private static FieldInfo timeRemainingOfBashButtonPress;
+        private static MethodInfo handleFindingTarget, updateTargetHighlight;
+
+        private static void Prepare()
+        {
+            timeRemainingOfBashButtonPress = typeof(SeinBashAttack).GetField("m_timeRemainingOfBashButtonPress", AccessTools.allDeclared);
+            handleFindingTarget = typeof(SeinBashAttack).GetMethod("HandleFindingTarget", AccessTools.allDeclared);
+            updateTargetHighlight = typeof(SeinBashAttack).GetMethod("UpdateTargetHighlight", AccessTools.allDeclared);
+        }
+
         private static bool Prefix(SeinBashAttack __instance)
         {
             // Get the private field from __instance required to recreate this function
-            float m_timeRemainingOfBashButtonPress = (float)AccessTools.Field(typeof(SeinBashAttack), "m_timeRemainingOfBashButtonPress").GetValue(__instance);
+            float m_timeRemainingOfBashButtonPress = (float)timeRemainingOfBashButtonPress.GetValue(__instance);
 
             // Save whether a double bash was queued
             LocalGameState.WasDoubleBashQueued = LocalGameState.QueueDoubleBash;
@@ -64,8 +75,10 @@ namespace OriBFArchipelago.Patches
             }
 
             // Invoke private methods of SeinBashAttack
-            AccessTools.Method(typeof(SeinBashAttack), "HandleFindingTarget").Invoke(__instance, []);
-            AccessTools.Method(typeof(SeinBashAttack), "UpdateTargetHighlight").Invoke(__instance, [__instance.Target]);
+            handleFindingTarget.Invoke(__instance, []);
+            updateTargetHighlight.Invoke(__instance, [__instance.Target]);
+
+            timeRemainingOfBashButtonPress.SetValue(__instance, m_timeRemainingOfBashButtonPress);
 
             return false;
         }
