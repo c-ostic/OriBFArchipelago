@@ -10,6 +10,7 @@ namespace OriBFArchipelago.Core
     internal class LocalGameState
     {
         public static bool IsGinsoExit = false;
+        public static bool IsGrottoBridgeFalling = false;
         public static bool IsPendingCheckpoint = false;
         public static bool IsTeleporting { 
             get

@@ -148,7 +148,6 @@ namespace OriBFArchipelago.Core
                 {
                     OpenTeleportMenu();
                 }
-                RandomizerMessager.instance.AddMessage("Pressed teleport");
             }
 
             if (Keybinder.OnPressed(KeybindAction.ListStones))

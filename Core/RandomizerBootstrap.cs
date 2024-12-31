@@ -36,6 +36,9 @@ namespace OriBFArchipelago.Core
                 // Forlorn Fixes
                 ["forlornRuinsResurrection"] = BootstrapForlornRuinsResurrection,
 
+                // Grotto Fixes
+                ["moonGrottoRopeBridge"] = BootstrapGrottoRopeBridge,
+                ["moonGrottoGumosHideoutB"] = BootstrapGumosHideoutB
             };
         }
 
@@ -248,7 +251,7 @@ namespace OriBFArchipelago.Core
         }
         #endregion
 
-        #region Stomp Triggers
+        #region Valley Fixes
         private static void BootstrapValleyOfTheWindBackground(SceneRoot sceneRoot)
         {
             var deathZoneTrigger = sceneRoot.transform.Find("*getFeatherSetupContainer/*kuroHideSetup/kuroDeathZones").GetComponent<ActivateBasedOnCondition>();
@@ -260,6 +263,26 @@ namespace OriBFArchipelago.Core
             UnityEngine.Object.Destroy(kuroCliffTriggerCollider.Condition);
             var kuroCliffCondition = kuroCliffTriggerCollider.gameObject.AddComponent<StompTriggerCondition>();
             kuroCliffTriggerCollider.Condition = kuroCliffCondition;
+        }
+        #endregion
+
+        #region Grotto Fixes
+        private static void BootstrapGrottoRopeBridge(SceneRoot sceneRoot)
+        {
+            ActionSequence fallingSequence = sceneRoot.transform.Find("*gumoBridgeSetup/group/action").GetComponent<ActionSequence>();
+            SetGrottoBridgeFallingAction fallingAction = InsertAction<SetGrottoBridgeFallingAction>(fallingSequence, 8, new MoonGuid(-1289149173, 680822594, 558787458, 1729667919), sceneRoot);
+            fallingAction.IsTrue = true;
+        }
+        
+        private static void BootstrapGumosHideoutB(SceneRoot sceneRoot)
+        {
+            PlayerCollisionTrigger landSetupTrigger = sceneRoot.transform.Find("*landSetup/trigger").GetComponent<PlayerCollisionTrigger>();
+            IsGrottoBridgeFallingCondition fallingCondition = landSetupTrigger.gameObject.AddComponent<IsGrottoBridgeFallingCondition>();
+            landSetupTrigger.Condition = fallingCondition;
+            
+            ActionSequence landSequence = sceneRoot.transform.Find("*landSetup/sequence").GetComponent<ActionSequence>();
+            SetGrottoBridgeFallingAction fallingAction = InsertAction<SetGrottoBridgeFallingAction>(landSequence, 0, new MoonGuid(-1289139173, 680722594, 558787458, 1729657919), sceneRoot);
+            fallingAction.IsTrue = false;
         }
         #endregion
     }
@@ -317,6 +340,36 @@ namespace OriBFArchipelago.Core
         public override void Perform(IContext context)
         {
             LocalGameState.IsGinsoExit = true;
+        }
+    }
+
+    // Used purely for debugging purposes
+    internal class LogMessageAction : ActionMethod
+    {
+        public string message = "";
+
+        public override void Perform(IContext context)
+        {
+            Console.WriteLine(message);
+        }
+    }
+
+    internal class SetGrottoBridgeFallingAction : ActionMethod
+    {
+        public bool IsTrue = true;
+
+        public override void Perform(IContext context)
+        {
+            LocalGameState.IsGrottoBridgeFalling = IsTrue;
+            System.Console.WriteLine("Bridge Falling set to " + IsTrue);
+        }
+    }
+
+    internal class IsGrottoBridgeFallingCondition: Condition
+    {
+        public override bool Validate(IContext context)
+        {
+            return LocalGameState.IsGrottoBridgeFalling;
         }
     }
 
