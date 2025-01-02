@@ -159,6 +159,13 @@ namespace OriBFArchipelago.Core
             {
                 RandomizerManager.Connection.IsGoalComplete();
             }
+
+            if (LocalGameState.TeleportNightberry && PlayerHasControl && Items.NightBerry != null)
+            {
+                // teleport the nightberry to the location of the forlorn teleporter
+                Items.NightBerry.transform.position = new Vector3(-910f, -300f);
+                LocalGameState.TeleportNightberry = false;
+            }
         }
     }
 }

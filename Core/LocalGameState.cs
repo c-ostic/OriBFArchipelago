@@ -25,11 +25,17 @@ namespace OriBFArchipelago.Core
         public static bool QueueDoubleBash = false;
         public static bool WasDoubleBashQueued = false;
         public static bool QueueGrenadeJump = false;
+        public static bool TeleportNightberry = false;
 
         public static void Reset()
         {
             IsGinsoExit = false;
+            IsGrottoBridgeFalling = false;
             IsPendingCheckpoint = false;
+            QueueDoubleBash = false;
+            WasDoubleBashQueued = false;
+            QueueGrenadeJump = false;
+            TeleportNightberry = false;
         }
     }
 }
