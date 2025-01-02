@@ -135,5 +135,14 @@ namespace OriBFArchipelago.Patches
                 LocalGameState.IsPendingCheckpoint = false;
             }
         }
+
+        [HarmonyPostfix, HarmonyPatch(nameof(TeleporterController.BeginTeleportation))]
+        private static void BeginTeleportationPostfix(GameMapTeleporter selectedTeleporter)
+        {
+            if (selectedTeleporter.Area.Area.AreaNameString == "Forlorn Ruins")
+            {
+                LocalGameState.TeleportNightberry = true;
+            }
+        }
     }
 }

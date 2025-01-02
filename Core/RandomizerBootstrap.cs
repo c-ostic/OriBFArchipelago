@@ -35,7 +35,11 @@ namespace OriBFArchipelago.Core
 
                 // Forlorn Fixes
                 ["forlornRuinsResurrection"] = BootstrapForlornRuinsResurrection,
+                ["forlornRuinsC"] = BootstrapForlornRuinsC,
 
+                // Grotto Fixes
+                ["moonGrottoRopeBridge"] = BootstrapGrottoRopeBridge,
+                ["moonGrottoGumosHideoutB"] = BootstrapGumosHideoutB
             };
         }
 
@@ -246,9 +250,44 @@ namespace OriBFArchipelago.Core
             bool hasEscaped = RandomizerManager.Connection.IsForlornEscapeComplete();
             sceneRoot.transform.Find("floatZone").gameObject.SetActive(hasEscaped);
         }
+
+        private static void BootstrapForlornRuinsC(SceneRoot sceneRoot)
+        {
+            // force the animation of the bridge coming down to play upon entering the area
+            ActionSequence entranceSequence = sceneRoot.transform.Find("*forlornEntranceLoad").GetComponent<ActionSequence>();
+            GameObject bridgeGravity = sceneRoot.transform.Find("*setupGravity/timelineSequence").gameObject;
+            BaseAnimatorAction bridgeGravityAction = InsertAction<BaseAnimatorAction>(entranceSequence, 8, new MoonGuid(-1289139173, 680722594, 558787458, 1729657920), sceneRoot);
+            bridgeGravityAction.Target = bridgeGravity;
+            bridgeGravityAction.Animators = [bridgeGravity.GetComponent<BaseAnimator>()];
+            bridgeGravityAction.AnimatorsMode = BaseAnimatorAction.FindAnimatorsMode.GameObject;
+            bridgeGravityAction.Command = BaseAnimatorAction.PlayMode.Restart;
+
+            // remove the cutscene to place the nightberry
+            GameObject nightberryCutscene = sceneRoot.transform.Find("*setupGravity/pedestalAction/*setups/triggers/cutsceneCollisionTrigger").gameObject;
+            ConstantCondition cutsceneCondition = nightberryCutscene.AddComponent<ConstantCondition>();
+            nightberryCutscene.GetComponent<PlayerCollisionStayTrigger>().Condition = cutsceneCondition;
+            cutsceneCondition.IsTrue = false;
+
+            // activate the bridge colliders
+            GameObject roomSetup = sceneRoot.transform.Find("*setupGravity").gameObject;
+            GameObject bridgeColliders = sceneRoot.transform.Find("*setupGravity/timelineSequence/bridgeColliders").gameObject;
+            ActivateBasedOnCondition bridgeActivator = roomSetup.AddComponent<ActivateBasedOnCondition>();
+            ConstantCondition bridgeCondition = roomSetup.AddComponent<ConstantCondition>();
+            bridgeActivator.Condition = bridgeCondition;
+            bridgeActivator.Target = bridgeColliders;
+            bridgeCondition.IsTrue = true;
+
+            // deactivate the door to the laser room
+            GameObject laserDoor = sceneRoot.transform.Find("*setupGravity/solidWallSetup").gameObject;
+            ActivateBasedOnCondition doorActivator = roomSetup.AddComponent<ActivateBasedOnCondition>();
+            ConstantCondition doorCondition = roomSetup.AddComponent<ConstantCondition>();
+            doorActivator.Condition = doorCondition;
+            doorActivator.Target = laserDoor;
+            doorCondition.IsTrue = false;
+        }
         #endregion
 
-        #region Stomp Triggers
+        #region Valley Fixes
         private static void BootstrapValleyOfTheWindBackground(SceneRoot sceneRoot)
         {
             var deathZoneTrigger = sceneRoot.transform.Find("*getFeatherSetupContainer/*kuroHideSetup/kuroDeathZones").GetComponent<ActivateBasedOnCondition>();
@@ -260,6 +299,26 @@ namespace OriBFArchipelago.Core
             UnityEngine.Object.Destroy(kuroCliffTriggerCollider.Condition);
             var kuroCliffCondition = kuroCliffTriggerCollider.gameObject.AddComponent<StompTriggerCondition>();
             kuroCliffTriggerCollider.Condition = kuroCliffCondition;
+        }
+        #endregion
+
+        #region Grotto Fixes
+        private static void BootstrapGrottoRopeBridge(SceneRoot sceneRoot)
+        {
+            ActionSequence fallingSequence = sceneRoot.transform.Find("*gumoBridgeSetup/group/action").GetComponent<ActionSequence>();
+            SetGrottoBridgeFallingAction fallingAction = InsertAction<SetGrottoBridgeFallingAction>(fallingSequence, 8, new MoonGuid(-1289139173, 680722594, 558787458, 1729657921), sceneRoot);
+            fallingAction.IsTrue = true;
+        }
+        
+        private static void BootstrapGumosHideoutB(SceneRoot sceneRoot)
+        {
+            PlayerCollisionTrigger landSetupTrigger = sceneRoot.transform.Find("*landSetup/trigger").GetComponent<PlayerCollisionTrigger>();
+            IsGrottoBridgeFallingCondition fallingCondition = landSetupTrigger.gameObject.AddComponent<IsGrottoBridgeFallingCondition>();
+            landSetupTrigger.Condition = fallingCondition;
+            
+            ActionSequence landSequence = sceneRoot.transform.Find("*landSetup/sequence").GetComponent<ActionSequence>();
+            SetGrottoBridgeFallingAction fallingAction = InsertAction<SetGrottoBridgeFallingAction>(landSequence, 0, new MoonGuid(-1289139173, 680722594, 558787458, 1729657922), sceneRoot);
+            fallingAction.IsTrue = false;
         }
         #endregion
     }
@@ -317,6 +376,35 @@ namespace OriBFArchipelago.Core
         public override void Perform(IContext context)
         {
             LocalGameState.IsGinsoExit = true;
+        }
+    }
+
+    // Used purely for debugging purposes
+    internal class LogMessageAction : ActionMethod
+    {
+        public string message = "";
+
+        public override void Perform(IContext context)
+        {
+            Console.WriteLine(message);
+        }
+    }
+
+    internal class SetGrottoBridgeFallingAction : ActionMethod
+    {
+        public bool IsTrue = true;
+
+        public override void Perform(IContext context)
+        {
+            LocalGameState.IsGrottoBridgeFalling = IsTrue;
+        }
+    }
+
+    internal class IsGrottoBridgeFallingCondition: Condition
+    {
+        public override bool Validate(IContext context)
+        {
+            return LocalGameState.IsGrottoBridgeFalling;
         }
     }
 

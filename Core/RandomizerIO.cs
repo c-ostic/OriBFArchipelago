@@ -57,7 +57,15 @@ namespace OriBFArchipelago.Core
 
                 foreach (string line in data)
                 {
+                    if (string.IsNullOrEmpty(line)) continue;
+
                     string[] pair = line.Split('=');
+
+                    if (pair.Length != 2)
+                    {
+                        Console.WriteLine($"Incorrect format for inventory data: {line}");
+                        continue;
+                    }
 
                     try
                     {
@@ -171,7 +179,16 @@ namespace OriBFArchipelago.Core
 
                 foreach (string line in lines)
                 {
+                    if (string.IsNullOrEmpty(line)) continue;
+
                     string[] parts = line.Split(',');
+
+                    if (parts.Length != 5)
+                    {
+                        Console.WriteLine($"Incorrect format for slot data: {line}");
+                        continue;
+                    }
+
                     SlotData slotData = new SlotData();
                     slotData.serverName = parts[1];
                     slotData.slotName = parts[2];
@@ -281,7 +298,15 @@ namespace OriBFArchipelago.Core
 
                 foreach (string line in lines)
                 {
+                    if (string.IsNullOrEmpty(line)) continue;
+
                     string[] pair = line.Split('=');
+
+                    if (pair.Length != 2)
+                    {
+                        Console.WriteLine($"Incorrect format for setting data: {line}");
+                        continue;
+                    }
 
                     try
                     {
@@ -291,7 +316,7 @@ namespace OriBFArchipelago.Core
                     }
                     catch (Exception)
                     {
-                        Console.WriteLine($"Invalid inventory data: {pair[0].Trim()}={pair[1].Trim()}");
+                        Console.WriteLine($"Invalid settings data: {pair[0].Trim()}={pair[1].Trim()}");
                     }
                 }
 
@@ -370,7 +395,15 @@ namespace OriBFArchipelago.Core
 
                 foreach (string line in lines)
                 {
+                    if (string.IsNullOrEmpty(line)) continue;
+
                     string[] pair = line.Split('=');
+
+                    if (pair.Length != 2)
+                    {
+                        Console.WriteLine($"Incorrect format for keybind data: {line}");
+                        continue;
+                    }
 
                     try
                     {
@@ -379,7 +412,7 @@ namespace OriBFArchipelago.Core
                     }
                     catch (Exception)
                     {
-                        Console.WriteLine($"Invalid inventory data: {pair[0].Trim()}={pair[1].Trim()}");
+                        Console.WriteLine($"Invalid keybind data: {pair[0].Trim()}={pair[1].Trim()}");
                     }
                 }
 
@@ -387,7 +420,7 @@ namespace OriBFArchipelago.Core
             }
             catch (IOException e)
             {
-                Console.WriteLine($"Could not read settings file: {e}");
+                Console.WriteLine($"Could not read keybinds file: {e}");
                 keybinds = new Dictionary<KeybindAction, string>();
                 return false;
             }

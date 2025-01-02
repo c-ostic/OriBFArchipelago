@@ -148,7 +148,6 @@ namespace OriBFArchipelago.Core
                 {
                     OpenTeleportMenu();
                 }
-                RandomizerMessager.instance.AddMessage("Pressed teleport");
             }
 
             if (Keybinder.OnPressed(KeybindAction.ListStones))
@@ -159,6 +158,13 @@ namespace OriBFArchipelago.Core
             if (Keybinder.OnPressed(KeybindAction.GoalProgress))
             {
                 RandomizerManager.Connection.IsGoalComplete();
+            }
+
+            if (LocalGameState.TeleportNightberry && PlayerHasControl && Items.NightBerry != null)
+            {
+                // teleport the nightberry to the location of the forlorn teleporter
+                Items.NightBerry.transform.position = new Vector3(-910f, -300f);
+                LocalGameState.TeleportNightberry = false;
             }
         }
     }
