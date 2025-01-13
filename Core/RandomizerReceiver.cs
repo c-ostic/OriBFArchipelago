@@ -218,15 +218,19 @@ namespace OriBFArchipelago.Core
         /**
          * Called when the player reaches/creates a checkpoint and saves the game
          */
-        public void OnSave()
+        public void OnSave(bool isQuitting = false)
         {
             Console.WriteLine("Saving...");
 
             // Add used items to saved inventory and reset to start tracking again
-            savedInventory.AddAll(unsavedInventory);
-            onLoadInventory.AddAll(unsavedInventory);
-            unsavedInventory.Reset();
-
+            // Only do this when the player manually saves, not when the player quits
+            if (!isQuitting)
+            {
+                savedInventory.AddAll(unsavedInventory);
+                onLoadInventory.AddAll(unsavedInventory);
+                unsavedInventory.Reset();
+            }
+            
             RandomizerIO.WriteSaveFile(saveSlot, savedInventory);
             Resync();
         }
