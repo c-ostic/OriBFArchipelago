@@ -175,18 +175,24 @@ namespace OriBFArchipelago.Core
          */
         public async void CheckLocation(string location)
         {
+            if (location is null)
+            {
+                Console.WriteLine("Invalid location: " + location);
+                return;
+            }
+
             if (Connected)
             {
-                if (location is not null)
+                if (RandomizerManager.Options.MapStoneLogic == MapStoneOptions.Progressive &&
+                    mapLocations.Contains(location))
                 {
-                    long locationId = session.Locations.GetLocationIdFromName(GAME_NAME, location);
-                    await Task.Factory.StartNew(() => session.Locations.CompleteLocationChecks(locationId));
-                    Console.WriteLine("Checked " + location);
+                    int nextMap = RandomizerManager.Receiver.GetItemCount(InventoryItem.MapStoneUsed);
+                    location = "ProgressiveMap" + nextMap;
                 }
-                else
-                {
-                    Console.WriteLine("Invalid location: " + location);
-                }
+
+                long locationId = session.Locations.GetLocationIdFromName(GAME_NAME, location);
+                await Task.Factory.StartNew(() => session.Locations.CompleteLocationChecks(locationId));
+                Console.WriteLine("Checked " + location);
             }
             else
             {
@@ -340,6 +346,13 @@ namespace OriBFArchipelago.Core
                         }
                         message.Remove(message.Length - 2, 2); // remove last comma
                     }
+                }
+                else if (RandomizerManager.Options.Goal == GoalOptions.AllMaps &&
+                    RandomizerManager.Options.MapStoneLogic == MapStoneOptions.Progressive)
+                {
+                    int mapstoneUsed = RandomizerManager.Receiver.GetItemCount(InventoryItem.MapStoneUsed);
+                    hasMetGoal = mapstoneUsed == 9;
+                    message.Append($"{mapstoneUsed} of out 9 maps checked. ");
                 }
                 else if (RandomizerManager.Options.Goal == GoalOptions.WarmthFragments)
                 {

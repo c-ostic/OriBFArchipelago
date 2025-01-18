@@ -31,7 +31,8 @@ namespace OriBFArchipelago.Core
     internal enum MapStoneOptions
     {
         Anywhere = 0,
-        AreaSpecific = 1
+        AreaSpecific = 1,
+        Progressive = 2
     }
 
     internal enum DeathLinkOptions
