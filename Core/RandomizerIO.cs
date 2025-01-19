@@ -35,14 +35,18 @@ namespace OriBFArchipelago.Core
         /**
          * Reads the save file associated with the given slot
          */
-        public static bool ReadSaveFile(int saveSlot, out RandomizerInventory inventory)
+        public static bool ReadSaveFile(int saveSlot, out RandomizerInventory inventory, out List<string> locations)
         {
+            string inventoryFileName = $"Slot{saveSlot}.txt";
+            string inventoryFullPath = $"{SAVE_FILE_PATH}\\{inventoryFileName}";
+
+            string locationFileName = $"Slot{saveSlot}Locations.txt";
+            string locationFullPath = $"{SAVE_FILE_PATH}\\{locationFileName}";
+
             try
             {
-                string fileName = $"Slot{saveSlot}.txt";
-                string fullPath = $"{SAVE_FILE_PATH}\\{fileName}";
-
-                StreamReader sr = new StreamReader(fullPath);
+                // Read inventory first
+                StreamReader sr = new StreamReader(inventoryFullPath);
 
                 // Get the version and slotname from file first
                 string version = sr.ReadLine().Split('=')[1].Trim();
@@ -57,9 +61,9 @@ namespace OriBFArchipelago.Core
 
                 foreach (string line in data)
                 {
-                    if (string.IsNullOrEmpty(line)) continue;
+                    if (string.IsNullOrEmpty(line.Trim())) continue;
 
-                    string[] pair = line.Split('=');
+                    string[] pair = line.Trim().Split('=');
 
                     if (pair.Length != 2)
                     {
@@ -79,12 +83,28 @@ namespace OriBFArchipelago.Core
                     }
                 }
 
+                // Read locations
+                sr = new StreamReader(locationFullPath);
+
+                data = sr.ReadToEnd().Split('\n');
+                sr.Close();
+
+                locations = new List<string>();
+
+                foreach (string line in data)
+                {
+                    if (string.IsNullOrEmpty(line.Trim())) continue;
+
+                    locations.Add(line.Trim());
+                }
+
                 return true;
             }
             catch (IOException e)
             {
                 Console.WriteLine($"Could not read save file: {e}");
                 inventory = new RandomizerInventory("", "");
+                locations = new List<string>();
                 return false;
             }
         }
@@ -92,13 +112,18 @@ namespace OriBFArchipelago.Core
         /** 
          * Saves the given inventory to a file
          */
-        public static bool WriteSaveFile(int saveSlot, RandomizerInventory inventory)
+        public static bool WriteSaveFile(int saveSlot, RandomizerInventory inventory, List<string> locations)
         {
+            string inventoryFileName = $"Slot{saveSlot}.txt";
+            string inventoryFullPath = $"{SAVE_FILE_PATH}\\{inventoryFileName}";
+
+            string locationFileName = $"Slot{saveSlot}Locations.txt";
+            string locationFullPath = $"{SAVE_FILE_PATH}\\{locationFileName}";
+
+            // Write inventory
             try
             {
-                string fileName = $"Slot{saveSlot}.txt";
-                string fullPath = $"{SAVE_FILE_PATH}\\{fileName}";
-
+                // Save inventory
                 StringBuilder sb = new StringBuilder();
 
                 // Save the version and slotname first
@@ -114,7 +139,21 @@ namespace OriBFArchipelago.Core
                 // remove last new line character
                 sb.Remove(sb.Length - 1, 1);
 
-                StreamWriter sw = new StreamWriter(fullPath);
+                StreamWriter sw = new StreamWriter(inventoryFullPath);
+
+                sw.Write(sb.ToString());
+
+                sw.Close();
+
+                // Save locations
+                sb = new StringBuilder();
+
+                foreach (string line in locations)
+                {
+                    sb.AppendLine(line);
+                }
+
+                sw = new StreamWriter(locationFullPath);
 
                 sw.Write(sb.ToString());
 
@@ -134,12 +173,16 @@ namespace OriBFArchipelago.Core
          */
         public static bool DeleteSaveFile(int saveSlot)
         {
-            string fileName = $"Slot{saveSlot}.txt";
-            string fullPath = $"{SAVE_FILE_PATH}\\{fileName}";
+            string inventoryFileName = $"Slot{saveSlot}.txt";
+            string inventoryFullPath = $"{SAVE_FILE_PATH}\\{inventoryFileName}";
+
+            string locationFileName = $"Slot{saveSlot}Locations.txt";
+            string locationFullPath = $"{SAVE_FILE_PATH}\\{locationFileName}";
 
             try
             {
-                File.Delete(fullPath);
+                File.Delete(inventoryFullPath);
+                File.Delete(locationFullPath);
                 return true;
             }
             catch (Exception e)

@@ -247,7 +247,7 @@ namespace OriBFArchipelago.Core
             backtrackingBlockOffTrigger.Condition = backtrackingBlockOffCondition;
 
             // For wind inside the final room
-            bool hasEscaped = RandomizerManager.Connection.IsForlornEscapeComplete();
+            bool hasEscaped = RandomizerManager.Receiver.IsLocationChecked("ForlornEscape");
             sceneRoot.transform.Find("floatZone").gameObject.SetActive(hasEscaped);
         }
 
@@ -347,7 +347,7 @@ namespace OriBFArchipelago.Core
 
         public override bool Validate(IContext context)
         {
-            return (RandomizerManager.Connection?.IsForlornEscapeComplete() ?? false) == IsTrue;
+            return (RandomizerManager.Receiver?.IsLocationChecked("ForlornEscape") ?? false) == IsTrue;
         }
     }
 

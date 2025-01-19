@@ -111,6 +111,9 @@ namespace OriBFArchipelago.Core
             return Connected;
         }
 
+        /**
+         * Called every frame
+         */
         public void Update()
         {
             if (queueDeath &&
@@ -198,6 +201,8 @@ namespace OriBFArchipelago.Core
             {
                 Console.WriteLine("Checked " + location + " but not connected");
             }
+
+            RandomizerManager.Receiver.CheckLocation(location);
         }
 
         /**
@@ -288,7 +293,6 @@ namespace OriBFArchipelago.Core
             {
                 bool hasMetGoal = true;
                 StringBuilder message = new StringBuilder();
-                ReadOnlyCollection<long> checkedLocations = session.Locations.AllLocationsChecked;
 
                 if (RandomizerManager.Options.Goal == GoalOptions.AllSkillTrees)
                 {
@@ -296,8 +300,7 @@ namespace OriBFArchipelago.Core
                     List<string> uncheckedTrees = new List<string>();
                     foreach (string goalLocation in skillTreeLocations)
                     {
-                        long id = session.Locations.GetLocationIdFromName(GAME_NAME, goalLocation);
-                        if (!checkedLocations.Contains(id))
+                        if (!RandomizerManager.Receiver.IsLocationChecked(goalLocation))
                         {
                             hasMetGoal = false;
                             uncheckedTrees.Add(goalLocation);
@@ -325,8 +328,7 @@ namespace OriBFArchipelago.Core
                     List<string> uncheckedMaps = new List<string>();
                     foreach (string goalLocation in mapLocations)
                     {
-                        long id = session.Locations.GetLocationIdFromName(GAME_NAME, goalLocation);
-                        if (!checkedLocations.Contains(id))
+                        if (!RandomizerManager.Receiver.IsLocationChecked(goalLocation))
                         {
                             hasMetGoal = false;
                             uncheckedMaps.Add(goalLocation);
@@ -387,51 +389,6 @@ namespace OriBFArchipelago.Core
                 RandomizerMessager.instance.AddMessage(message.ToString());
 
                 return hasMetGoal;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        /**
-         * Check if the ginso escape has been complete
-         */
-        public bool IsGinsoEscapeComplete()
-        {
-            if (Connected)
-            {
-                ReadOnlyCollection<long> checkedLocations = session.Locations.AllLocationsChecked;
-                long id = session.Locations.GetLocationIdFromName(GAME_NAME, "GinsoEscapeExit");
-                if (checkedLocations.Contains(id))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public bool IsForlornEscapeComplete()
-        {
-            if (Connected)
-            {
-                ReadOnlyCollection<long> checkedLocations = session.Locations.AllLocationsChecked;
-                long id = session.Locations.GetLocationIdFromName(GAME_NAME, "ForlornEscape");
-                if (checkedLocations.Contains(id))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
             }
             else
             {
