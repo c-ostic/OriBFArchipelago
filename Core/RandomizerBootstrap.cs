@@ -400,6 +400,15 @@ namespace OriBFArchipelago.Core
             fallingAction.IsTrue = false;
         }
         #endregion
+
+        #region Grove Fixes
+        private static void BootstrapSpiritTreeRefined(SceneRoot sceneRoot)
+        {
+            // Unlike most other pickups, which are permanent placeholders that spawn an object with a DestroyOnRestoreCheckpoint component,
+            // this one is *just* an object with a DestroyOnRestoreCheckpoint component. Disable that to prevent its untimely demise.
+            sceneRoot.transform.FindChild("mediumExpOrb").GetComponent<DestroyOnRestoreCheckpoint>().enabled = false;
+        }
+        #endregion
     }
 
     public class StompTriggerCondition : Condition
