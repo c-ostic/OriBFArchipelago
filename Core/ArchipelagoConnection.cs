@@ -189,6 +189,9 @@ namespace OriBFArchipelago.Core
                 if (RandomizerManager.Options.MapStoneLogic == MapStoneOptions.Progressive &&
                     mapLocations.Contains(location))
                 {
+                    // track the original location in addition to the progressive location
+                    RandomizerManager.Receiver.CheckLocation(location);
+
                     int nextMap = RandomizerManager.Receiver.GetItemCount(InventoryItem.MapStoneUsed);
                     location = "ProgressiveMap" + nextMap;
                 }
@@ -321,8 +324,7 @@ namespace OriBFArchipelago.Core
                         message.Remove(message.Length - 2, 2); // remove last comma
                     }
                 }
-                else if (RandomizerManager.Options.Goal == GoalOptions.AllMaps &&
-                    RandomizerManager.Options.MapStoneLogic != MapStoneOptions.Progressive)
+                else if (RandomizerManager.Options.Goal == GoalOptions.AllMaps)
                 {
                     int countMaps = 0;
                     List<string> uncheckedMaps = new List<string>();
@@ -348,13 +350,6 @@ namespace OriBFArchipelago.Core
                         }
                         message.Remove(message.Length - 2, 2); // remove last comma
                     }
-                }
-                else if (RandomizerManager.Options.Goal == GoalOptions.AllMaps &&
-                    RandomizerManager.Options.MapStoneLogic == MapStoneOptions.Progressive)
-                {
-                    int mapstoneUsed = RandomizerManager.Receiver.GetItemCount(InventoryItem.MapStoneUsed);
-                    hasMetGoal = mapstoneUsed == 9;
-                    message.Append($"{mapstoneUsed} of out 9 maps checked. ");
                 }
                 else if (RandomizerManager.Options.Goal == GoalOptions.WarmthFragments)
                 {
