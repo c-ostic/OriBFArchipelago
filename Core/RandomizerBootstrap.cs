@@ -1,27 +1,26 @@
 ﻿using Game;
 using OriModding.BF.Core;
-using OriModding.BF.l10n;
-using OriModding.BF.UiLib.Menu;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using UnityEngine;
 
 namespace OriBFArchipelago.Core
 {
+    /**
+     * Bootstraps specific scenes to fix bugs and make randomizer changes
+     * Many changes are modified from https://github.com/ori-community/bf-rando/blob/main/Randomiser/World%20Changes/RandomiserBootstrap.cs
+     */
     internal static class RandomiserBootstrap
     {
         public static void SetupBootstrap(SceneBootstrap sceneBootstrap)
         {
             sceneBootstrap.BootstrapActions = new Dictionary<string, Action<SceneRoot>>
             {
-                // Horu
+                // Horu Fixes
                 ["mountHoruHubMid"] = BootstrapMountHoruHubMid,
 
-                // Death plane
+                // Valley Fixes
                 ["valleyOfTheWindBackground"] = BootstrapValleyOfTheWindBackground,
 
                 // Ginso Fixes
@@ -39,11 +38,26 @@ namespace OriBFArchipelago.Core
 
                 // Grotto Fixes
                 ["moonGrottoRopeBridge"] = BootstrapGrottoRopeBridge,
-                ["moonGrottoGumosHideoutB"] = BootstrapGumosHideoutB
+                ["moonGrottoGumosHideoutB"] = BootstrapGumosHideoutB,
+
+                // Grove Fixes
+                ["spiritTreeRefined"] = BootstrapSpiritTreeRefined
             };
         }
 
-        #region Horu
+        private static T InsertAction<T>(ActionSequence sequence, int index, MoonGuid guid, SceneRoot sceneRoot) where T : ActionMethod
+        {
+            var go = new GameObject();
+            go.transform.SetParent(sequence.transform);
+            var action = go.AddComponent<T>();
+            action.MoonGuid = guid;
+            action.RegisterToSaveSceneManager(sceneRoot.SaveSceneManager);
+            sequence.Actions.Insert(index, action);
+            ActionSequence.Rename(sequence.Actions);
+            return action;
+        }
+
+        #region Horu Fixes
         private static void BootstrapMountHoruHubMid(SceneRoot sceneRoot)
         {
             // Open Dungeons (remove all lava)
@@ -54,6 +68,83 @@ namespace OriBFArchipelago.Core
                 GameObject lavaStream = sceneRoot.transform.Find(lavaStreamName).gameObject;
                 lavaStream.SetActive(false);
             }
+
+            // modified from https://github.com/ori-community/bf-rando/blob/main/Randomiser/World%20Changes/RandomiserBootstrap.cs#L380
+            // credit to Vulajin for the bootstrap
+            // add randomized pickup actions for each end of room cutscene
+            Transform lavaDrainParent = sceneRoot.transform.FindChild("*doorSetups/lavaDrainSetups");
+
+            CheckLocationAction action;
+
+            // door1LavaDrain - (L3) mountHoruBreakyPathTop
+            action = InsertAction<CheckLocationAction>(lavaDrainParent.FindChild("*door1LavaDrains/*door1LavaDrain").GetComponent<ActionSequence>(), 3,
+                new MoonGuid(-300318401, 1327879929, 1546957364, -1505614911), sceneRoot);
+            action.Location = "HoruL3";
+
+            // door2LavaDrain - (R1) mountHoruStomperSystemsR
+            action = InsertAction<CheckLocationAction>(lavaDrainParent.FindChild("*door2LavaDrains/*door2LavaDrain").GetComponent<ActionSequence>(), 3,
+                new MoonGuid(-300318401, 1327879929, 1546957364, -1505614912), sceneRoot);
+            action.Location = "HoruR1";
+
+            // door3LavaDrain - (R2) mountHoruProjectileCorridor
+            action = InsertAction<CheckLocationAction>(lavaDrainParent.FindChild("*door3LavaDrains/*door3LavaDrain").GetComponent<ActionSequence>(), 3,
+                new MoonGuid(-300318401, 1327879929, 1546957364, -1505614913), sceneRoot);
+            action.Location = "HoruR2";
+
+            // door5LavaDrain - (R3) mountHoruMovingPlatform
+            action = InsertAction<CheckLocationAction>(lavaDrainParent.FindChild("*door5LavaDrains/*door5LavaDrain").GetComponent<ActionSequence>(), 3,
+                new MoonGuid(-300318401, 1327879929, 1546957364, -1505614914), sceneRoot);
+            action.Location = "HoruR3";
+
+            // door7LavaDrain - (L2) mountHoruBigPushBlock
+            action = InsertAction<CheckLocationAction>(lavaDrainParent.FindChild("*door7LavaDrains/*door7LavaDrain").GetComponent<ActionSequence>(), 3,
+                new MoonGuid(-300318401, 1327879929, 1546957364, -1505614915), sceneRoot);
+            action.Location = "HoruL2";
+
+            // door8LavaDrain - (L1) mountHoruBlockableLasers
+            action = InsertAction<CheckLocationAction>(lavaDrainParent.FindChild("*door8LavaDrains/*door8LavaDrain").GetComponent<ActionSequence>(), 3,
+                new MoonGuid(-300318401, 1327879929, 1546957364, -1505614916), sceneRoot);
+            action.Location = "HoruL1";
+
+            // special cases for L4/R4
+            CheckLocationAction leftPickupAction = lavaDrainParent.gameObject.AddComponent<CheckLocationAction>();
+            leftPickupAction.MoonGuid = new MoonGuid(-300318401, 1327879929, 1546957364, -1505614917);
+            leftPickupAction.Location = "HoruL4";
+            leftPickupAction.RegisterToSaveSceneManager(sceneRoot.SaveSceneManager);
+            CheckLocationAction rightPickupAction = lavaDrainParent.gameObject.AddComponent<CheckLocationAction>();
+            rightPickupAction.MoonGuid = new MoonGuid(-300318401, 1327879929, 1546957364, -1505614918);
+            rightPickupAction.Location = "HoruR4";
+            rightPickupAction.RegisterToSaveSceneManager(sceneRoot.SaveSceneManager);
+
+            // door4LavaDrain - L4/R4, whichever comes first
+            ActionSequence doorSequence = lavaDrainParent.FindChild("*door4LavaDrains/*door4LavaDrain").GetComponent<ActionSequence>();
+            GameObject obj = new GameObject("pickupAction");
+            obj.transform.parent = doorSequence.transform;
+
+            RunActionCondition conditionPickupAction = obj.AddComponent<RunActionCondition>();
+            conditionPickupAction.MoonGuid = new MoonGuid(-1261986975, 1336041250, 1663544246, -817715174);
+            conditionPickupAction.RegisterToSaveSceneManager(sceneRoot.SaveSceneManager);
+            conditionPickupAction.Action = leftPickupAction;
+            conditionPickupAction.ElseAction = rightPickupAction;
+            conditionPickupAction.Condition = (doorSequence.Actions[2] as RunActionCondition).Condition;
+
+            doorSequence.Actions.Insert(3, conditionPickupAction);
+            ActionSequence.Rename(doorSequence.Actions);
+
+            // door6LavaDrain - L4/R4, whichever comes second
+            doorSequence = lavaDrainParent.FindChild("*door6LavaDrains/*door6LavaDrain").GetComponent<ActionSequence>();
+            obj = new GameObject("pickupAction");
+            obj.transform.parent = doorSequence.transform;
+
+            conditionPickupAction = obj.AddComponent<RunActionCondition>();
+            conditionPickupAction.MoonGuid = new MoonGuid(-300318401, 1327879929, 1536957364, -1500614911);
+            conditionPickupAction.RegisterToSaveSceneManager(sceneRoot.SaveSceneManager);
+            conditionPickupAction.Action = rightPickupAction;
+            conditionPickupAction.ElseAction = leftPickupAction;
+            conditionPickupAction.Condition = (doorSequence.Actions[2] as RunActionCondition).Condition;
+
+            doorSequence.Actions.Insert(3, conditionPickupAction);
+            ActionSequence.Rename(doorSequence.Actions);
         }
         #endregion
 
@@ -223,18 +314,6 @@ namespace OriBFArchipelago.Core
             UnityEngine.Object.Destroy(musicZones.GetComponent<SeinWorldStateCondition>());
         }
 
-        private static T InsertAction<T>(ActionSequence sequence, int index, MoonGuid guid, SceneRoot sceneRoot) where T : ActionMethod
-        {
-            var go = new GameObject();
-            go.transform.SetParent(sequence.transform);
-            var action = go.AddComponent<T>();
-            action.MoonGuid = guid;
-            action.RegisterToSaveSceneManager(sceneRoot.SaveSceneManager);
-            sequence.Actions.Insert(index, action);
-            ActionSequence.Rename(sequence.Actions);
-            return action;
-        }
-
         #endregion
 
         #region Forlorn Fixes
@@ -247,7 +326,7 @@ namespace OriBFArchipelago.Core
             backtrackingBlockOffTrigger.Condition = backtrackingBlockOffCondition;
 
             // For wind inside the final room
-            bool hasEscaped = RandomizerManager.Connection.IsForlornEscapeComplete();
+            bool hasEscaped = RandomizerManager.Receiver.IsLocationChecked("ForlornEscape");
             sceneRoot.transform.Find("floatZone").gameObject.SetActive(hasEscaped);
         }
 
@@ -309,16 +388,25 @@ namespace OriBFArchipelago.Core
             SetGrottoBridgeFallingAction fallingAction = InsertAction<SetGrottoBridgeFallingAction>(fallingSequence, 8, new MoonGuid(-1289139173, 680722594, 558787458, 1729657921), sceneRoot);
             fallingAction.IsTrue = true;
         }
-        
+
         private static void BootstrapGumosHideoutB(SceneRoot sceneRoot)
         {
             PlayerCollisionTrigger landSetupTrigger = sceneRoot.transform.Find("*landSetup/trigger").GetComponent<PlayerCollisionTrigger>();
             IsGrottoBridgeFallingCondition fallingCondition = landSetupTrigger.gameObject.AddComponent<IsGrottoBridgeFallingCondition>();
             landSetupTrigger.Condition = fallingCondition;
-            
+
             ActionSequence landSequence = sceneRoot.transform.Find("*landSetup/sequence").GetComponent<ActionSequence>();
             SetGrottoBridgeFallingAction fallingAction = InsertAction<SetGrottoBridgeFallingAction>(landSequence, 0, new MoonGuid(-1289139173, 680722594, 558787458, 1729657922), sceneRoot);
             fallingAction.IsTrue = false;
+        }
+        #endregion
+
+        #region Grove Fixes
+        private static void BootstrapSpiritTreeRefined(SceneRoot sceneRoot)
+        {
+            // Unlike most other pickups, which are permanent placeholders that spawn an object with a DestroyOnRestoreCheckpoint component,
+            // this one is *just* an object with a DestroyOnRestoreCheckpoint component. Disable that to prevent its untimely demise.
+            sceneRoot.transform.FindChild("mediumExpOrb").GetComponent<DestroyOnRestoreCheckpoint>().enabled = false;
         }
         #endregion
     }
@@ -347,7 +435,7 @@ namespace OriBFArchipelago.Core
 
         public override bool Validate(IContext context)
         {
-            return (RandomizerManager.Connection?.IsForlornEscapeComplete() ?? false) == IsTrue;
+            return (RandomizerManager.Receiver?.IsLocationChecked("ForlornEscape") ?? false) == IsTrue;
         }
     }
 
@@ -423,6 +511,16 @@ namespace OriBFArchipelago.Core
         public override bool Validate(IContext context) 
         {
             return !LocalGameState.IsTeleporting;
+        }
+    }
+
+    public class CheckLocationAction : ActionMethod
+    {
+        public string Location = "";
+
+        public override void Perform(IContext context)
+        {
+            RandomizerManager.Connection.CheckLocation(Location);
         }
     }
 }

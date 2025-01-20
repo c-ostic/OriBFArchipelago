@@ -16,6 +16,9 @@ namespace OriBFArchipelago.Patches
         [HarmonyPostfix, HarmonyPatch(nameof(TeleporterController.OnFadedToBlack))]
         private static void OnFadedToBlackPostfix()
         {
+            // save the game on teleporting
+            GameController.Instance.SaveGameController.PerformSave();
+
             // Reset misty woods
             var mistyEvents = WorldEventsHelper.MistyWorldEvents;
             int value = mistyEvents?.Value ?? 10;

@@ -27,6 +27,12 @@ namespace OriBFArchipelago.Core
         // compares against savedInventory to make sure items aren't duplicated
         private RandomizerInventory onLoadInventory;
 
+        // locally saves the locaiotns that have been checked in game
+        private List<string> checkedLocations;
+
+        // similar purpose to unsavedInventory
+        private List<string> unsavedCheckedLocations;
+
         // the number of the associated save slot in Ori
         private int saveSlot;
 
@@ -58,12 +64,14 @@ namespace OriBFArchipelago.Core
 
             onLoadInventory = new RandomizerInventory(VERSION, apSlotName);
             unsavedInventory = new RandomizerInventory(VERSION, apSlotName);
+            unsavedCheckedLocations = new List<string>();
 
             if (isNew)
             {
                 // If this is a new slot, create a new inventory
                 savedInventory = new RandomizerInventory(VERSION, apSlotName);
-                if (RandomizerIO.WriteSaveFile(saveSlot, savedInventory))
+                checkedLocations = new List<string>();
+                if (RandomizerIO.WriteSaveFile(saveSlot, savedInventory, checkedLocations))
                 {
                     Console.Write($"Successfully created new inventory for slot {saveSlot}");
                 }
@@ -75,7 +83,7 @@ namespace OriBFArchipelago.Core
             else
             {
                 // Otherwise, load the inventory from file
-                if (RandomizerIO.ReadSaveFile(saveSlot, out savedInventory))
+                if (RandomizerIO.ReadSaveFile(saveSlot, out savedInventory, out checkedLocations))
                 {
                     Console.Write($"Successfully loaded inventory from slot {saveSlot}");
                 }
@@ -204,6 +212,22 @@ namespace OriBFArchipelago.Core
         }
 
         /**
+         * Called when the player checks a location locally. Used for tracking pruposes
+         */
+        public void CheckLocation(string location)
+        {
+            unsavedCheckedLocations.Add(location);
+        }
+
+        /**
+         * Checks if a location has been locally reached
+         */
+        public bool IsLocationChecked(string location)
+        {
+            return checkedLocations.Contains(location) || unsavedCheckedLocations.Contains(location);
+        }
+
+        /**
          * Called when the player dies
          */
         public void OnDeath()
@@ -211,23 +235,31 @@ namespace OriBFArchipelago.Core
             // Resync items to bypass the death rollback
             Resync();
 
-            // Remove any tracking of used items
+            // Remove any tracking of used items and checked locations
             unsavedInventory.Reset();
+            unsavedCheckedLocations.Clear();
         }
 
         /**
          * Called when the player reaches/creates a checkpoint and saves the game
          */
-        public void OnSave()
+        public void OnSave(bool isQuitting = false)
         {
             Console.WriteLine("Saving...");
 
             // Add used items to saved inventory and reset to start tracking again
-            savedInventory.AddAll(unsavedInventory);
-            onLoadInventory.AddAll(unsavedInventory);
-            unsavedInventory.Reset();
+            // Only do this when the player manually saves, not when the player quits
+            if (!isQuitting)
+            {
+                savedInventory.AddAll(unsavedInventory);
+                onLoadInventory.AddAll(unsavedInventory);
+                unsavedInventory.Reset();
 
-            RandomizerIO.WriteSaveFile(saveSlot, savedInventory);
+                checkedLocations.AddRange(unsavedCheckedLocations);
+                unsavedCheckedLocations.Clear();
+            }
+            
+            RandomizerIO.WriteSaveFile(saveSlot, savedInventory, checkedLocations);
             Resync();
         }
 

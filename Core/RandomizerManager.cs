@@ -200,7 +200,7 @@ namespace OriBFArchipelago.Core
             inSaveSelect = true;
             connection.Disconnect();
             connection = null;
-            receiver.OnSave();
+            receiver.OnSave(true);
             receiver = null;
             LocalGameState.Reset();
         }

@@ -79,6 +79,9 @@ namespace OriBFArchipelago.Core
         TPHoru,
         TPBlackroot,
 
+        WarmthFragment,
+        Relic,
+
         EX15,
         EX50,
         EX100,

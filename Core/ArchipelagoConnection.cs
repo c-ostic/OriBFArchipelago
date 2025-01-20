@@ -8,6 +8,7 @@ using Game;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -110,6 +111,9 @@ namespace OriBFArchipelago.Core
             return Connected;
         }
 
+        /**
+         * Called every frame
+         */
         public void Update()
         {
             if (queueDeath &&
@@ -174,23 +178,34 @@ namespace OriBFArchipelago.Core
          */
         public async void CheckLocation(string location)
         {
+            if (location is null)
+            {
+                Console.WriteLine("Invalid location: " + location);
+                return;
+            }
+
             if (Connected)
             {
-                if (location is not null)
+                if (RandomizerManager.Options.MapStoneLogic == MapStoneOptions.Progressive &&
+                    mapLocations.Contains(location))
                 {
-                    long locationId = session.Locations.GetLocationIdFromName(GAME_NAME, location);
-                    await Task.Factory.StartNew(() => session.Locations.CompleteLocationChecks(locationId));
-                    Console.WriteLine("Checked " + location);
+                    // track the original location in addition to the progressive location
+                    RandomizerManager.Receiver.CheckLocation(location);
+
+                    int nextMap = RandomizerManager.Receiver.GetItemCount(InventoryItem.MapStoneUsed);
+                    location = "ProgressiveMap" + nextMap;
                 }
-                else
-                {
-                    Console.WriteLine("Invalid location: " + location);
-                }
+
+                long locationId = session.Locations.GetLocationIdFromName(GAME_NAME, location);
+                await Task.Factory.StartNew(() => session.Locations.CompleteLocationChecks(locationId));
+                Console.WriteLine("Checked " + location);
             }
             else
             {
                 Console.WriteLine("Checked " + location + " but not connected");
             }
+
+            RandomizerManager.Receiver.CheckLocation(location);
         }
 
         /**
@@ -244,7 +259,7 @@ namespace OriBFArchipelago.Core
         }
 
         // List of required locations for the All Trees goal
-        private readonly List<string> goalLocations = new List<string>
+        private readonly List<string> skillTreeLocations = new List<string>
         {
             "BashSkillTree",
             "ChargeFlameSkillTree",
@@ -254,7 +269,22 @@ namespace OriBFArchipelago.Core
             "DoubleJumpSkillTree",
             "GrenadeSkillTree",
             "StompSkillTree",
-            "WallJumpSkillTree"
+            "WallJumpSkillTree",
+            "GlideSkillFeather"
+        };
+
+        // List of required locations for the All Maps goal
+        private readonly List<string> mapLocations = new List<string>
+        {
+            "GladesMap",
+            "BlackrootMap",
+            "HollowGroveMap",
+            "GumoHideoutMap",
+            "SwampMap",
+            "HoruMap",
+            "ValleyMap",
+            "ForlornMap",
+            "SorrowMap"
         };
 
         /**
@@ -265,68 +295,95 @@ namespace OriBFArchipelago.Core
             if (Connected)
             {
                 bool hasMetGoal = true;
-                ReadOnlyCollection<long> checkedLocations = session.Locations.AllLocationsChecked;
-                int countTrees = 0;
-                foreach (string goalLocation in goalLocations)
+                StringBuilder message = new StringBuilder();
+
+                if (RandomizerManager.Options.Goal == GoalOptions.AllSkillTrees)
                 {
-                    long id = session.Locations.GetLocationIdFromName(GAME_NAME, goalLocation);
-                    if (!checkedLocations.Contains(id))
+                    int countTrees = 0;
+                    List<string> uncheckedTrees = new List<string>();
+                    foreach (string goalLocation in skillTreeLocations)
                     {
-                        hasMetGoal = false;
-                        Console.WriteLine("Missing tree: " + goalLocation);
+                        if (!RandomizerManager.Receiver.IsLocationChecked(goalLocation))
+                        {
+                            hasMetGoal = false;
+                            uncheckedTrees.Add(goalLocation);
+                        }
+                        else
+                        {
+                            countTrees++;
+                        }
                     }
-                    else
+                    message.Append($"{countTrees} of out 10 trees checked. \n");
+                    if (!hasMetGoal)
                     {
-                        countTrees++;
+                        message.Append("Missing ");
+                        foreach (string tree in uncheckedTrees)
+                        {
+                            message.Append(tree).Append(", ");
+                        }
+                        message.Remove(message.Length - 2, 2); // remove last comma
                     }
                 }
-                RandomizerMessager.instance.AddMessage($"{countTrees} of out 9 trees checked");
+                else if (RandomizerManager.Options.Goal == GoalOptions.AllMaps)
+                {
+                    int countMaps = 0;
+                    List<string> uncheckedMaps = new List<string>();
+                    foreach (string goalLocation in mapLocations)
+                    {
+                        if (!RandomizerManager.Receiver.IsLocationChecked(goalLocation))
+                        {
+                            hasMetGoal = false;
+                            uncheckedMaps.Add(goalLocation);
+                        }
+                        else
+                        {
+                            countMaps++;
+                        }
+                    }
+                    message.Append($"{countMaps} of out 9 maps checked. \n");
+                    if (!hasMetGoal)
+                    {
+                        message.Append("Missing ");
+                        foreach (string map in uncheckedMaps)
+                        {
+                            message.Append(map).Append(", ");
+                        }
+                        message.Remove(message.Length - 2, 2); // remove last comma
+                    }
+                }
+                else if (RandomizerManager.Options.Goal == GoalOptions.WarmthFragments)
+                {
+                    int collectedWarmthFragments = RandomizerManager.Receiver.GetItemCount(InventoryItem.WarmthFragment);
+                    int requiredWarmthFragments = RandomizerManager.Options.WarmthFragmentsRequired;
+                    int availableWarmthFragments = RandomizerManager.Options.WarmthFragmentsAvailable;
+                    hasMetGoal = collectedWarmthFragments >= requiredWarmthFragments;
+                    message.Append($"Collected {collectedWarmthFragments} out of {requiredWarmthFragments} warmth fragments needed. \n");
+                    if (!hasMetGoal)
+                        message.Append($"{availableWarmthFragments - collectedWarmthFragments} remain in multiworld");
+                }
+                else if (RandomizerManager.Options.Goal == GoalOptions.WorldTour)
+                {
+                    int collectedRelics = RandomizerManager.Receiver.GetItemCount(InventoryItem.Relic);
+                    int requiredRelics = RandomizerManager.Options.RelicCount;
+                    string[] relicAreas = RandomizerManager.Options.WorldTourAreas;
+                    hasMetGoal = collectedRelics >= requiredRelics;
+                    message.Append($"Collected {collectedRelics} out of {requiredRelics} relics. \n");
+                    if (!hasMetGoal)
+                    {
+                        message.Append($"Relics can be found in ");
+                        foreach (string relic in relicAreas)
+                        {
+                            message.Append(relic).Append(", ");
+                        }
+                        message.Remove(message.Length - 2, 2); // remove last comma
+                    }
+                }
+                else
+                    hasMetGoal = true;
+
+                RandomizerMessager.instance.AddMessage(message.ToString());
+
                 return hasMetGoal;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        /**
-         * Check if the ginso escape has been complete
-         */
-        public bool IsGinsoEscapeComplete()
-        {
-            if (Connected)
-            {
-                ReadOnlyCollection<long> checkedLocations = session.Locations.AllLocationsChecked;
-                long id = session.Locations.GetLocationIdFromName(GAME_NAME, "GinsoEscapeExit");
-                if (checkedLocations.Contains(id))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public bool IsForlornEscapeComplete()
-        {
-            if (Connected)
-            {
-                ReadOnlyCollection<long> checkedLocations = session.Locations.AllLocationsChecked;
-                long id = session.Locations.GetLocationIdFromName(GAME_NAME, "ForlornEscape");
-                if (checkedLocations.Contains(id))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
             }
             else
             {
