@@ -1,6 +1,8 @@
 # Step 0: Install Ori
 1. Make sure Ori and the Blind Forest: Definitive Edition is installed
 
+   - Note: this mod does not work with the standalone Ori randomizer. If are using the standalone randomizer, you will need to switch back to vanilla
+
 # Step 1: Install BepInEx
 1. Download and unzip BepInEx_x86_5.4.23.2.zip located [here](https://github.com/BepInEx/BepInEx/releases)
    - Note: Make sure you download the x86 version specifically even if your machine is x64
@@ -46,8 +48,8 @@
 
 - You can teleport from anywhere in the map to any activated/unlocked Teleporter by pressing `Alt-T`
   - Make sure you acquire Sein and activate the first Teleporter before teleporting for the first time
-  - Don't teleport during any of the escape sequences (Ginso, Forlorn, and Horu) or you may softlock yourself from completing them
+  - You can freely teleport out of the Ginso escape sequence and come back to it later
+  - You can freely teleport out of the Forlorn escape sequence. You won't be able to complete it later, but there aren't any checks besides starting the escape
+  - *Don't* teleport about of the Horu escape sequence if you can avoid it. This is a known issue. If you need to, try to do so at the beginning of the sequence. Otherwise, you may softlock yourself
 
-- The current goal of the randomizer requires you to activate all 9 Spirit Trees and then complete the Horu Escape
-  - You will not be able to enter the final door until all 9 Spirit Trees have been activated
-  - More goal modes will be coming later
+- Keybinds (including `Alt-T` to teleport) can be changed in the Keybinds.txt file. More information about this can be found [here](Keybinds.md)

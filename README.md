@@ -11,3 +11,6 @@ Server side AP World fork: https://github.com/c-ostic/Archipelago
 
 ## Setup Instructions
 [Setup Instructions Here](Setup.md)
+
+## Keybind Information
+[Keybind Info Here](Keybinds.md)
