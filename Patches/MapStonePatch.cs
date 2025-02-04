@@ -13,7 +13,7 @@ namespace OriBFArchipelago.Patches
     {
         private static void Grant(MapStone mapstone)
         {
-            RandomizerManager.Connection.CheckLocationByGameObject(mapstone.gameObject);
+            RandomizerManager.Connection.CheckLocation(mapstone.GetComponent<VisibleOnWorldMap>().MoonGuid);
         }
 
         private static int GetCurrentMapstonesCount() => RandomizerManager.Receiver.GetCurrentMapstonesCount();

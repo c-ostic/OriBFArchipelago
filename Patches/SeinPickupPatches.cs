@@ -16,7 +16,7 @@ namespace OriBFArchipelago.Patches
         static bool Prefix(SkillPointPickup skillPointPickup)
         {
             skillPointPickup.Collected();
-            RandomizerManager.Connection.CheckLocationByGameObject(skillPointPickup.gameObject);
+            RandomizerManager.Connection.CheckLocation(skillPointPickup.GetComponent<VisibleOnWorldMap>().MoonGuid);
             return false;
         }
     }
@@ -44,7 +44,7 @@ namespace OriBFArchipelago.Patches
         static bool Prefix(MaxEnergyContainerPickup energyContainerPickup)
         {
             energyContainerPickup.Collected();
-            RandomizerManager.Connection.CheckLocationByGameObject(energyContainerPickup.gameObject);
+            RandomizerManager.Connection.CheckLocation(energyContainerPickup.GetComponent<VisibleOnWorldMap>().MoonGuid);
             return false;
         }
     }
@@ -55,7 +55,7 @@ namespace OriBFArchipelago.Patches
         static bool Prefix(MaxHealthContainerPickup maxHealthContainerPickup)
         {
             maxHealthContainerPickup.Collected();
-            RandomizerManager.Connection.CheckLocationByGameObject(maxHealthContainerPickup.gameObject);
+            RandomizerManager.Connection.CheckLocation(maxHealthContainerPickup.GetComponent<VisibleOnWorldMap>().MoonGuid);
             return false;
         }
     }
@@ -66,7 +66,7 @@ namespace OriBFArchipelago.Patches
         static bool Prefix(KeystonePickup keystonePickup)
         {
             keystonePickup.Collected();
-            RandomizerManager.Connection.CheckLocationByGameObject(keystonePickup.gameObject);
+            RandomizerManager.Connection.CheckLocation(keystonePickup.GetComponent<VisibleOnWorldMap>().MoonGuid);
             return false;
         }
     }
@@ -164,7 +164,7 @@ namespace OriBFArchipelago.Patches
         static bool Prefix(MapStonePickup mapStonePickup)
         {
             mapStonePickup.Collected();
-            RandomizerManager.Connection.CheckLocationByGameObject(mapStonePickup.gameObject);
+            RandomizerManager.Connection.CheckLocation(mapStonePickup.GetComponent<VisibleOnWorldMap>().MoonGuid);
             return false;
         }
     }
@@ -227,7 +227,7 @@ namespace OriBFArchipelago.Patches
             {
                 // these are spirit light containers
                 expOrbPickup.Collected();
-                RandomizerManager.Connection.CheckLocationByGameObject(expOrbPickup.gameObject);
+                RandomizerManager.Connection.CheckLocation(expOrbPickup.GetComponent<VisibleOnWorldMap>().MoonGuid);
                 return false;
             }
             else

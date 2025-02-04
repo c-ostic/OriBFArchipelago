@@ -176,7 +176,7 @@ namespace OriBFArchipelago.Core
         /**
          * Send a message to the server that a location has been checked
          */
-        public async void CheckLocation(string location)
+        public async void CheckLocation(Location location)
         {
             if (location is null)
             {
@@ -187,16 +187,16 @@ namespace OriBFArchipelago.Core
             if (Connected)
             {
                 if (RandomizerManager.Options.MapStoneLogic == MapStoneOptions.Progressive &&
-                    mapLocations.Contains(location))
+                    mapLocations.Contains(location.Name))
                 {
                     // track the original location in addition to the progressive location
-                    RandomizerManager.Receiver.CheckLocation(location);
+                    RandomizerManager.Receiver.CheckLocation(location.Name);
 
                     int nextMap = RandomizerManager.Receiver.GetItemCount(InventoryItem.MapStoneUsed);
-                    location = "ProgressiveMap" + nextMap;
+                    location = LocationLookup.Get("ProgressiveMap" + nextMap);
                 }
 
-                long locationId = session.Locations.GetLocationIdFromName(GAME_NAME, location);
+                long locationId = session.Locations.GetLocationIdFromName(GAME_NAME, location.Name);
                 await Task.Factory.StartNew(() => session.Locations.CompleteLocationChecks(locationId));
                 Console.WriteLine("Checked " + location);
             }
@@ -205,15 +205,23 @@ namespace OriBFArchipelago.Core
                 Console.WriteLine("Checked " + location + " but not connected");
             }
 
-            RandomizerManager.Receiver.CheckLocation(location);
+            RandomizerManager.Receiver.CheckLocation(location.Name);
         }
 
         /**
-         * Check location using gameobject location lookup
+         * Check location using MoonGuid
          */
-        public void CheckLocationByGameObject(GameObject g)
+        public void CheckLocation(MoonGuid guid)
         {
-            CheckLocation(LocationLookup.GetLocationName(g));
+            CheckLocation(LocationLookup.Get(guid));
+        }
+
+        /**
+         * Check location using name
+         */
+        public void CheckLocation(string name)
+        {
+            CheckLocation(LocationLookup.Get(name));
         }
 
         /**
@@ -365,15 +373,15 @@ namespace OriBFArchipelago.Core
                 {
                     int collectedRelics = RandomizerManager.Receiver.GetItemCount(InventoryItem.Relic);
                     int requiredRelics = RandomizerManager.Options.RelicCount;
-                    string[] relicAreas = RandomizerManager.Options.WorldTourAreas;
+                    WorldArea[] relicAreas = RandomizerManager.Options.WorldTourAreas;
                     hasMetGoal = collectedRelics >= requiredRelics;
                     message.Append($"Collected {collectedRelics} out of {requiredRelics} relics. \n");
                     if (!hasMetGoal)
                     {
                         message.Append($"Relics can be found in ");
-                        foreach (string relic in relicAreas)
+                        foreach (WorldArea area in relicAreas)
                         {
-                            message.Append(relic).Append(", ");
+                            message.Append(area).Append(", ");
                         }
                         message.Remove(message.Length - 2, 2); // remove last comma
                     }
