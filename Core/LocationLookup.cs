@@ -80,6 +80,12 @@ namespace OriBFArchipelago.Core
             if (moonGuid == null) return null;
 
             locationByGuid.TryGetValue(moonGuid, out Location target);
+
+            if (target == null)
+            {
+                Console.WriteLine("Invalid location: " + moonGuid.ToString());
+            }
+
             return target;
         }
 
@@ -99,6 +105,12 @@ namespace OriBFArchipelago.Core
             if (name == null) return null;
 
             locationByName.TryGetValue(name, out Location target);
+
+            if (target == null)
+            {
+                Console.WriteLine("Invalid location: " + name);
+            }
+
             return target;
         }
 

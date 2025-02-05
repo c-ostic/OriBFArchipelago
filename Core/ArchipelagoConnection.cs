@@ -5,6 +5,7 @@ using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Packets;
 using Game;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,6 +22,7 @@ namespace OriBFArchipelago.Core
     {
         // The name of the game used to connect to arhcipelago
         public const string GAME_NAME = "Ori and the Blind Forest";
+        public const string MAP_LOCATION_DATA_KEY = "MapLocations";
 
         // The archipelago session
         private ArchipelagoSession session;
@@ -105,6 +107,9 @@ namespace OriBFArchipelago.Core
                 Console.WriteLine($"Successfully connected to {server} as {user}");
                 RandomizerMessager.instance.AddMessage($"Successfully connected to {server} as {user}");
                 SlotData = loginSuccess.SlotData;
+
+                session.DataStorage[Scope.Slot, MAP_LOCATION_DATA_KEY] = new string[0];
+                UpdateMapLocations();
             }
 
             Connected = result.Successful;
@@ -116,6 +121,7 @@ namespace OriBFArchipelago.Core
          */
         public void Update()
         {
+            // Kills the player if a death link is queued
             if (queueDeath &&
                 Characters.Sein.Active && 
                 !Characters.Sein.IsSuspended && 
@@ -180,22 +186,21 @@ namespace OriBFArchipelago.Core
         {
             if (location is null)
             {
-                Console.WriteLine("Invalid location: " + location);
                 return;
+            }
+
+            if (RandomizerManager.Options.MapStoneLogic == MapStoneOptions.Progressive &&
+                    mapLocations.Contains(location.Name))
+            {
+                // track the original location in addition to the progressive location
+                RandomizerManager.Receiver.CheckLocation(location.Name);
+
+                int nextMap = RandomizerManager.Receiver.GetItemCount(InventoryItem.MapStoneUsed);
+                location = LocationLookup.Get("ProgressiveMap" + nextMap);
             }
 
             if (Connected)
             {
-                if (RandomizerManager.Options.MapStoneLogic == MapStoneOptions.Progressive &&
-                    mapLocations.Contains(location.Name))
-                {
-                    // track the original location in addition to the progressive location
-                    RandomizerManager.Receiver.CheckLocation(location.Name);
-
-                    int nextMap = RandomizerManager.Receiver.GetItemCount(InventoryItem.MapStoneUsed);
-                    location = LocationLookup.Get("ProgressiveMap" + nextMap);
-                }
-
                 long locationId = session.Locations.GetLocationIdFromName(GAME_NAME, location.Name);
                 await Task.Factory.StartNew(() => session.Locations.CompleteLocationChecks(locationId));
                 Console.WriteLine("Checked " + location);
@@ -206,6 +211,7 @@ namespace OriBFArchipelago.Core
             }
 
             RandomizerManager.Receiver.CheckLocation(location.Name);
+            UpdateMapLocations();
         }
 
         /**
@@ -222,6 +228,26 @@ namespace OriBFArchipelago.Core
         public void CheckLocation(string name)
         {
             CheckLocation(LocationLookup.Get(name));
+        }
+
+        /**
+         * Updates the datastorage value with map locations checked while using progressive mapstones
+         * This way, trackers can still see which map locations have been checked
+         */
+        private void UpdateMapLocations()
+        {
+            List<string> foundMaps = new List<string>();
+            
+            foreach (string mapLocation in mapLocations)
+            {
+                if (RandomizerManager.Receiver.IsLocationChecked(mapLocation))
+                {
+                    foundMaps.Add(mapLocation);
+                }
+            }
+
+            // Stores mapLocations array to DataStorage key "Slot:<slot_number>:MapLocations"
+            session.DataStorage[Scope.Slot, MAP_LOCATION_DATA_KEY] = foundMaps.ToArray();
         }
 
         /**
@@ -254,9 +280,24 @@ namespace OriBFArchipelago.Core
         }
 
         /**
+         * Called when the player dies
+         */
+        public void OnDeath(bool instakill = false)
+        {
+            UpdateMapLocations();
+
+            // assume damage that is over 100 is meant to be an insta kill
+            if (RandomizerManager.Options.DeathLinkLogic == DeathLinkOptions.Full ||
+                RandomizerManager.Options.DeathLinkLogic == DeathLinkOptions.Partial && !instakill)
+            {
+                SendDeathLink();
+            }
+        }
+
+        /**
          * Sends a death link to the archipelago server
          */
-        public void SendDeathLink()
+        private void SendDeathLink()
         {
             if (!ignoreNextDeath)
             {
@@ -311,6 +352,7 @@ namespace OriBFArchipelago.Core
                     List<string> uncheckedTrees = new List<string>();
                     foreach (string goalLocation in skillTreeLocations)
                     {
+                        // Uses internal tracking of trees to avoid desyncs with the server
                         if (!RandomizerManager.Receiver.IsLocationChecked(goalLocation))
                         {
                             hasMetGoal = false;
@@ -338,6 +380,8 @@ namespace OriBFArchipelago.Core
                     List<string> uncheckedMaps = new List<string>();
                     foreach (string goalLocation in mapLocations)
                     {
+                        // Uses internal tracking of trees to avoid desyncs with the server and any problems with
+                        // the death rollback (since these locations can be unchecked in game but not on the ap server)
                         if (!RandomizerManager.Receiver.IsLocationChecked(goalLocation))
                         {
                             hasMetGoal = false;
