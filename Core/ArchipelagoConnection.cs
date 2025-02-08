@@ -27,7 +27,10 @@ namespace OriBFArchipelago.Core
         // The archipelago session
         private ArchipelagoSession session;
         private DeathLinkService deathLinkService;
+        private string hostname;
+        private int port;
         private string slotName;
+        private string password;
 
         // boolean used to ignore the death caused by deathlink as to not send another
         private bool ignoreNextDeath;
@@ -43,7 +46,10 @@ namespace OriBFArchipelago.Core
          */
         public bool Init(string hostname, int port, string user, string password)
         {
+            this.hostname = hostname;
+            this.port = port;
             slotName = user;
+            this.password = password;
 
             session = ArchipelagoSessionFactory.CreateSession(hostname, port);
 
@@ -53,7 +59,19 @@ namespace OriBFArchipelago.Core
             deathLinkService = session.CreateDeathLinkService();
             deathLinkService.OnDeathLinkReceived += OnDeathLinkRecieved;
 
-            return Connect(hostname, user, password);
+            return Connect();
+        }
+
+        /**
+         * Tries to reconnect to the archipelago server
+         */
+        public void Reconnect()
+        {
+            if (session is not null)
+            {
+                Disconnect();
+                Connect();
+            }
         }
 
         /**
@@ -70,14 +88,14 @@ namespace OriBFArchipelago.Core
         /**
          * Tries to connect to a slot on the Archipelago server
          */
-        private bool Connect(string server, string user, string password)
+        private bool Connect()
         {
             LoginResult result;
 
             try
             {
                 // handle TryConnectAndLogin attempt here and save the returned object to `result`
-                result = session.TryConnectAndLogin(GAME_NAME, user, ItemsHandlingFlags.AllItems,
+                result = session.TryConnectAndLogin(GAME_NAME, slotName, ItemsHandlingFlags.AllItems,
                     null, null, null, password);
             }
             catch (Exception e)
@@ -88,7 +106,7 @@ namespace OriBFArchipelago.Core
             if (!result.Successful)
             {
                 LoginFailure failure = (LoginFailure)result;
-                string errorMessage = $"Failed to Connect to {server} as {user}:";
+                string errorMessage = $"Failed to Connect to {hostname} as {slotName}:";
                 foreach (string error in failure.Errors)
                 {
                     errorMessage += $"\n    {error}";
@@ -98,18 +116,20 @@ namespace OriBFArchipelago.Core
                     errorMessage += $"\n    {error}";
                 }
                 Console.WriteLine(errorMessage);
-                RandomizerMessager.instance.AddMessage($"Failed to connect to {server} as {user}");
+                RandomizerMessager.instance.AddMessage($"Failed to connect to {hostname} as {slotName}");
             }
             else
             {
                 // Successfully connected, `ArchipelagoSession` (assume statically defined as `session` from now on) can now be used to interact with the server and the returned `LoginSuccessful` contains some useful information about the initial connection (e.g. a copy of the slot data as `loginSuccess.SlotData`)
                 var loginSuccess = (LoginSuccessful)result;
-                Console.WriteLine($"Successfully connected to {server} as {user}");
-                RandomizerMessager.instance.AddMessage($"Successfully connected to {server} as {user}");
+                Console.WriteLine($"Successfully connected to {hostname} as {slotName}");
+                RandomizerMessager.instance.AddMessage($"Successfully connected to {hostname} as {slotName}");
                 SlotData = loginSuccess.SlotData;
 
                 session.DataStorage[Scope.Slot, MAP_LOCATION_DATA_KEY].Initialize(new string[0]);
                 session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].Initialize(new string[0]);
+
+                RecheckLocations();
                 UpdateMapLocations();
             }
 
@@ -249,6 +269,19 @@ namespace OriBFArchipelago.Core
         public void CheckLocation(string name)
         {
             CheckLocation(LocationLookup.Get(name));
+        }
+
+        /**
+         * Sends all locally checked locations to the archipelago server in case any were missed
+         */
+        private async void RecheckLocations()
+        {
+            IEnumerable<long> ids = RandomizerManager.Receiver.GetAllLocations()
+                .Select(x => session.Locations.GetLocationIdFromName(GAME_NAME, x));
+            foreach (long id in ids)
+            {
+                await Task.Factory.StartNew(() => session.Locations.CompleteLocationChecks(id));
+            }
         }
 
         /**

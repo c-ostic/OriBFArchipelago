@@ -142,12 +142,9 @@ namespace OriBFArchipelago.Core
 
         private void FixedUpdate()
         {
-            if (Keybinder.OnPressed(KeybindAction.OpenTeleport))
+            if (Keybinder.OnPressed(KeybindAction.OpenTeleport) && PlayerHasControl)
             {
-                if (PlayerHasControl)
-                {
-                    OpenTeleportMenu();
-                }
+                OpenTeleportMenu();
             }
 
             if (Keybinder.OnPressed(KeybindAction.ListStones))
@@ -158,6 +155,12 @@ namespace OriBFArchipelago.Core
             if (Keybinder.OnPressed(KeybindAction.GoalProgress))
             {
                 RandomizerManager.Connection.IsGoalComplete();
+            }
+
+            if (Keybinder.OnPressed(KeybindAction.Reconnect) && PlayerHasControl)
+            {
+                RandomizerManager.Receiver.OnReconnect();
+                RandomizerManager.Connection.Reconnect();
             }
 
             if (LocalGameState.TeleportNightberry && PlayerHasControl && Items.NightBerry != null)
