@@ -5,10 +5,9 @@ using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Packets;
 using Game;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -23,6 +22,7 @@ namespace OriBFArchipelago.Core
         // The name of the game used to connect to arhcipelago
         public const string GAME_NAME = "Ori and the Blind Forest";
         public const string MAP_LOCATION_DATA_KEY = "MapLocations";
+        public const string FOUND_RELICS_DATA_KEY = "FoundRelics";
 
         // The archipelago session
         private ArchipelagoSession session;
@@ -108,7 +108,8 @@ namespace OriBFArchipelago.Core
                 RandomizerMessager.instance.AddMessage($"Successfully connected to {server} as {user}");
                 SlotData = loginSuccess.SlotData;
 
-                session.DataStorage[Scope.Slot, MAP_LOCATION_DATA_KEY] = new string[0];
+                session.DataStorage[Scope.Slot, MAP_LOCATION_DATA_KEY].Initialize(new string[0]);
+                session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].Initialize(new string[0]);
                 UpdateMapLocations();
             }
 
@@ -151,6 +152,26 @@ namespace OriBFArchipelago.Core
             string itemName = helper.PeekItem().ItemName;
 
             RandomizerManager.Receiver.ReceiveItem((InventoryItem) Enum.Parse(typeof(InventoryItem), itemName));
+
+            if (itemName == "Relic")
+            {
+                Location location = LocationLookup.Get(helper.PeekItem().LocationName);
+                if (location != null)
+                {
+                    session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].GetAsync<string[]>(x =>
+                    {
+                        string[] areas = x;
+                        if (!areas.Contains(location.Area.ToString()))
+                        {
+                            session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY] += new string[] { location.Area.ToString() };
+                        }
+                    });
+                }
+                else
+                {
+                    Console.WriteLine("Found Relic from unknown location");
+                }
+            }
 
             helper.DequeueItem();
         }
@@ -419,15 +440,28 @@ namespace OriBFArchipelago.Core
                     int requiredRelics = RandomizerManager.Options.RelicCount;
                     WorldArea[] relicAreas = RandomizerManager.Options.WorldTourAreas;
                     hasMetGoal = collectedRelics >= requiredRelics;
-                    message.Append($"Collected {collectedRelics} out of {requiredRelics} relics. \n");
+                    message.Append($"Collected {collectedRelics} out of {requiredRelics} relics.");
+
                     if (!hasMetGoal)
                     {
-                        message.Append($"Relics can be found in ");
-                        foreach (WorldArea area in relicAreas)
+                        session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].GetAsync<string[]>(x =>
                         {
-                            message.Append(area).Append(", ");
-                        }
-                        message.Remove(message.Length - 2, 2); // remove last comma
+                            // Since relic data is retrieved async, it needs its own string builder message
+                            StringBuilder relicMessage = new StringBuilder();
+
+                            relicMessage.Append($"Remaining relics can be found in ");
+                            foreach (WorldArea area in relicAreas)
+                            {
+                                string[] areas = x;
+                                if (!areas.Contains(area.ToString()))
+                                {
+                                    relicMessage.Append(area).Append(", ");
+                                }
+                            }
+                            relicMessage.Remove(relicMessage.Length - 2, 2); // remove last comma
+
+                            RandomizerMessager.instance.AddMessage(relicMessage.ToString());
+                        });
                     }
                 }
                 else
