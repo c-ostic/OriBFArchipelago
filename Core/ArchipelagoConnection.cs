@@ -23,6 +23,7 @@ namespace OriBFArchipelago.Core
         public const string GAME_NAME = "Ori and the Blind Forest";
         public const string MAP_LOCATION_DATA_KEY = "MapLocations";
         public const string FOUND_RELICS_DATA_KEY = "FoundRelics";
+        public const string POSITION_DATA_KEY = "Position";
 
         // The archipelago session
         private ArchipelagoSession session;
@@ -31,6 +32,10 @@ namespace OriBFArchipelago.Core
         private int port;
         private string slotName;
         private string password;
+
+        // Position update variables
+        private float positionTimer = 0;
+        private const float POSITION_UPDATE_RATE = 5; // every 5 seconds
 
         // boolean used to ignore the death caused by deathlink as to not send another
         private bool ignoreNextDeath;
@@ -128,6 +133,7 @@ namespace OriBFArchipelago.Core
 
                 session.DataStorage[Scope.Slot, MAP_LOCATION_DATA_KEY].Initialize(new string[0]);
                 session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].Initialize(new string[0]);
+                session.DataStorage[Scope.Slot, POSITION_DATA_KEY].Initialize(new float[0]);
 
                 RecheckLocations();
                 UpdateMapLocations();
@@ -153,6 +159,26 @@ namespace OriBFArchipelago.Core
                 Damage damage = new Damage(10000f, Vector2.zero, Vector2.zero, DamageType.Lava, Characters.Sein.gameObject);
                 Characters.Sein.Controller.OnRecieveDamage(damage);
             }
+
+            // Update position every POSITION_UPDATE_RATE seconds
+            positionTimer += Time.deltaTime;
+            if (positionTimer >= POSITION_UPDATE_RATE)
+            {
+                positionTimer = 0;
+                UpdatePositionTracking();
+            }
+        }
+
+        /**
+         * Updates the player's current player position to the AP server
+         */
+        private void UpdatePositionTracking()
+        {
+            float x = Characters.Sein.transform.position.x;
+            float y = Characters.Sein.transform.position.y;
+            float[] position = [x, y];
+
+            session.DataStorage[Scope.Slot, POSITION_DATA_KEY] = position;
         }
 
         /**
