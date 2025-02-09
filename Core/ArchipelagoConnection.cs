@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -174,11 +175,14 @@ namespace OriBFArchipelago.Core
          */
         private void UpdatePositionTracking()
         {
-            float x = Characters.Sein.transform.position.x;
-            float y = Characters.Sein.transform.position.y;
-            float[] position = [x, y];
+            if (Characters.Sein is not null)
+            {
+                float x = Characters.Sein.transform.position.x;
+                float y = Characters.Sein.transform.position.y;
+                float[] position = [x, y];
 
-            session.DataStorage[Scope.Slot, POSITION_DATA_KEY] = position;
+                Task.Factory.StartNew(() => session.DataStorage[Scope.Slot, POSITION_DATA_KEY] = position);
+            }
         }
 
         /**
@@ -300,14 +304,11 @@ namespace OriBFArchipelago.Core
         /**
          * Sends all locally checked locations to the archipelago server in case any were missed
          */
-        private async void RecheckLocations()
+        private void RecheckLocations()
         {
             IEnumerable<long> ids = RandomizerManager.Receiver.GetAllLocations()
                 .Select(x => session.Locations.GetLocationIdFromName(GAME_NAME, x));
-            foreach (long id in ids)
-            {
-                await Task.Factory.StartNew(() => session.Locations.CompleteLocationChecks(id));
-            }
+            session.Locations.CompleteLocationChecks(ids.ToArray());
         }
 
         /**
@@ -327,7 +328,7 @@ namespace OriBFArchipelago.Core
             }
 
             // Stores mapLocations array to DataStorage key "Slot:<slot_number>:MapLocations"
-            session.DataStorage[Scope.Slot, MAP_LOCATION_DATA_KEY] = foundMaps.ToArray();
+            Task.Factory.StartNew(() => session.DataStorage[Scope.Slot, MAP_LOCATION_DATA_KEY] = foundMaps.ToArray());
         }
 
         /**
@@ -503,6 +504,7 @@ namespace OriBFArchipelago.Core
 
                     if (!hasMetGoal)
                     {
+                        Task.Factory.StartNew(() =>
                         session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].GetAsync<string[]>(x =>
                         {
                             // Since relic data is retrieved async, it needs its own string builder message
@@ -520,7 +522,7 @@ namespace OriBFArchipelago.Core
                             relicMessage.Remove(relicMessage.Length - 2, 2); // remove last comma
 
                             RandomizerMessager.instance.AddMessage(relicMessage.ToString());
-                        });
+                        }));
                     }
                 }
                 else
