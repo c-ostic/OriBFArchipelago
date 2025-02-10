@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using HarmonyLib;
 
 namespace OriBFArchipelago.Core
 {
@@ -169,6 +170,38 @@ namespace OriBFArchipelago.Core
         }
 
         /**
+         * Copy files of a saved game into another slot
+         */
+        public static bool CopySaveFile(int originalSaveSlot, int copySaveSlot)
+        {
+            // Original file paths
+            string originalInventoryFileName = $"Slot{originalSaveSlot}.txt";
+            string originalInventoryFullPath = $"{SAVE_FILE_PATH}\\{originalInventoryFileName}";
+
+            string originalLocationFileName = $"Slot{originalSaveSlot}Locations.txt";
+            string originalLocationFullPath = $"{SAVE_FILE_PATH}\\{originalLocationFileName}";
+            
+            // New file paths
+            string newInventoryFileName = $"Slot{copySaveSlot}.txt";
+            string newInventoryFullPath = $"{SAVE_FILE_PATH}\\{newInventoryFileName}";
+
+            string newLocationFileName = $"Slot{copySaveSlot}Locations.txt";
+            string newLocationFullPath = $"{SAVE_FILE_PATH}\\{newLocationFileName}";
+
+            try
+            {
+                File.Copy(originalInventoryFullPath, newInventoryFullPath);
+                File.Copy(originalLocationFullPath, newLocationFullPath);
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine($"Could not copy the file: {e}");
+                return false;
+            }
+
+            return true;
+        }
+        /**
          * Deletes the specified save file
          */
         public static bool DeleteSaveFile(int saveSlot)
@@ -311,7 +344,7 @@ namespace OriBFArchipelago.Core
                 return false;
             }
         }
-
+        
         /**
          * Read settings from file
          * If the file is not found, an empty dictionary is returned and the function returns false
