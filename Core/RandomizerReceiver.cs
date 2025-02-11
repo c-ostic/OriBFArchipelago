@@ -2,6 +2,7 @@
 using OriBFArchipelago.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OriBFArchipelago.Core
 {
@@ -27,7 +28,7 @@ namespace OriBFArchipelago.Core
         // compares against savedInventory to make sure items aren't duplicated
         private RandomizerInventory onLoadInventory;
 
-        // locally saves the locaiotns that have been checked in game
+        // locally saves the locations that have been checked in game
         private List<string> checkedLocations;
 
         // similar purpose to unsavedInventory
@@ -228,6 +229,15 @@ namespace OriBFArchipelago.Core
         }
 
         /**
+         * Returns a list of all locally checked locations
+         */
+        public IEnumerable<string> GetAllLocations()
+        {
+            
+            return checkedLocations.Concat(unsavedCheckedLocations);
+        }
+
+        /**
          * Called when the player dies
          */
         public void OnDeath()
@@ -261,6 +271,14 @@ namespace OriBFArchipelago.Core
             
             RandomizerIO.WriteSaveFile(saveSlot, savedInventory, checkedLocations);
             Resync();
+        }
+
+        /**
+         * Called when the player tries to reconnect to the archipelago server from within the game
+         */
+        public void OnReconnect()
+        {
+            onLoadInventory.Reset();
         }
 
         /**

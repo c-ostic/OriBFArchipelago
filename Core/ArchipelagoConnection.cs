@@ -7,8 +7,9 @@ using Archipelago.MultiClient.Net.Packets;
 using Game;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -21,11 +22,21 @@ namespace OriBFArchipelago.Core
     {
         // The name of the game used to connect to arhcipelago
         public const string GAME_NAME = "Ori and the Blind Forest";
+        public const string MAP_LOCATION_DATA_KEY = "MapLocations";
+        public const string FOUND_RELICS_DATA_KEY = "FoundRelics";
+        public const string POSITION_DATA_KEY = "Position";
 
         // The archipelago session
         private ArchipelagoSession session;
         private DeathLinkService deathLinkService;
+        private string hostname;
+        private int port;
         private string slotName;
+        private string password;
+
+        // Position update variables
+        private float positionTimer = 0;
+        private const float POSITION_UPDATE_RATE = 5; // every 5 seconds
 
         // boolean used to ignore the death caused by deathlink as to not send another
         private bool ignoreNextDeath;
@@ -41,7 +52,10 @@ namespace OriBFArchipelago.Core
          */
         public bool Init(string hostname, int port, string user, string password)
         {
+            this.hostname = hostname;
+            this.port = port;
             slotName = user;
+            this.password = password;
 
             session = ArchipelagoSessionFactory.CreateSession(hostname, port);
 
@@ -51,7 +65,19 @@ namespace OriBFArchipelago.Core
             deathLinkService = session.CreateDeathLinkService();
             deathLinkService.OnDeathLinkReceived += OnDeathLinkRecieved;
 
-            return Connect(hostname, user, password);
+            return Connect();
+        }
+
+        /**
+         * Tries to reconnect to the archipelago server
+         */
+        public void Reconnect()
+        {
+            if (session is not null)
+            {
+                Disconnect();
+                Connect();
+            }
         }
 
         /**
@@ -68,14 +94,14 @@ namespace OriBFArchipelago.Core
         /**
          * Tries to connect to a slot on the Archipelago server
          */
-        private bool Connect(string server, string user, string password)
+        private bool Connect()
         {
             LoginResult result;
 
             try
             {
                 // handle TryConnectAndLogin attempt here and save the returned object to `result`
-                result = session.TryConnectAndLogin(GAME_NAME, user, ItemsHandlingFlags.AllItems,
+                result = session.TryConnectAndLogin(GAME_NAME, slotName, ItemsHandlingFlags.AllItems,
                     null, null, null, password);
             }
             catch (Exception e)
@@ -86,7 +112,7 @@ namespace OriBFArchipelago.Core
             if (!result.Successful)
             {
                 LoginFailure failure = (LoginFailure)result;
-                string errorMessage = $"Failed to Connect to {server} as {user}:";
+                string errorMessage = $"Failed to Connect to {hostname} as {slotName}:";
                 foreach (string error in failure.Errors)
                 {
                     errorMessage += $"\n    {error}";
@@ -96,15 +122,22 @@ namespace OriBFArchipelago.Core
                     errorMessage += $"\n    {error}";
                 }
                 Console.WriteLine(errorMessage);
-                RandomizerMessager.instance.AddMessage($"Failed to connect to {server} as {user}");
+                RandomizerMessager.instance.AddMessage($"Failed to connect to {hostname} as {slotName}");
             }
             else
             {
                 // Successfully connected, `ArchipelagoSession` (assume statically defined as `session` from now on) can now be used to interact with the server and the returned `LoginSuccessful` contains some useful information about the initial connection (e.g. a copy of the slot data as `loginSuccess.SlotData`)
                 var loginSuccess = (LoginSuccessful)result;
-                Console.WriteLine($"Successfully connected to {server} as {user}");
-                RandomizerMessager.instance.AddMessage($"Successfully connected to {server} as {user}");
+                Console.WriteLine($"Successfully connected to {hostname} as {slotName}");
+                RandomizerMessager.instance.AddMessage($"Successfully connected to {hostname} as {slotName}");
                 SlotData = loginSuccess.SlotData;
+
+                session.DataStorage[Scope.Slot, MAP_LOCATION_DATA_KEY].Initialize(new string[0]);
+                session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].Initialize(new string[0]);
+                session.DataStorage[Scope.Slot, POSITION_DATA_KEY].Initialize(new float[0]);
+
+                RecheckLocations();
+                UpdateMapLocations();
             }
 
             Connected = result.Successful;
@@ -116,6 +149,7 @@ namespace OriBFArchipelago.Core
          */
         public void Update()
         {
+            // Kills the player if a death link is queued
             if (queueDeath &&
                 Characters.Sein.Active && 
                 !Characters.Sein.IsSuspended && 
@@ -125,6 +159,29 @@ namespace OriBFArchipelago.Core
                 queueDeath = false;
                 Damage damage = new Damage(10000f, Vector2.zero, Vector2.zero, DamageType.Lava, Characters.Sein.gameObject);
                 Characters.Sein.Controller.OnRecieveDamage(damage);
+            }
+
+            // Update position every POSITION_UPDATE_RATE seconds
+            positionTimer += Time.deltaTime;
+            if (positionTimer >= POSITION_UPDATE_RATE)
+            {
+                positionTimer = 0;
+                UpdatePositionTracking();
+            }
+        }
+
+        /**
+         * Updates the player's current player position to the AP server
+         */
+        private void UpdatePositionTracking()
+        {
+            if (Characters.Sein is not null)
+            {
+                float x = Characters.Sein.transform.position.x;
+                float y = Characters.Sein.transform.position.y;
+                float[] position = [x, y];
+
+                Task.Factory.StartNew(() => session.DataStorage[Scope.Slot, POSITION_DATA_KEY] = position);
             }
         }
 
@@ -145,6 +202,26 @@ namespace OriBFArchipelago.Core
             string itemName = helper.PeekItem().ItemName;
 
             RandomizerManager.Receiver.ReceiveItem((InventoryItem) Enum.Parse(typeof(InventoryItem), itemName));
+
+            if (itemName == "Relic")
+            {
+                Location location = LocationLookup.Get(helper.PeekItem().LocationName);
+                if (location != null)
+                {
+                    session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].GetAsync<string[]>(x =>
+                    {
+                        string[] areas = x;
+                        if (!areas.Contains(location.Area.ToString()))
+                        {
+                            session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY] += new string[] { location.Area.ToString() };
+                        }
+                    });
+                }
+                else
+                {
+                    Console.WriteLine("Found Relic from unknown location");
+                }
+            }
 
             helper.DequeueItem();
         }
@@ -176,27 +253,26 @@ namespace OriBFArchipelago.Core
         /**
          * Send a message to the server that a location has been checked
          */
-        public async void CheckLocation(string location)
+        public async void CheckLocation(Location location)
         {
             if (location is null)
             {
-                Console.WriteLine("Invalid location: " + location);
                 return;
+            }
+
+            if (RandomizerManager.Options.MapStoneLogic == MapStoneOptions.Progressive &&
+                    mapLocations.Contains(location.Name))
+            {
+                // track the original location in addition to the progressive location
+                RandomizerManager.Receiver.CheckLocation(location.Name);
+
+                int nextMap = RandomizerManager.Receiver.GetItemCount(InventoryItem.MapStoneUsed);
+                location = LocationLookup.Get("ProgressiveMap" + nextMap);
             }
 
             if (Connected)
             {
-                if (RandomizerManager.Options.MapStoneLogic == MapStoneOptions.Progressive &&
-                    mapLocations.Contains(location))
-                {
-                    // track the original location in addition to the progressive location
-                    RandomizerManager.Receiver.CheckLocation(location);
-
-                    int nextMap = RandomizerManager.Receiver.GetItemCount(InventoryItem.MapStoneUsed);
-                    location = "ProgressiveMap" + nextMap;
-                }
-
-                long locationId = session.Locations.GetLocationIdFromName(GAME_NAME, location);
+                long locationId = session.Locations.GetLocationIdFromName(GAME_NAME, location.Name);
                 await Task.Factory.StartNew(() => session.Locations.CompleteLocationChecks(locationId));
                 Console.WriteLine("Checked " + location);
             }
@@ -205,15 +281,54 @@ namespace OriBFArchipelago.Core
                 Console.WriteLine("Checked " + location + " but not connected");
             }
 
-            RandomizerManager.Receiver.CheckLocation(location);
+            RandomizerManager.Receiver.CheckLocation(location.Name);
+            UpdateMapLocations();
         }
 
         /**
-         * Check location using gameobject location lookup
+         * Check location using MoonGuid
          */
-        public void CheckLocationByGameObject(GameObject g)
+        public void CheckLocation(MoonGuid guid)
         {
-            CheckLocation(LocationLookup.GetLocationName(g));
+            CheckLocation(LocationLookup.Get(guid));
+        }
+
+        /**
+         * Check location using name
+         */
+        public void CheckLocation(string name)
+        {
+            CheckLocation(LocationLookup.Get(name));
+        }
+
+        /**
+         * Sends all locally checked locations to the archipelago server in case any were missed
+         */
+        private void RecheckLocations()
+        {
+            IEnumerable<long> ids = RandomizerManager.Receiver.GetAllLocations()
+                .Select(x => session.Locations.GetLocationIdFromName(GAME_NAME, x));
+            session.Locations.CompleteLocationChecks(ids.ToArray());
+        }
+
+        /**
+         * Updates the datastorage value with map locations checked while using progressive mapstones
+         * This way, trackers can still see which map locations have been checked
+         */
+        private void UpdateMapLocations()
+        {
+            List<string> foundMaps = new List<string>();
+            
+            foreach (string mapLocation in mapLocations)
+            {
+                if (RandomizerManager.Receiver.IsLocationChecked(mapLocation))
+                {
+                    foundMaps.Add(mapLocation);
+                }
+            }
+
+            // Stores mapLocations array to DataStorage key "Slot:<slot_number>:MapLocations"
+            Task.Factory.StartNew(() => session.DataStorage[Scope.Slot, MAP_LOCATION_DATA_KEY] = foundMaps.ToArray());
         }
 
         /**
@@ -246,9 +361,24 @@ namespace OriBFArchipelago.Core
         }
 
         /**
+         * Called when the player dies
+         */
+        public void OnDeath(bool instakill = false)
+        {
+            UpdateMapLocations();
+
+            // assume damage that is over 100 is meant to be an insta kill
+            if (RandomizerManager.Options.DeathLinkLogic == DeathLinkOptions.Full ||
+                RandomizerManager.Options.DeathLinkLogic == DeathLinkOptions.Partial && !instakill)
+            {
+                SendDeathLink();
+            }
+        }
+
+        /**
          * Sends a death link to the archipelago server
          */
-        public void SendDeathLink()
+        private void SendDeathLink()
         {
             if (!ignoreNextDeath)
             {
@@ -303,6 +433,7 @@ namespace OriBFArchipelago.Core
                     List<string> uncheckedTrees = new List<string>();
                     foreach (string goalLocation in skillTreeLocations)
                     {
+                        // Uses internal tracking of trees to avoid desyncs with the server
                         if (!RandomizerManager.Receiver.IsLocationChecked(goalLocation))
                         {
                             hasMetGoal = false;
@@ -330,6 +461,8 @@ namespace OriBFArchipelago.Core
                     List<string> uncheckedMaps = new List<string>();
                     foreach (string goalLocation in mapLocations)
                     {
+                        // Uses internal tracking of trees to avoid desyncs with the server and any problems with
+                        // the death rollback (since these locations can be unchecked in game but not on the ap server)
                         if (!RandomizerManager.Receiver.IsLocationChecked(goalLocation))
                         {
                             hasMetGoal = false;
@@ -365,17 +498,31 @@ namespace OriBFArchipelago.Core
                 {
                     int collectedRelics = RandomizerManager.Receiver.GetItemCount(InventoryItem.Relic);
                     int requiredRelics = RandomizerManager.Options.RelicCount;
-                    string[] relicAreas = RandomizerManager.Options.WorldTourAreas;
+                    WorldArea[] relicAreas = RandomizerManager.Options.WorldTourAreas;
                     hasMetGoal = collectedRelics >= requiredRelics;
-                    message.Append($"Collected {collectedRelics} out of {requiredRelics} relics. \n");
+                    message.Append($"Collected {collectedRelics} out of {requiredRelics} relics.");
+
                     if (!hasMetGoal)
                     {
-                        message.Append($"Relics can be found in ");
-                        foreach (string relic in relicAreas)
+                        Task.Factory.StartNew(() =>
+                        session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].GetAsync<string[]>(x =>
                         {
-                            message.Append(relic).Append(", ");
-                        }
-                        message.Remove(message.Length - 2, 2); // remove last comma
+                            // Since relic data is retrieved async, it needs its own string builder message
+                            StringBuilder relicMessage = new StringBuilder();
+
+                            relicMessage.Append($"Remaining relics can be found in ");
+                            foreach (WorldArea area in relicAreas)
+                            {
+                                string[] areas = x;
+                                if (!areas.Contains(area.ToString()))
+                                {
+                                    relicMessage.Append(area).Append(", ");
+                                }
+                            }
+                            relicMessage.Remove(relicMessage.Length - 2, 2); // remove last comma
+
+                            RandomizerMessager.instance.AddMessage(relicMessage.ToString());
+                        }));
                     }
                 }
                 else

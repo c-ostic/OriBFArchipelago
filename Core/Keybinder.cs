@@ -29,7 +29,8 @@ namespace OriBFArchipelago.Core
         DoubleBash,
         GrenadeJump,
         ListStones,
-        GoalProgress
+        GoalProgress,
+        Reconnect
     }
 
     /**
@@ -70,7 +71,8 @@ namespace OriBFArchipelago.Core
             { KeybindAction.DoubleBash, "Grenade" },
             { KeybindAction.GrenadeJump, "Grenade+Jump" },
             { KeybindAction.ListStones, "LeftAlt+S, RightAlt+S" },
-            { KeybindAction.GoalProgress, "LeftAlt+G, RightAlt+G" }
+            { KeybindAction.GoalProgress, "LeftAlt+G, RightAlt+G" },
+            { KeybindAction.Reconnect, "LeftAlt+K, RightAlt+K" }
         };
 
         /**
@@ -362,6 +364,9 @@ namespace OriBFArchipelago.Core
             if (RandomizerIO.ReadKeybinds(out fileKeybinds))
             {
                 keybinds = parseBindSets(fileKeybinds);
+
+                // Write to file to fill in any missing keybinds, such as new defaults from updates
+                RandomizerIO.WriteKeybinds(keybinds.ToDictionary(x => x.Key, x => x.Value.ToString())); 
             }
             else
             {

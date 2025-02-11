@@ -12,7 +12,7 @@ namespace OriBFArchipelago.Patches
     {
         private static void Postfix(GetAbilityPedestal __instance)
         {
-            RandomizerManager.Connection.CheckLocation(__instance.Ability.ToString() + "SkillTree");
+            RandomizerManager.Connection.CheckLocation(__instance.MoonGuid);
         }
 
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -37,9 +37,9 @@ namespace OriBFArchipelago.Patches
         // This is called only when collecting sein or feather - no other skills
         private static bool Prefix(GetAbilityAction __instance)
         {
-            if (LocationLookup.GetLocationName(__instance.gameObject) == "GlideSkillFeather")
+            if (LocationLookup.Get(__instance.MoonGuid)?.Name == "GlideSkillFeather")
             {
-                RandomizerManager.Connection.CheckLocationByGameObject(__instance.gameObject);
+                RandomizerManager.Connection.CheckLocation(__instance.MoonGuid);
                 return false;
             }
             return true;

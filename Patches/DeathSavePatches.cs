@@ -15,11 +15,7 @@ namespace OriBFArchipelago.Patches
             RandomizerManager.Receiver.OnDeath();
 
             // assume damage that is over 100 is meant to be an insta kill
-            if (RandomizerManager.Options.DeathLinkLogic == DeathLinkOptions.Full ||
-                RandomizerManager.Options.DeathLinkLogic == DeathLinkOptions.Partial && damage.Amount < 100)
-            {
-                RandomizerManager.Connection.SendDeathLink();
-            }
+            RandomizerManager.Connection.OnDeath(damage.Amount > 100);
         }
     }
 
