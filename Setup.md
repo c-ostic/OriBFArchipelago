@@ -1,3 +1,5 @@
+*Note: If you are updating the mod, you can skip to step 2*
+
 # Step 0: Install Ori
 1. Make sure Ori and the Blind Forest: Definitive Edition is installed
 
@@ -30,6 +32,8 @@
 
 3. Move the entire OriBFArchipelago folder into the plugins folder
 
+4. If you are updating the mod it may ask you to replace files. If so, click yes
+
 # Step 3: Run the game!
 1. Start Ori and the Blind Forest
 
@@ -41,7 +45,10 @@
 
 5. Fill out the server name, port, slot name, and (optional) password in the upper left text boxes
 
-6. Start the profile and begin playing!
+6. If you are having problems with the game's UI moving as you type, press the "Edit" button. 
+This prevents all other input into the game. Press "Done" when complete.
+
+7. Start the profile and begin playing!
 
 # Additional Notes
 - You can access the APWorld that goes along with this mod [here](https://github.com/c-ostic/Archipelago/releases)
