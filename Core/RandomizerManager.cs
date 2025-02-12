@@ -18,6 +18,8 @@ namespace OriBFArchipelago.Core
 
         public static RandomizerOptions Options { get { return instance.options; } }
 
+        public static bool IsEditing {  get { return instance.isEditing; } }
+
         public static RandomizerManager instance;
 
         // references to both the receiver and the connection
@@ -25,7 +27,7 @@ namespace OriBFArchipelago.Core
         private ArchipelagoConnection connection;
         private RandomizerOptions options;
 
-        private bool inGame, inSaveSelect, failedToStart;
+        private bool inGame, inSaveSelect, failedToStart, isEditing;
         private Dictionary<int, SlotData> saveSlots;
 
         // strings associated with the gui buttons in OnGUI
@@ -50,6 +52,7 @@ namespace OriBFArchipelago.Core
             inGame = false;
             inSaveSelect = true; // TODO: change this to false when on start screen vs save select menu
             failedToStart = false;
+            isEditing = false;
         }
 
         /**
@@ -81,7 +84,7 @@ namespace OriBFArchipelago.Core
             // Only display this UI when on the save select screen
             if (inSaveSelect)
             {
-                GUILayout.BeginArea(new Rect(5, 5, 300, 100));
+                GUILayout.BeginArea(new Rect(5, 5, 300, 200));
 
                 GUILayout.BeginVertical();
 
@@ -107,6 +110,25 @@ namespace OriBFArchipelago.Core
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Password");
                 password = GUILayout.TextField(password, 50);
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                if (isEditing)
+                {
+                    // Create a button to stop editing
+                    if (GUILayout.Button("Done"))
+                    {
+                        isEditing = false;
+                    }
+                }
+                else
+                {
+                    // Create a button to start editing
+                    if (GUILayout.Button("Edit"))
+                    {
+                        isEditing = true;
+                    }
+                }
                 GUILayout.EndHorizontal();
 
                 GUILayout.EndVertical();
@@ -275,7 +297,7 @@ namespace OriBFArchipelago.Core
     }
 
     /**
-     * Patch into the functino called when deleting a save slot
+     * Patch into the function called when deleting a save slot
      */
     [HarmonyPatch(typeof(SaveSlotsManager), nameof(SaveSlotsManager.DeleteSlot))]
     internal class DeleteSavePatch
@@ -286,7 +308,6 @@ namespace OriBFArchipelago.Core
             return true;
         }
     }
-
     
     /**
      * Patch into the function called when copying a save slot
@@ -297,6 +318,18 @@ namespace OriBFArchipelago.Core
         private static void Prefix(int from, int to)
         {
             RandomizerIO.CopySaveFile(from, to);
+        }
+    }
+
+    /**
+     * Prevent the refreshing of controls while editing
+     */
+    [HarmonyPatch(typeof(PlayerInput), nameof(PlayerInput.FixedUpdate))]
+    internal class PreventPlayerInputPatch
+    {
+        private static bool Prefix()
+        {
+            return !RandomizerManager.IsEditing;
         }
     }
 }
