@@ -286,4 +286,17 @@ namespace OriBFArchipelago.Core
             return true;
         }
     }
+
+    
+    /**
+     * Patch into the function called when copying a save slot
+     */
+    [HarmonyPatch(typeof(SaveSlotsManager), nameof(SaveSlotsManager.CopySlot))]
+    internal class CopySaveFilePatch
+    {
+        private static void Prefix(int from, int to)
+        {
+            RandomizerIO.CopySaveFile(from, to);
+        }
+    }
 }
