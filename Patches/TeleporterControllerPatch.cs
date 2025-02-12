@@ -137,6 +137,8 @@ namespace OriBFArchipelago.Patches
 
                 LocalGameState.IsPendingCheckpoint = false;
             }
+
+            RandomizerController.Instance.ShowRandomTip();
         }
 
         [HarmonyPostfix, HarmonyPatch(nameof(TeleporterController.BeginTeleportation))]

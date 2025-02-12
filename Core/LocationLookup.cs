@@ -123,6 +123,7 @@ namespace OriBFArchipelago.Core
             new Location(new MoonGuid(new Guid("a63780b0-42b1-4774-9b29-e09860be1909")), "FirstPickup", WorldArea.Glades, LocationType.ExpSmall, new Vector2(92.0f, -227.5f)),
             new Location(new MoonGuid(new Guid("946296aa-9449-4a2b-8d71-9d8dc9354e04")), "FirstEnergyCell", WorldArea.Glades, LocationType.EnergyCell, new Vector2(-27.4f, -256.3f)),
             new Location(new MoonGuid(new Guid("6bb0cafc-6dd1-47f2-85dd-8567b3a60e15")), "FronkeyFight", WorldArea.Glades, LocationType.ExpSmall, new Vector2(-154.5f, -271.8f)),
+            new Location(new MoonGuid(new Guid("df30b319-f085-4e36-9ad7-04f14f8087ee")), "Sein", WorldArea.Glades, LocationType.Skill, new Vector2(-164.1f, -261.4f)),
             new Location(new MoonGuid(new Guid("bc6b3f8d-e278-460e-86b6-7ece93e236ce")), "GladesKeystone1", WorldArea.Glades, LocationType.Keystone, new Vector2(83.1f, -222.3f)),
             new Location(new MoonGuid(new Guid("e06e9d7a-e566-4594-aba9-87b8e660a89c")), "GladesKeystone2", WorldArea.Glades, LocationType.Keystone, new Vector2(-11.1f, -206.4f)),
             new Location(new MoonGuid(new Guid("8da3969b-7ae7-4894-8801-49727a1634e7")), "GladesGrenadePool", WorldArea.Glades, LocationType.ExpLarge, new Vector2(59.0f, -280.9f)),

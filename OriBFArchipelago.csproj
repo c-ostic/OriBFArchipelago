@@ -4,7 +4,7 @@
     <TargetFramework>net35</TargetFramework>
     <AssemblyName>OriBFArchipelago</AssemblyName>
     <Description>Archipelago client for Ori and the Blind Forest</Description>
-    <Version>0.3.0</Version>
+    <Version>0.3.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

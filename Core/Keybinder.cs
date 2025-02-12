@@ -30,7 +30,8 @@ namespace OriBFArchipelago.Core
         GrenadeJump,
         ListStones,
         GoalProgress,
-        Reconnect
+        Reconnect,
+        Help
     }
 
     /**
@@ -72,7 +73,8 @@ namespace OriBFArchipelago.Core
             { KeybindAction.GrenadeJump, "Grenade+Jump" },
             { KeybindAction.ListStones, "LeftAlt+S, RightAlt+S" },
             { KeybindAction.GoalProgress, "LeftAlt+G, RightAlt+G" },
-            { KeybindAction.Reconnect, "LeftAlt+K, RightAlt+K" }
+            { KeybindAction.Reconnect, "LeftAlt+K, RightAlt+K" },
+            { KeybindAction.Help, "LeftAlt+H, RightAlt+H" }
         };
 
         /**
@@ -401,6 +403,14 @@ namespace OriBFArchipelago.Core
         public static bool OnPressed(KeybindAction action)
         {
             return Instance.keybinds[action].OnPressed;
+        }
+
+        /**
+         * Returns the string representation of a keybind
+         */
+        public static string ToString(KeybindAction action)
+        {
+            return Instance.keybinds[action].ToString();
         }
     }
 }

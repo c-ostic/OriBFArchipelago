@@ -42,6 +42,12 @@ namespace OriBFArchipelago.Patches
                 RandomizerManager.Connection.CheckLocation(__instance.MoonGuid);
                 return false;
             }
+            else if (LocationLookup.Get(__instance.MoonGuid)?.Name == "Sein")
+            {
+                RandomizerMessager.instance.AddMessage($"Good luck with the randomizer! \nTip: " +
+                    $"Press {Keybinder.ToString(KeybindAction.OpenTeleport)} to teleport. \n" +
+                    $"Press {Keybinder.ToString(KeybindAction.Help)} to see other keybinds.");
+            }
             return true;
         }
     }
