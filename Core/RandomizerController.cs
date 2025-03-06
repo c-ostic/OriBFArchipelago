@@ -156,6 +156,17 @@ namespace OriBFArchipelago.Core
 
         public static bool PlayerHasControl => Characters.Sein && Characters.Sein.Controller.CanMove && Characters.Sein.Active;
 
+        private void Update()
+        {
+            if (PlayerHasControl &&
+                Characters.Sein.Position.y > 935f &&
+                RandomizerManager.Receiver.HasItem(InventoryItem.GinsoEscapeComplete) &&
+                Scenes.Manager.CurrentScene.Scene == "ginsoTreeWaterRisingEnd")
+            {
+                Characters.Sein.Position = new Vector3(750f, -120f);
+            }
+        }
+
         private void FixedUpdate()
         {
             if (Keybinder.OnPressed(KeybindAction.OpenTeleport) && PlayerHasControl)
