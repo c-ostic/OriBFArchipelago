@@ -253,7 +253,7 @@ namespace OriBFArchipelago.Core
         /**
          * Send a message to the server that a location has been checked
          */
-        public async void CheckLocation(Location location)
+        public void CheckLocation(Location location)
         {
             if (location is null)
             {
@@ -273,7 +273,7 @@ namespace OriBFArchipelago.Core
             if (Connected)
             {
                 long locationId = session.Locations.GetLocationIdFromName(GAME_NAME, location.Name);
-                await Task.Factory.StartNew(() => session.Locations.CompleteLocationChecks(locationId));
+                Task.Factory.StartNew(() => session.Locations.CompleteLocationChecks(locationId));
                 Console.WriteLine("Checked " + location);
             }
             else
@@ -382,7 +382,8 @@ namespace OriBFArchipelago.Core
         {
             if (!ignoreNextDeath)
             {
-                deathLinkService.SendDeathLink(new DeathLink(slotName, slotName + " perished in the Blind Forest"));
+                Task.Factory.StartNew(() => deathLinkService.SendDeathLink(
+                    new DeathLink(slotName, slotName + " perished in the Blind Forest")));
             }
 
             ignoreNextDeath = false;
