@@ -413,14 +413,6 @@ namespace OriBFArchipelago.Core
         #endregion
     }
 
-    public class StompTriggerCondition : Condition
-    {
-        public override bool Validate(IContext context)
-        {
-            return Characters.Sein != null && Characters.Sein.PlayerAbilities.HasAbility(AbilityType.Stomp);
-        }
-    }
-
     public class FinishedGinsoEscapeCondition : Condition
     {
         public bool IsTrue = true;
