@@ -371,13 +371,15 @@ namespace OriBFArchipelago.Core
         {
             var deathZoneTrigger = sceneRoot.transform.Find("*getFeatherSetupContainer/*kuroHideSetup/kuroDeathZones").GetComponent<ActivateBasedOnCondition>();
             UnityEngine.Object.Destroy(deathZoneTrigger.Condition);
-            var deathZoneCondition = deathZoneTrigger.gameObject.AddComponent<StompTriggerCondition>();
+            var deathZoneCondition = deathZoneTrigger.gameObject.AddComponent<ConstantCondition>();
             deathZoneTrigger.Condition = deathZoneCondition;
+            deathZoneCondition.IsTrue = true;
 
             var kuroCliffTriggerCollider = sceneRoot.transform.Find("*getFeatherSetupContainer/*kuroCliffLowerHint/triggerCollider").GetComponent<PlayerCollisionTrigger>();
             UnityEngine.Object.Destroy(kuroCliffTriggerCollider.Condition);
-            var kuroCliffCondition = kuroCliffTriggerCollider.gameObject.AddComponent<StompTriggerCondition>();
+            var kuroCliffCondition = kuroCliffTriggerCollider.gameObject.AddComponent<ConstantCondition>();
             kuroCliffTriggerCollider.Condition = kuroCliffCondition;
+            kuroCliffCondition.IsTrue = true;
         }
         #endregion
 
@@ -409,14 +411,6 @@ namespace OriBFArchipelago.Core
             sceneRoot.transform.FindChild("mediumExpOrb").GetComponent<DestroyOnRestoreCheckpoint>().enabled = false;
         }
         #endregion
-    }
-
-    public class StompTriggerCondition : Condition
-    {
-        public override bool Validate(IContext context)
-        {
-            return Characters.Sein != null && Characters.Sein.PlayerAbilities.HasAbility(AbilityType.Stomp);
-        }
     }
 
     public class FinishedGinsoEscapeCondition : Condition
