@@ -1,0 +1,223 @@
+﻿using Game;
+using OriBFArchipelago.Core;
+using OriBFArchipelago.MapTracker.Core;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace OriBFArchipelago.MapTracker.Logic
+{
+    internal class LogicInventory
+    {
+        private static List<Teleporter> _teleporters;
+        public static List<Teleporter> Teleporters
+        {
+            get
+            {
+                if (_teleporters != null)
+                    return _teleporters;
+
+                _teleporters = new List<Teleporter>
+                {
+                    new Teleporter( new MoonGuid("-116578275 1111087997 412427670 -1249908721"), "forlorn", "TPForlorn"),
+                    new Teleporter( new MoonGuid("1192718876 1302593798 1929767334 1228332312"),"ginsoTree","TPGinso"),
+                    new Teleporter( new MoonGuid("535515012 1334527363 694602174 1078580914"),"horuFields",""),
+                    new Teleporter( new MoonGuid("1392867786 1221127759 -1187823465 2065923254"),"mangroveFalls","TPBlackroot"),
+                    new Teleporter( new MoonGuid("-1403163413 1192454842 -61150018 -775781366"),"mangroveFalls",""),
+                    new Teleporter( new MoonGuid("1752643371 1284208868 -838119773 -772240063"),"moonGrotto","TPGrotto"),
+                    new Teleporter( new MoonGuid("-222749108 1226712869 1550796190 1752513159"),"mountHoru","TPHoru"),
+                    new Teleporter( new MoonGuid("-526679870 1154615959 -822258040 -1157635306"),"sorrowPass","TPValley"),
+                    new Teleporter( new MoonGuid("1728896576 1241211625 810412199 -1853282216"),"spiritTree","TPGrove"),
+                    new Teleporter( new MoonGuid("-426388372 1251161513 2131007642 -178890301"),"sunkenGlades","TPGlades"),
+                    new Teleporter( new MoonGuid("1413930166 1176009348 411655079 -1337676822"),"swamp","TPSwamp"),
+                    new Teleporter( new MoonGuid("290349702 1160050707 663397788 1544872441"),"valleyOfTheWind","")
+                };
+
+                return _teleporters;
+            }
+        }
+
+
+        private static List<KeyDoor> _keyDoors;
+        public static List<KeyDoor> KeyDoors
+        {
+            get
+            {
+                if (_keyDoors != null)
+                    return _keyDoors;
+
+                _keyDoors = new List<KeyDoor>
+                {
+                    new KeyDoor(new MoonGuid("-1339740894 1318671638 1367314854 947958608"), "First key door", 2, WorldArea.Glades, false),
+                    new KeyDoor(new MoonGuid("1038130459 1118045924 -858373469 79112879"), "Second key door", 2, WorldArea.Glades, false),
+                    //new KeyDoor(new MoonGuid(""), "Third key door", 4, WorldArea.Glades, false)
+
+                };
+                return _keyDoors;
+
+            }
+        }
+
+        public static Dictionary<string, int> Inventory { get; set; }
+
+        public static Dictionary<string, int> GetInventory()
+        {
+            InitializeInventory();
+            return Inventory;
+        }
+
+        public static void UpdateInventory()
+        {
+            UpdateHealth();
+            UpdateEnergy();
+            UpdateTeleporters();
+            UpdateKeys();
+            UpdateKeystones();
+            UpdateMapStones();
+        }
+
+        private static void UpdateMapStones()
+        {
+            //todo: implement mapstone area logic
+            SetInventoryValue("MapStone", RandomizerManager.Receiver.GetCurrentMapstonesCount());
+        }
+
+        private static void UpdateKeystones()
+        {
+            //todo: implement keystone area logic
+            var currentKeystoneCount = RandomizerManager.Receiver.GetCurrentKeystonesCount();
+            currentKeystoneCount += KeyDoors.Where(x => x.IsOpened)?.Sum(d => d.RequiredKeystones) ?? 0;
+            SetInventoryValue("KeyStone", currentKeystoneCount);
+        }
+        internal static void OpenKeyDoor(MoonGuid guid)
+        {
+            var door = KeyDoors.FirstOrDefault(d => d.Guid == guid);
+            if (door == null)
+            {
+                ModLogger.Debug($"Door with id {guid} not found");
+                return;
+            }
+
+            if (door.IsOpened)
+                return;
+
+            door.IsOpened = true;
+            UpdateKeystones();
+        }
+
+
+        private static void UpdateKeys()
+        {
+            if (Sein.World.Keys.GinsoTree)
+                AddInventoryItem("GinsoKey");
+            if (Sein.World.Events.WaterPurified)
+                AddInventoryItem("CleanWater");
+            if (Sein.World.Events.WindRestored)
+                AddInventoryItem("Wind");
+            if (Sein.World.Keys.MountHoru)
+                AddInventoryItem("HoruKey");
+        }
+
+        private static void AddInventoryItem(string entryName, int value = 1)
+        {
+            InitializeInventory();
+            if (!Inventory.ContainsKey(entryName))
+            {
+                ModLogger.Debug($"Added inventory entry {entryName}{(value > 1 ? $" with value {value}" : "")}");
+                Inventory.Add(entryName, value);
+            }
+        }
+
+        private static void SetInventoryValue(string entryName, int value)
+        {
+            InitializeInventory();
+            if (!Inventory.ContainsKey(entryName))
+                AddInventoryItem(entryName, value);
+
+            if (Inventory[entryName] != value)
+            {
+                Inventory[entryName] = value;
+                ModLogger.Debug($"Setting inventory value {entryName} to {value}");
+            }
+        }
+
+        public static void AddAbility(AbilityType ability)
+        {
+            AddInventoryItem(ability.ToString());
+        }
+
+
+        private static void UpdateTeleporters()
+        {
+            foreach (var teleporter in TeleporterController.Instance.Teleporters)
+            {
+                if (!teleporter.Activated)
+                    continue;
+
+                var match = Teleporters.FirstOrDefault(d => d.GameIdentifier.Equals(teleporter.Identifier));
+                if (match == null || string.IsNullOrEmpty(match.LogicIdentifier))
+                {
+                    ModLogger.Debug($"Cant find teleporter: {teleporter.Identifier}");
+                    continue;
+                }
+
+                if (match.IsActivaded)
+                    continue;
+
+                match.IsActivaded = true;
+                ModLogger.Debug($"Matched teleporter: {match.GameIdentifier} to {match.LogicIdentifier}");
+                AddInventoryItem(match.LogicIdentifier);
+            }
+        }
+        private static void UpdateHealth()
+        {
+            SetInventoryValue("HealthCell", (Characters.Sein?.Mortality?.Health?.MaxHealth ?? 12) / 4);
+        }
+        private static void UpdateEnergy()
+        {
+            SetInventoryValue("EnergyCell", (int)Characters.Sein?.Energy?.Max);
+        }
+        private static void InitializeInventory()
+        {
+            if (Inventory == null)
+                Inventory = new Dictionary<string, int>();
+        }
+
+
+
+
+    }
+
+    internal class KeyDoor
+    {
+        public MoonGuid Guid { get; set; }
+        public string Name { get; set; }
+        public int RequiredKeystones { get; set; }
+        public WorldArea Area { get; set; }
+        public bool IsOpened { get; set; }
+        public KeyDoor(MoonGuid guid, string name, int requiredKeyStones, WorldArea area, bool isOpened = false)
+        {
+            Guid = guid;
+            Name = name;
+            RequiredKeystones = requiredKeyStones;
+            Area = area;
+            IsOpened = isOpened;
+        }
+    }
+
+    internal class Teleporter
+    {
+        public MoonGuid Guid { get; set; }
+        public string GameIdentifier { get; set; }
+        public string LogicIdentifier { get; set; }
+        public bool IsActivaded { get; set; }
+        public Teleporter(MoonGuid guid, string gameIdentifier, string logicIdentifier, bool isActivated = false)
+        {
+            Guid = guid;
+            GameIdentifier = gameIdentifier;
+            LogicIdentifier = logicIdentifier;
+            IsActivaded = isActivated;
+        }
+
+    }
+}

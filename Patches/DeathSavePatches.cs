@@ -1,9 +1,6 @@
 ﻿using HarmonyLib;
 using OriBFArchipelago.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using OriBFArchipelago.MapTracker.Core;
 
 namespace OriBFArchipelago.Patches
 {
@@ -26,6 +23,7 @@ namespace OriBFArchipelago.Patches
         {
             RandomizerManager.Receiver.OnSave();
             RandomizerSettings.Save();
+            MaptrackerSettings.Save();
         }
     }
 }

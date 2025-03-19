@@ -1,9 +1,6 @@
 ﻿using MonoMod.Utils;
 using System;
 using System.Collections.Generic;
-using System.Drawing.Text;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace OriBFArchipelago.Core

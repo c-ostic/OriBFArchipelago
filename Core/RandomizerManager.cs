@@ -5,6 +5,7 @@ using System.Text;
 using UnityEngine;
 using CatlikeCoding.TextBox;
 using HarmonyLib;
+using OriBFArchipelago.MapTracker.Core;
 
 namespace OriBFArchipelago.Core
 {
@@ -254,7 +255,11 @@ namespace OriBFArchipelago.Core
     {
         private static bool Prefix()
         {
-            return RandomizerManager.instance.StartSaveSlot(false);
+            var canStart = RandomizerManager.instance.StartSaveSlot(false);
+            if (canStart)
+                MaptrackerSettings.LoadSettings();
+
+            return canStart;
         }
     }
 
@@ -266,7 +271,11 @@ namespace OriBFArchipelago.Core
     {
         private static bool Prefix()
         {
-            return RandomizerManager.instance.StartSaveSlot(true);
+            var canStart = RandomizerManager.instance.StartSaveSlot(true);
+            if (canStart)
+                MaptrackerSettings.LoadSettings();
+
+            return canStart;            
         }
     }
 
@@ -305,6 +314,7 @@ namespace OriBFArchipelago.Core
         private static bool Prefix(int index)
         {
             RandomizerManager.instance.DeleteSaveSlot(index);
+            MaptrackerSettings.Delete();
             return true;
         }
     }

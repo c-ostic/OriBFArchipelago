@@ -1,7 +1,7 @@
-﻿using System;
+﻿using OriBFArchipelago.MapTracker.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace OriBFArchipelago.Core
@@ -27,18 +27,20 @@ namespace OriBFArchipelago.Core
     internal class Location
     {
         public MoonGuid MoonGuid { get; private set; }
+        public MoonGuid IconGuid { get; private set; }
         public string Name { get; private set; }
         public WorldArea Area { get; private set; }
         public LocationType Type { get; private set; }
         public Vector2 WorldPosition { get; private set; }
 
-        public Location(MoonGuid moonGuid, string name, WorldArea area, LocationType type, Vector2 worldPosition)
+        public Location(MoonGuid moonGuid, string name, WorldArea area, LocationType type, Vector2 worldPosition, MoonGuid iconGuid = null)
         {
             MoonGuid = moonGuid;
             Name = name;
             Area = area;
             Type = type;
             WorldPosition = worldPosition;
+            IconGuid = iconGuid;
         }
 
         public override bool Equals(object obj)
@@ -70,21 +72,21 @@ namespace OriBFArchipelago.Core
             if (locationByGuid is null)
             {
                 locationByGuid = new Dictionary<MoonGuid, Location>();
-
                 foreach (Location location in locations)
                 {
                     locationByGuid.Add(location.MoonGuid, location);
                 }
             }
 
-            if (moonGuid == null) return null;
+            if (moonGuid == null)
+                return null;
 
             locationByGuid.TryGetValue(moonGuid, out Location target);
+            if (target == null) //attempt to get location by iconguid
+                target = locations.FirstOrDefault(d => d.IconGuid == moonGuid);
 
             if (target == null)
-            {
-                Console.WriteLine("Invalid location: " + moonGuid.ToString());
-            }
+            ModLogger.Debug("Invalid location: " + moonGuid.ToString());
 
             return target;
         }
@@ -133,7 +135,7 @@ namespace OriBFArchipelago.Core
             new Location(new MoonGuid(new Guid("aec98a28-a213-4a32-9149-9189ad294a82")), "FronkeyWalkRoof", WorldArea.Glades, LocationType.ExpLarge, new Vector2(257.1f, -199.7f)),
             new Location(new MoonGuid(new Guid("5d7a6107-ca33-4820-a7cf-0a9db233d16c")), "FourthHealthCell", WorldArea.Glades, LocationType.HealthCell, new Vector2(-80.5f, -189.0f)),
             new Location(new MoonGuid(new Guid("b4d6891b-6985-44b7-a38a-7207a2c0eb9a")), "GladesMapKeystone", WorldArea.Glades, LocationType.Keystone, new Vector2(-59.4f, -244.3f)),
-            new Location(new MoonGuid(new Guid("9be6ea7c-ea0e-4127-bf98-7d1ab19d73dd")), "WallJumpSkillTree", WorldArea.Glades, LocationType.Skill, new Vector2(-316.0f, -308.0f)),
+            new Location(new MoonGuid(new Guid("9be6ea7c-ea0e-4127-bf98-7d1ab19d73dd")), "WallJumpSkillTree", WorldArea.Glades, LocationType.Skill, new Vector2(-316.0f, -308.0f), new MoonGuid("260643369 1160744590 -1831624011 853281340")),
             new Location(new MoonGuid(new Guid("32cc3987-9ef6-461d-ae6a-f38f3288bb5d")), "LeftGladesHiddenExp", WorldArea.Glades, LocationType.ExpSmall, new Vector2(-283.4f, -236.4f)),
             new Location(new MoonGuid(new Guid("3cb3ac42-c9ca-47be-a6dd-b5415220b07b")), "DeathGauntletExp", WorldArea.Grove, LocationType.ExpMedium, new Vector2(303.4f, -190.5f)),
             new Location(new MoonGuid(new Guid("227e146b-13d0-4043-b0b7-f3a2ceacaa6e")), "DeathGauntletEnergyCell", WorldArea.Grotto, LocationType.EnergyCell, new Vector2(423.8f, -169.2f)),
@@ -152,7 +154,7 @@ namespace OriBFArchipelago.Core
             new Location(new MoonGuid(new Guid("b905425d-a894-48ae-9c27-0b21e2b11b53")), "GladesLaser", WorldArea.Glades, LocationType.EnergyCell, new Vector2(-155.0f, -186.0f)),
             new Location(new MoonGuid(new Guid("4319a75b-01d6-49c0-9bac-1d10f5c59a82")), "GladesLaserGrenade", WorldArea.Glades, LocationType.AbilityCell, new Vector2(-165.4f, -140.4f)),
             new Location(new MoonGuid(new Guid("9887f949-0a02-4ca0-974d-fe400569ece9")), "SpiritTreeExp", WorldArea.Grove, LocationType.ExpMedium, new Vector2(-168.1f, -103.0f)),
-            new Location(new MoonGuid(new Guid("db35e94b-0392-48ff-990e-c24befa00a2e")), "ChargeFlameSkillTree", WorldArea.Grove, LocationType.Skill, new Vector2(-56.0f, -160.0f)),
+            new Location(new MoonGuid(new Guid("db35e94b-0392-48ff-990e-c24befa00a2e")), "ChargeFlameSkillTree", WorldArea.Grove, LocationType.Skill, new Vector2(-56.0f, -160.0f), new MoonGuid("-2006576777 1129981168 451178941 -949368857")),
             new Location(new MoonGuid(new Guid("50e3ac87-6cb0-46a5-9b6d-61fc512bf491")), "ChargeFlameAreaPlant", WorldArea.Grove, LocationType.Plant, new Vector2(43.0f, -156.0f)),
             new Location(new MoonGuid(new Guid("31ce9625-ba55-4bb3-87c0-9d4350a7e512")), "ChargeFlameAreaExp", WorldArea.Glades, LocationType.ExpMedium, new Vector2(5.0f, -193.2f)),
             new Location(new MoonGuid(new Guid("7bbd835d-c1cb-4144-be49-5df3d7e76835")), "AboveChargeFlameTreeExp", WorldArea.Grove, LocationType.ExpMedium, new Vector2(-14.2f, -95.7f)),
@@ -163,14 +165,14 @@ namespace OriBFArchipelago.Core
             new Location(new MoonGuid(new Guid("fac86702-fb8e-4f69-9c10-875ca4c054d3")), "DashAreaOrbRoomExp", WorldArea.Blackroot, LocationType.ExpMedium, new Vector2(154.0f, -291.5f)),
             new Location(new MoonGuid(new Guid("a0e20125-fd8d-403e-8f05-18bc816178fb")), "DashAreaAbilityCell", WorldArea.Blackroot, LocationType.AbilityCell, new Vector2(183.8f, -291.5f)),
             new Location(new MoonGuid(new Guid("a8959482-6024-4de2-9c4a-85904321498a")), "DashAreaRoofExp", WorldArea.Blackroot, LocationType.ExpMedium, new Vector2(197.3f, -229.1f)),
-            new Location(new MoonGuid(new Guid("bb0847e0-a88b-4449-9bf6-f9944e5024df")), "DashSkillTree", WorldArea.Blackroot, LocationType.Skill, new Vector2(292.0f, -256.0f)),
+            new Location(new MoonGuid(new Guid("bb0847e0-a88b-4449-9bf6-f9944e5024df")), "DashSkillTree", WorldArea.Blackroot, LocationType.Skill, new Vector2(292.0f, -256.0f), new MoonGuid("304011135 1339857525 -2133296710 -2057075874")),
             new Location(new MoonGuid(new Guid("a334b21b-691d-4b79-b149-4027b2aed3e5")), "DashAreaPlant", WorldArea.Blackroot, LocationType.Plant, new Vector2(313.0f, -232.0f)),
             new Location(new MoonGuid(new Guid("821112d5-830d-4dd0-a16c-6f574a4122aa")), "RazielNo", WorldArea.Blackroot, LocationType.ExpMedium, new Vector2(304.4f, -303.2f)),
             new Location(new MoonGuid(new Guid("c09a7bd5-d703-40ec-92b9-c3a840478aa8")), "DashAreaMapstone", WorldArea.Blackroot, LocationType.Mapstone, new Vector2(346.0f, -255.0f)),
             new Location(new MoonGuid(new Guid("b73d5139-430f-4076-8357-91638db8aa4c")), "BlackrootTeleporterHealthCell", WorldArea.Blackroot, LocationType.HealthCell, new Vector2(395.0f, -309.1f)),
             new Location(new MoonGuid(new Guid("6b12d651-6eae-46b3-9949-94fa73404a45")), "BlackrootMap", WorldArea.Blackroot, LocationType.Map, new Vector2(418.0f, -291.0f)),
             new Location(new MoonGuid(new Guid("965ca68c-a41d-47a4-ac63-64a932c04177")), "BlackrootBoulderExp", WorldArea.Blackroot, LocationType.ExpMedium, new Vector2(432.0f, -324.0f)),
-            new Location(new MoonGuid(new Guid("a90db45e-56b4-405b-80d6-83bc4607b921")), "GrenadeSkillTree", WorldArea.Blackroot, LocationType.Skill, new Vector2(72.0f, -380.0f)),
+            new Location(new MoonGuid(new Guid("a90db45e-56b4-405b-80d6-83bc4607b921")), "GrenadeSkillTree", WorldArea.Blackroot, LocationType.Skill, new Vector2(72.0f, -380.0f), new MoonGuid("-1930278647 1170755951 -352157249 123122998")),
             new Location(new MoonGuid(new Guid("f9f705a1-e2c4-4856-a6b3-ce08a0b15807")), "GrenadeAreaExp", WorldArea.Blackroot, LocationType.ExpMedium, new Vector2(224.0f, -359.1f)),
             new Location(new MoonGuid(new Guid("bcd84bf8-2b02-442a-bd2d-798687ead2aa")), "GrenadeAreaAbilityCell", WorldArea.Blackroot, LocationType.AbilityCell, new Vector2(252.4f, -331.9f)),
             new Location(new MoonGuid(new Guid("07983731-614c-4123-8bec-1eb036fbdceb")), "LowerBlackrootAbilityCell", WorldArea.Blackroot, LocationType.AbilityCell, new Vector2(279.0f, -375.0f)),
@@ -222,7 +224,7 @@ namespace OriBFArchipelago.Core
             new Location(new MoonGuid(new Guid("c54266b0-44eb-4ef9-86cd-8efa8f0e3377")), "GumoHideoutLeftHangingExp", WorldArea.Grotto, LocationType.ExpSmall, new Vector2(467.5f, -369.0f)),
             new Location(new MoonGuid(new Guid("f8c47a8b-74d8-495f-8920-a2fcb9c83a0a")), "GumoHideoutRedirectAbilityCell", WorldArea.Grotto, LocationType.AbilityCell, new Vector2(449.0f, -430.0f)),
             new Location(new MoonGuid(new Guid("5051e7e8-3361-46fc-9edf-8470b28bf7df")), "GumoHideoutMap", WorldArea.Grotto, LocationType.Map, new Vector2(477.0f, -389.0f)),
-            new Location(new MoonGuid(new Guid("83a91676-9217-4d5f-8ae5-ef6189d6ebfe")), "DoubleJumpSkillTree", WorldArea.Grotto, LocationType.Skill, new Vector2(784.0f, -412.0f)),
+            new Location(new MoonGuid(new Guid("83a91676-9217-4d5f-8ae5-ef6189d6ebfe")), "DoubleJumpSkillTree", WorldArea.Grotto, LocationType.Skill, new Vector2(784.0f, -412.0f),new MoonGuid("-580784160 1255675681 1754853281 -1264071248")),
             new Location(new MoonGuid(new Guid("5601a577-4fe0-4baa-aa82-24baa01ebcd8")), "DoubleJumpAreaExp", WorldArea.Grotto, LocationType.ExpMedium, new Vector2(759.0f, -398.0f)),
             new Location(new MoonGuid(new Guid("1a34da08-b071-434c-bb16-5061d90dbb23")), "GumoHideoutEnergyCell", WorldArea.Grotto, LocationType.EnergyCell, new Vector2(545.8f, -357.9f)),
             new Location(new MoonGuid(new Guid("76b64647-1a59-4fa5-8dbc-9a9db47afe6e")), "GumoHideoutRockfallExp", WorldArea.Grotto, LocationType.ExpMedium, new Vector2(567.6f, -246.2f)),
@@ -245,7 +247,7 @@ namespace OriBFArchipelago.Core
             new Location(new MoonGuid(new Guid("35b2689e-8ecb-4f4d-9434-10b9bfdc778e")), "LowerGinsoKeystone3", WorldArea.Ginso, LocationType.Keystone, new Vector2(508.0f, 304.0f)),
             new Location(new MoonGuid(new Guid("dd7b36d5-af5a-44dc-8f2f-071d2729c35a")), "LowerGinsoKeystone4", WorldArea.Ginso, LocationType.Keystone, new Vector2(529.0f, 297.0f)),
             new Location(new MoonGuid(new Guid("d15bed0b-b493-4931-8822-4f8c91a782d3")), "LowerGinsoPlant", WorldArea.Ginso, LocationType.Plant, new Vector2(540.0f, 101.0f)),
-            new Location(new MoonGuid(new Guid("d094cce4-3b65-454f-b5c9-7e6ed7dcc436")), "BashSkillTree", WorldArea.Ginso, LocationType.Skill, new Vector2(532.0f, 328.0f)),
+            new Location(new MoonGuid(new Guid("d094cce4-3b65-454f-b5c9-7e6ed7dcc436")), "BashSkillTree", WorldArea.Ginso, LocationType.Skill, new Vector2(532.0f, 328.0f), new MoonGuid("-1906535857 1336220761 1768076162 -2078859709")),
             new Location(new MoonGuid(new Guid("32419a38-e045-48dc-b9af-84f192f34b68")), "BashAreaExp", WorldArea.Ginso, LocationType.ExpMedium, new Vector2(518.4f, 339.8f)),
             new Location(new MoonGuid(new Guid("e5d4683c-2909-4d5a-b5a2-6184af83f66f")), "UpperGinsoLowerKeystone", WorldArea.Ginso, LocationType.Keystone, new Vector2(507.0f, 476.0f)),
             new Location(new MoonGuid(new Guid("94a7bf35-e1f1-4be6-ab6d-276d18e36fe6")), "UpperGinsoRightKeystone", WorldArea.Ginso, LocationType.Keystone, new Vector2(535.0f, 488.0f)),
@@ -270,7 +272,7 @@ namespace OriBFArchipelago.Core
             new Location(new MoonGuid(new Guid("a976fb6d-0db9-4ff3-becb-fd8cb98e7e98")), "InnerSwampSwimMapstone", WorldArea.Swamp, LocationType.Mapstone, new Vector2(796.0f, -210.0f)),
             new Location(new MoonGuid(new Guid("ebe89d18-678d-4654-84a2-ca94fe1831a2")), "InnerSwampStompExp", WorldArea.Swamp, LocationType.ExpMedium, new Vector2(770.9f, -148.0f)),
             new Location(new MoonGuid(new Guid("2da844e9-4e55-4ec0-a71a-b0c6abd6e1b0")), "InnerSwampEnergyCell", WorldArea.Swamp, LocationType.EnergyCell, new Vector2(722.3f, -95.5f)),
-            new Location(new MoonGuid(new Guid("d02c2919-1426-44e9-a72b-f48a6c7c68e1")), "StompSkillTree", WorldArea.Swamp, LocationType.Skill, new Vector2(860.0f, -96.0f)),
+            new Location(new MoonGuid(new Guid("d02c2919-1426-44e9-a72b-f48a6c7c68e1")), "StompSkillTree", WorldArea.Swamp, LocationType.Skill, new Vector2(860.0f, -96.0f), new MoonGuid("68554818 1221815075 706902162 1720991581")),
             new Location(new MoonGuid(new Guid("08edaf56-f649-4e8c-8ee6-0fab727507d7")), "StompAreaRoofExp", WorldArea.Swamp, LocationType.ExpLarge, new Vector2(914.9f, -71.3f)),
             new Location(new MoonGuid(new Guid("9f0907c3-fc53-4943-910e-79cef197c9bf")), "StompAreaExp", WorldArea.Swamp, LocationType.ExpMedium, new Vector2(884.0f, -98.3f)),
             new Location(new MoonGuid(new Guid("195e0dd8-4871-40db-9c6a-a8912684e944")), "StompAreaGrenadeExp", WorldArea.Swamp, LocationType.ExpLarge, new Vector2(874.2f, -143.6f)),
@@ -366,7 +368,7 @@ namespace OriBFArchipelago.Core
             new Location(new MoonGuid(new Guid("40675dbd-5f3c-4e1c-86ee-c7241c5fdd52")), "MistyMortarCorridorUpperExp", WorldArea.Misty, LocationType.ExpMedium, new Vector2(-1083.0f, 8.3f)),
             new Location(new MoonGuid(new Guid("958dfa0f-6ab3-422e-b1e1-98a71eef37ba")), "MistyMortarCorridorHiddenExp", WorldArea.Misty, LocationType.ExpMedium, new Vector2(-1009.0f, -35.0f)),
             new Location(new MoonGuid(new Guid("5e563952-174f-42be-ab22-17a901dd29e0")), "MistyPlant", WorldArea.Misty, LocationType.Plant, new Vector2(-1102.0f, -67.0f)),
-            new Location(new MoonGuid(new Guid("a273c819-a2c7-44c9-8798-a6510fc25e0d")), "ClimbSkillTree", WorldArea.Misty, LocationType.Skill, new Vector2(-1188.0f, -100.0f)),
+            new Location(new MoonGuid(new Guid("a273c819-a2c7-44c9-8798-a6510fc25e0d")), "ClimbSkillTree", WorldArea.Misty, LocationType.Skill, new Vector2(-1188.0f, -100.0f), new MoonGuid("-1150881676 1129752971 -816329813 2058174229")),
             new Location(new MoonGuid(new Guid("920137e5-c082-428b-93a1-bcb8f67a0748")), "MistyKeystone3", WorldArea.Misty, LocationType.Keystone, new Vector2(-912.0f, -36.0f)),
             new Location(new MoonGuid(new Guid("43c5043b-4b30-4cc3-84e3-baedb5e5a378")), "MistyPostClimbSpikeCave", WorldArea.Misty, LocationType.ExpMedium, new Vector2(-837.7f, -123.5f)),
             new Location(new MoonGuid(new Guid("8eae37fc-ca7a-4f9b-904b-47384ed8ec39")), "MistyPostClimbAboveSpikePit", WorldArea.Misty, LocationType.ExpLarge, new Vector2(-796.0f, -144.0f)),

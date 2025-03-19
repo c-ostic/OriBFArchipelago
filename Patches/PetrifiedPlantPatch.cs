@@ -1,9 +1,6 @@
 ﻿using HarmonyLib;
 using OriBFArchipelago.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using OriBFArchipelago.MapTracker.Core;
 
 namespace OriBFArchipelago.Patches
 {
@@ -15,6 +12,8 @@ namespace OriBFArchipelago.Patches
             if (__instance.NoHealthLeft && __instance.Entity is PetrifiedPlant)
             {
                 RandomizerManager.Connection.CheckLocation(__instance.Entity.MoonGuid);
+                ModLogger.Debug($"Killed plant: {__instance.Entity.MoonGuid.ToString()} - {__instance.Entity.Position.ToString()} - {__instance.Entity.name}");
+                MaptrackerSettings.AddPetrifiedPlant(__instance.Entity.MoonGuid);
             }
         }
     }

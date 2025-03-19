@@ -1,7 +1,6 @@
 ﻿using Core;
 using Game;
 using HarmonyLib;
-using OriModding.BF.l10n;
 using System;
 using System.Collections.Generic;
 using System.Linq;
