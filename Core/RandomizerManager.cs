@@ -92,25 +92,25 @@ namespace OriBFArchipelago.Core
                 // Create an area for slot name
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Slot Name");
-                slotName = GUILayout.TextField(slotName, 50);
+                slotName = GUILayout.TextField(slotName, 50, GUILayout.Width(200));
                 GUILayout.EndHorizontal();
 
                 // Create an area for server name
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Server");
-                server = GUILayout.TextField(server, 50);
+                server = GUILayout.TextField(server, 50, GUILayout.Width(200));
                 GUILayout.EndHorizontal();
 
                 // Create an area for port number
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Port");
-                port = GUILayout.TextField(port, 50);
+                port = GUILayout.TextField(port, 50, GUILayout.Width(200));
                 GUILayout.EndHorizontal();
 
                 // Create an area for password
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Password");
-                password = GUILayout.TextField(password, 50);
+                password = GUILayout.TextField(password, 50, GUILayout.Width(200));
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
