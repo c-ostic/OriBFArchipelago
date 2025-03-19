@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using OriBFArchipelago.MapTracker.Core;
 using System;
 using System.Collections.Generic;
 
@@ -53,19 +54,46 @@ namespace OriBFArchipelago.Core
         public KeyStoneOptions KeyStoneLogic { get; }
         public MapStoneOptions MapStoneLogic { get; }
         public DeathLinkOptions DeathLinkLogic { get; }
+        public bool EnableDamageBoost { get; internal set; }
+        public bool EnableLure { get; internal set; }
+        public bool EnableDoubleBash { get; internal set; }
+        public bool EnableGrenadeJump { get; internal set; }
+        public bool EnableChargeFlame { get; internal set; }
+        public bool EnableChargeDash { get; internal set; }
+        public bool EnableAirDash { get; internal set; }
+        public bool EnableTripleJump { get; internal set; }
+        public bool EnableRekindle { get; internal set; }
 
-        public RandomizerOptions(Dictionary<string, object> apSlotData) {
+        public RandomizerOptions(Dictionary<string, object> apSlotData)
+        {
+
+            foreach (var item in apSlotData.Keys)
+            {
+                ModLogger.Debug($"{item}: {apSlotData[item]}");
+            }
+
+
             if (apSlotData != null)
             {
-                Goal = apSlotData.TryGetValue("goal", out object goalOption) ? (GoalOptions) Enum.ToObject(typeof(GoalOptions), goalOption) : GoalOptions.AllSkillTrees;
+                Goal = apSlotData.TryGetValue("goal", out object goalOption) ? (GoalOptions)Enum.ToObject(typeof(GoalOptions), goalOption) : GoalOptions.AllSkillTrees;
                 WarmthFragmentsAvailable = apSlotData.TryGetValue("warmth_fragments_available", out object warmthFragmentsAvailable) ? Convert.ToInt32(warmthFragmentsAvailable) : 0;
                 WarmthFragmentsRequired = apSlotData.TryGetValue("warmth_fragments_required", out object warmthFragmentsRequired) ? Convert.ToInt32(warmthFragmentsRequired) : 0;
                 RelicCount = apSlotData.TryGetValue("relic_count", out object relicCount) ? Convert.ToInt32(relicCount) : 0;
                 WorldTourAreas = apSlotData.TryGetValue("world_tour_areas", out object worldTourAreas) ? JsonConvert.DeserializeObject<WorldArea[]>(worldTourAreas.ToString()) : [];
-                LogicDifficulty = apSlotData.TryGetValue("logic_difficulty", out object difficultyOption) ? (DifficultyOptions) Enum.ToObject(typeof(DifficultyOptions), difficultyOption) : DifficultyOptions.Casual;
-                KeyStoneLogic = apSlotData.TryGetValue("keystone_logic", out object keystoneOption) ? (KeyStoneOptions) Enum.ToObject(typeof(KeyStoneOptions), keystoneOption) : KeyStoneOptions.Anywhere;
-                MapStoneLogic = apSlotData.TryGetValue("mapstone_logic", out object mapstoneOption) ? (MapStoneOptions) Enum.ToObject(typeof(MapStoneOptions), mapstoneOption) : MapStoneOptions.Anywhere;
+                LogicDifficulty = apSlotData.TryGetValue("logic_difficulty", out object difficultyOption) ? (DifficultyOptions)Enum.ToObject(typeof(DifficultyOptions), difficultyOption) : DifficultyOptions.Casual;
+                KeyStoneLogic = apSlotData.TryGetValue("keystone_logic", out object keystoneOption) ? (KeyStoneOptions)Enum.ToObject(typeof(KeyStoneOptions), keystoneOption) : KeyStoneOptions.Anywhere;
+                MapStoneLogic = apSlotData.TryGetValue("mapstone_logic", out object mapstoneOption) ? (MapStoneOptions)Enum.ToObject(typeof(MapStoneOptions), mapstoneOption) : MapStoneOptions.Anywhere;
                 DeathLinkLogic = apSlotData.TryGetValue("deathlink_logic", out object deathlinkOption) ? (DeathLinkOptions)Enum.ToObject(typeof(DeathLinkOptions), deathlinkOption) : DeathLinkOptions.Disabled;
+                EnableLure = apSlotData.TryGetValue("enable_lure", out object enable_lure) ? (bool)enable_lure : false;
+                EnableDamageBoost = apSlotData.TryGetValue("enable_damage_boost", out object enable_damage_boost) ? (bool)enable_damage_boost : false;
+
+                EnableDoubleBash = apSlotData.TryGetValue("enable_double_bash", out object enable_double_bash) ? (bool)enable_double_bash : false;
+                EnableGrenadeJump = apSlotData.TryGetValue("enable_grenade_jump", out object enable_grenade_jump) ? (bool)enable_grenade_jump : false;
+                EnableChargeFlame = apSlotData.TryGetValue("enable_charge_flame_burn", out object enable_charge_flame_burn) ? (bool)enable_charge_flame_burn : false;
+                EnableChargeDash = apSlotData.TryGetValue("enable_charge_dash", out object enable_charge_dash) ? (bool)enable_charge_dash : false;
+                EnableAirDash = apSlotData.TryGetValue("enable_air_dash", out object enable_air_dash) ? (bool)enable_air_dash : false;
+                EnableTripleJump = apSlotData.TryGetValue("enable_triple_jump", out object enable_triple_jump) ? (bool)enable_triple_jump : false;
+                EnableRekindle = apSlotData.TryGetValue("enable_rekindle", out object enable_rekindle) ? (bool)enable_rekindle : false;
             }
             else
             {

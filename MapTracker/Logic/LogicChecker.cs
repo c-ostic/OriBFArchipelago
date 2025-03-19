@@ -37,7 +37,6 @@ namespace OriBFArchipelago.MapTracker.Logic
         /// </summary>
         public bool IsPickupAccessible(string pickupName, Dictionary<string, int> inventory, DifficultyOptions difficultyLevel = DifficultyOptions.Casual)
         {
-            var showLog = pickupName == "WallJumpSkillTree";
             string location = FindPickupLocation(pickupName);
             if (location == null)
             {
@@ -47,19 +46,11 @@ namespace OriBFArchipelago.MapTracker.Logic
 
             // First check if we can reach the location containing the pickup
             if (!IsLocationReachable(location, inventory, "SunkenGladesRunaway", difficultyLevel))
-            {
-                if (showLog)
-                    ModLogger.Debug($"Cannot reach location {location} containing pickup {pickupName}");
                 return false;
-            }
 
             // Now check if we can access the pickup itself
             if (!CanAccess(location, pickupName, inventory, difficultyLevel))
-            {
-                if (showLog)
-                    ModLogger.Debug($"Cannot access pickup {pickupName} in location {location}");
                 return false;
-            }
 
             return true;
         }
@@ -186,8 +177,8 @@ namespace OriBFArchipelago.MapTracker.Logic
                 var count = int.Parse(parts[1]);
 
                 // Special case for HealthCell - only count if damage boost is enabled
-                //if (itemName == "HealthCell" && !_options.EnableDamageBoost)
-                //    return false;
+                if (itemName == "HealthCell" && !RandomizerManager.Options.EnableDamageBoost)
+                    return false;
 
                 return inventory.ContainsKey(itemName) && inventory[itemName] >= count;
             }
@@ -195,48 +186,48 @@ namespace OriBFArchipelago.MapTracker.Logic
             // Handle special abilities
             switch (requirement)
             {
-                //case "Lure":
-                //    return _options.EnableLure;
+                case "Lure":
+                    return RandomizerManager.Options.EnableLure;
 
-                //case "DoubleBash":
-                //    return _options.EnableDoubleBash && HasItem("Bash", inventory);
+                case "DoubleBash":
+                    return RandomizerManager.Options.EnableDoubleBash && HasItem("Bash", inventory);
 
-                //case "GrenadeJump":
-                //    return _options.EnableGrenadeJump &&
-                //           HasItem("Climb", inventory) &&
-                //           HasItem("ChargeJump", inventory) &&
-                //           HasItem("Grenade", inventory);
+                case "GrenadeJump":
+                    return RandomizerManager.Options.EnableGrenadeJump &&
+                           HasItem("Climb", inventory) &&
+                           HasItem("ChargeJump", inventory) &&
+                           HasItem("Grenade", inventory);
 
-                //case "ChargeFlameBurn":
-                //    return _options.EnableChargeFlame &&
-                //           HasItem("ChargeFlame", inventory) &&
-                //           HasItem("AbilityCell", inventory, 3);
+                case "ChargeFlameBurn":
+                    return RandomizerManager.Options.EnableChargeFlame &&
+                           HasItem("ChargeFlame", inventory) &&
+                           HasItem("AbilityCell", inventory, 3);
 
-                //case "ChargeDash":
-                //case "RocketJump":
-                //    return _options.EnableChargeDash &&
-                //           HasItem("Dash", inventory) &&
-                //           HasItem("AbilityCell", inventory, 6);
+                case "ChargeDash":
+                case "RocketJump":
+                    return RandomizerManager.Options.EnableChargeDash &&
+                           HasItem("Dash", inventory) &&
+                           HasItem("AbilityCell", inventory, 6);
 
-                //case "AirDash":
-                //    return _options.EnableAirDash &&
-                //           HasItem("Dash", inventory) &&
-                //           HasItem("AbilityCell", inventory, 3);
+                case "AirDash":
+                    return RandomizerManager.Options.EnableAirDash &&
+                           HasItem("Dash", inventory) &&
+                           HasItem("AbilityCell", inventory, 3);
 
-                //case "TripleJump":
-                //    return _options.EnableTripleJump &&
-                //           HasItem("DoubleJump", inventory) &&
-                //           HasItem("AbilityCell", inventory, 12);
+                case "TripleJump":
+                    return RandomizerManager.Options.EnableTripleJump &&
+                           HasItem("DoubleJump", inventory) &&
+                           HasItem("AbilityCell", inventory, 12);
 
-                //case "UltraDefense":
-                //    return _options.EnableDamageBoost &&
-                //           HasItem("AbilityCell", inventory, 12);
+                case "UltraDefense":
+                    return RandomizerManager.Options.EnableDamageBoost &&
+                           HasItem("AbilityCell", inventory, 12);
 
-                //case "BashGrenade":
-                //    return HasItem("Bash", inventory) && HasItem("Grenade", inventory);
+                case "BashGrenade":
+                    return HasItem("Bash", inventory) && HasItem("Grenade", inventory);
 
-                //case "Rekindle":
-                //    return _options.EnableRekindle;
+                case "Rekindle":
+                    return RandomizerManager.Options.EnableRekindle;
 
                 default:
                     // Normal abilities like Dash, Climb, etc.
