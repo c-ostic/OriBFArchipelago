@@ -52,10 +52,12 @@ namespace OriBFArchipelago.Core
          */
         public bool Init(string hostname, int port, string user, string password)
         {
+            
             this.hostname = hostname;
             this.port = port;
             slotName = user;
             this.password = password;
+            RandomizerMessager.instance.AddMessage($"Attempting to connect to {hostname}:{port} {user}");
 
             session = ArchipelagoSessionFactory.CreateSession(hostname, port);
 
