@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PostBuildEvent>
+    <PostBuildEvent >
       xcopy "$(TargetDir)OriBFArchipelago.dll" "G:\SteamLibrary\steamapps\common\Ori DE\BepInEx\plugins\OriBFArchipelago\" /Y
 
     </PostBuildEvent>

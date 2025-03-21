@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using UnityEngine;
 
-namespace OriBFArchipelago.MapTracker.Menu
+namespace OriBFArchipelago.MapTracker.UI
 {
     internal class BaseModOptionsScreen : CustomOptionsScreen
     {

@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
+using OriBFArchipelago.MapTracker.UI;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,19 +18,10 @@ namespace OriBFArchipelago.MapTracker.Core
         private static ConfigEntry<string> _collectedCustomItems { get; set; }
         public static List<MoonGuid> CollectedCustomIcons { get; set; }
 
-        private static ConfigEntry<string> _difficulty { get; set; }
-        public static GameDifficulty Difficulty
-        {
-            get
-            {
-                return (GameDifficulty)Enum.Parse(typeof(GameDifficulty), _difficulty.Value);
-            }
-        }
-        public static ConfigEntry<string> MapVisibility { get; set; }
-        public static ConfigEntry<string> IconVisibility { get; set; }
 
-
-
+        public static bool EnableLogicUI { get { return ModOptionsScreen.GetEnableLogicUI(); } }
+        public static MapVisibilityEnum MapVisibility { get { return ModOptionsScreen.GetMapVisibility(); } }
+        public static IconVisibilityEnum IconVisibility { get { return ModOptionsScreen.GetIconVisibility(); } }
         public static void LoadSettings()
         {
             try
@@ -52,8 +44,6 @@ namespace OriBFArchipelago.MapTracker.Core
             {
                 CollectedCustomIcons = _collectedCustomItems.Value.Split(',').Select(c => new MoonGuid(c)).ToList();
             }
-
-            _difficulty = _config.Bind(CONFIGSECTION, "Difficulty", $"{GameDifficulty.Casual}", "Sets game difficulty");
         }
 
         public static void Save()
@@ -75,15 +65,6 @@ namespace OriBFArchipelago.MapTracker.Core
         {
             if (File.Exists(SaveSlotFilePath))
                 File.Delete(SaveSlotFilePath);
-        }
-
-        public static MapVisibilityEnum GetMapVisibility()
-        {
-            return EnumParser.GetEnumValue<MapVisibilityEnum>(MapVisibility.Value);
-        }
-        public static IconVisibilityEnum GetIconVisibility()
-        {
-            return EnumParser.GetEnumValue<IconVisibilityEnum>(IconVisibility.Value);
         }
     }
 }

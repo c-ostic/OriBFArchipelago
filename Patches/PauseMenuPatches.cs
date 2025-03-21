@@ -12,7 +12,7 @@ namespace OriBFArchipelago.Patches
         static bool Prefix()
         {
             RandomizerSettings.ShowSettings = true;
-            RuntimeGameWorldAreaPatch.ToggleDiscoveredAreas(MaptrackerSettings.GetMapVisibility());
+            RuntimeGameWorldAreaPatch.ToggleDiscoveredAreas(MaptrackerSettings.MapVisibility);
             LogicInventory.UpdateInventory();
             return true;
         }
