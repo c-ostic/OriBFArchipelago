@@ -22,6 +22,7 @@ namespace OriBFArchipelago.MapTracker.Core
         public static bool EnableLogicUI { get { return ModOptionsScreen.GetEnableLogicUI(); } }
         public static MapVisibilityEnum MapVisibility { get { return ModOptionsScreen.GetMapVisibility(); } }
         public static IconVisibilityEnum IconVisibility { get { return ModOptionsScreen.GetIconVisibility(); } }
+        public static bool DisableMapSway { get { return ModOptionsScreen.GetDisableMapSway(); } }
         public static void LoadSettings()
         {
             try
