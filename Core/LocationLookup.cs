@@ -1,4 +1,5 @@
 ﻿using OriBFArchipelago.MapTracker.Core;
+using OriModding.BF.UiLib.Map;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +32,7 @@ namespace OriBFArchipelago.Core
         public string Name { get; private set; }
         public WorldArea Area { get; private set; }
         public LocationType Type { get; private set; }
+        public CustomWorldMapIconType CustomIconType { get; private set; }
         public Vector2 WorldPosition { get; private set; }
 
         public Location(MoonGuid moonGuid, string name, WorldArea area, LocationType type, Vector2 worldPosition, MoonGuid iconGuid = null)
@@ -41,8 +43,35 @@ namespace OriBFArchipelago.Core
             Type = type;
             WorldPosition = worldPosition;
             IconGuid = iconGuid;
+            CustomIconType = GetCustomWorldMapIcon(type);
         }
 
+        private CustomWorldMapIconType GetCustomWorldMapIcon(LocationType type)
+        { //todo: maybe move this into the location class and have it set icon on generation
+            switch (type)
+            {
+                case LocationType.EnergyCell:
+                case LocationType.HealthCell:
+                case LocationType.AbilityCell:
+                case LocationType.Keystone:
+                case LocationType.Mapstone:
+                case LocationType.Map:
+                case LocationType.ProgressiveMap:
+                case LocationType.Skill:
+                case LocationType.ExpSmall:
+                case LocationType.ExpMedium:
+                case LocationType.ExpLarge:
+                    return CustomWorldMapIconType.None;
+                case LocationType.Plant:
+                    return CustomWorldMapIconType.Plant;
+                case LocationType.Event:
+                    return CustomWorldMapIconType.WindRestored;
+                case LocationType.Cutscene:
+                    return CustomWorldMapIconType.HoruRoom;
+                default:
+                    return CustomWorldMapIconType.None;
+            }
+        }
         public override bool Equals(object obj)
         {
             if (obj == null || GetType() != obj.GetType())
@@ -86,7 +115,7 @@ namespace OriBFArchipelago.Core
                 target = locations.FirstOrDefault(d => d.IconGuid == moonGuid);
 
             if (target == null)
-            ModLogger.Debug("Invalid location: " + moonGuid.ToString());
+                ModLogger.Debug("Invalid location: " + moonGuid.ToString());
 
             return target;
         }
@@ -114,6 +143,11 @@ namespace OriBFArchipelago.Core
             }
 
             return target;
+        }
+
+        public static List<Location> GetLocations()
+        {
+            return locations.Select(c => c).ToList();
         }
 
         private static Dictionary<string, Location> locationByName;
