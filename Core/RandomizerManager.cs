@@ -6,6 +6,7 @@ using UnityEngine;
 using CatlikeCoding.TextBox;
 using HarmonyLib;
 using OriBFArchipelago.MapTracker.Core;
+using System.Collections;
 
 namespace OriBFArchipelago.Core
 {
@@ -19,7 +20,7 @@ namespace OriBFArchipelago.Core
 
         public static RandomizerOptions Options { get { return instance.options; } }
 
-        public static bool IsEditing {  get { return instance.isEditing; } }
+        public static bool IsEditing { get { return instance.isEditing; } }
 
         public static RandomizerManager instance;
 
@@ -28,7 +29,7 @@ namespace OriBFArchipelago.Core
         private ArchipelagoConnection connection;
         private RandomizerOptions options;
 
-        private bool inGame, inSaveSelect, failedToStart, isEditing;
+        private bool failedToStart, isEditing;
         private Dictionary<int, SlotData> saveSlots;
 
         // strings associated with the gui buttons in OnGUI
@@ -50,8 +51,7 @@ namespace OriBFArchipelago.Core
                 Console.WriteLine("Could not read slot data");
             }
 
-            inGame = false;
-            inSaveSelect = true; // TODO: change this to false when on start screen vs save select menu
+            RandomizerSettings.InGame = false;
             failedToStart = false;
             isEditing = false;
         }
@@ -63,7 +63,7 @@ namespace OriBFArchipelago.Core
         private void Update()
         {
             // Call the update method on the receiver while in game
-            if (inGame)
+            if (RandomizerSettings.InGame)
             {
                 receiver.Update();
                 connection.Update();
@@ -83,7 +83,7 @@ namespace OriBFArchipelago.Core
         private void OnGUI()
         {
             // Only display this UI when on the save select screen
-            if (inSaveSelect)
+            if (RandomizerSettings.InSaveSelect)
             {
                 GUILayout.BeginArea(new Rect(5, 5, 300, 200));
 
@@ -157,8 +157,18 @@ namespace OriBFArchipelago.Core
          * Called when attempting to start a save slot
          * Returns false if there is a problem with the save slot data or archipelago connection
          */
+
+
         public bool StartSaveSlot(bool isNew)
         {
+            string missingFields = string.Join(", ", new[] { string.IsNullOrEmpty(slotName) ? "slotname" : null, string.IsNullOrEmpty(server) ? "server" : null, string.IsNullOrEmpty(port) ? "port" : null }.Where(f => f != null).ToArray());
+
+            if (!string.IsNullOrEmpty(missingFields))
+            {
+                RandomizerMessager.instance.AddMessage($"Required fields are empty: {missingFields}");
+                return false;
+            }
+            RandomizerMessager.instance.AddMessage($"Attempting to connect to {server}:{port} {slotName}");
             int saveSlot = SaveSlotsUI.Instance.CurrentSlotIndex;
             Console.WriteLine($"Starting save slot {saveSlot}");
 
@@ -166,10 +176,11 @@ namespace OriBFArchipelago.Core
 
             // Attempt to load the this slots data first
             receiver = new RandomizerReceiver();
+
             if (!receiver.Init(isNew, saveSlot, slotName))
             {
-                canStart = false;
                 Console.WriteLine("Slot name provided does not match save file");
+                return false;
             }
 
             // Attempt to connect to archipelago only if the save slot was loaded correctly
@@ -185,8 +196,8 @@ namespace OriBFArchipelago.Core
             if (canStart)
             {
                 // If so, set necessary flags and update the slot data
-                inGame = true;
-                inSaveSelect = false;
+                RandomizerSettings.InGame = true;
+                RandomizerSettings.InSaveSelect = false;
 
                 SlotData updatedData = new SlotData();
                 updatedData.slotName = slotName;
@@ -219,8 +230,7 @@ namespace OriBFArchipelago.Core
         public void QuitSaveSlot()
         {
             Console.WriteLine($"Quitting save slot {SaveSlotsManager.CurrentSlotIndex}");
-            inGame = false;
-            inSaveSelect = true;
+            RandomizerSettings.InGame = false;
             connection.Disconnect();
             connection = null;
             receiver.OnSave(true);
@@ -275,7 +285,7 @@ namespace OriBFArchipelago.Core
             if (canStart)
                 MaptrackerSettings.LoadSettings();
 
-            return canStart;            
+            return canStart;
         }
     }
 
@@ -318,7 +328,7 @@ namespace OriBFArchipelago.Core
             return true;
         }
     }
-    
+
     /**
      * Patch into the function called when copying a save slot
      */

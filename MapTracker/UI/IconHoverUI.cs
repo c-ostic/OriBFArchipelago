@@ -35,7 +35,7 @@ namespace OriBFArchipelago.MapTracker.UI
 
             try
             {
-                if (RandomizerSettings.ShowSettings && ShowMapTrackerSettings && Icon != null)
+                if (RandomizerSettings.ShowSettings && ShowMapTrackerSettings && Icon != null && MaptrackerSettings.EnableIconInfocUI)
                 {
                     // Set the depth before any GUI calls
                     GUI.depth = 0;

@@ -73,8 +73,6 @@ namespace OriBFArchipelago.Patches
                 {
                     // Get the private m_iconGameObject field using reflection
                     var gameObject = (GameObject)typeof(RuntimeWorldMapIcon).GetField("m_iconGameObject", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
-
-
                     if (gameObject != null)
                     {
                         IconHoverEffectUI existingHoverEffect = gameObject.GetComponent<IconHoverEffectUI>();

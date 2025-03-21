@@ -34,7 +34,7 @@ namespace OriBFArchipelago.MapTracker.UI
         private void OnGUI()
         {
             // Check control scheme directly in OnGUI
-            if (circleTexture == null || GameSettings.Instance.CurrentControlScheme != ControlScheme.Controller || !RandomizerSettings.ShowSettings || !MaptrackerSettings.EnableLogicUI)
+            if (circleTexture == null || GameSettings.Instance.CurrentControlScheme != ControlScheme.Controller || !RandomizerSettings.ShowSettings || !MaptrackerSettings.EnableIconInfocUI || Game.UI.Menu.CurrentScreen != MenuScreenManager.Screens.WorldMap )
                 return;
 
             // Get screen center
