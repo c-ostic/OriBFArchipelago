@@ -4621,13 +4621,13 @@ namespace OriBFArchipelago.MapTracker.Logic
       ""casual"": [ [ ""Free"" ] ]
     },
     ""FronkeyFight"": {
-      ""casual"": [ [ ""Free"" ] ]
+      ""casual"": [ [ ""SpiritFlame"" ] ]
     },
     ""GladesKeystone1"": {
-      ""casual"": [ [ ""Free"" ] ]
+      ""casual"": [ [ ""SpiritFlame"" ] ]
     },
     ""GladesKeystone2"": {
-      ""casual"": [ [ ""Free"" ] ]
+      ""casual"": [ [ ""SpiritFlame"" ] ]
     },
     ""GladesGrenadePool"": {
       ""casual"": [ [ ""Grenade"", ""CleanWater"" ] ],
