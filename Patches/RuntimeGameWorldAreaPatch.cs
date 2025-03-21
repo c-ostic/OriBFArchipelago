@@ -1,35 +1,28 @@
 ﻿using HarmonyLib;
 using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
-using OriBFArchipelago.MapTracker.Logic;
-using OriBFArchipelago.MapTracker.Model;
 using OriModding.BF.UiLib.Map;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 
 namespace OriBFArchipelago.Patches
 {
     [HarmonyPatch(typeof(RuntimeGameWorldArea))]
     internal class RuntimeGameWorldAreaPatch
     {
-
-        
-
         [HarmonyPatch("Initialize")]
         [HarmonyPostfix]
         internal static void Initialize_Postfix(RuntimeGameWorldArea __instance)
         {
 
             try
-            {//todo: Check if this works as intended
+            {   //todo: Check if this works as intended
                 var locations = LocationLookup.GetLocations().Where(d => d.CustomIconType != CustomWorldMapIconType.None);
                 foreach (var location in locations)
                 {
-                    ModLogger.Debug($"Adding icon for {location.Name} - {location.CustomIconType}");
+                    ModLogger.Debug($"Adding custom icon for {location.Name} - {location.CustomIconType}");
                     var customIcon = new CustomWorldMapIcon(location.CustomIconType, location.WorldPosition, location.MoonGuid);
                     CustomWorldMapIconManager.Register(customIcon);
                 }

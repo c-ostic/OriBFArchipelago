@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 using OriBFArchipelago.MapTracker.Core;
-using OriBFArchipelago.MapTracker.Menu;
+using OriBFArchipelago.MapTracker.UI;
 using OriModding.BF.UiLib.Menu;
 
 namespace OriBFArchipelago.Patches

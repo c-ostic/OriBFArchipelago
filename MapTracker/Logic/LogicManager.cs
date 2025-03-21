@@ -10,6 +10,11 @@ namespace OriBFArchipelago.MapTracker.Logic
     internal class LogicManager
     {
         private static LogicChecker _logicChecker;
+
+        internal static Location Get(RuntimeWorldMapIcon icon)
+        {
+            return LocationLookup.Get(icon.Guid);
+        }
         internal static bool IsInLogic(RuntimeWorldMapIcon icon)
         {
             try

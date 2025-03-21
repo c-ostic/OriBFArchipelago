@@ -5,7 +5,7 @@ using OriBFArchipelago.MapTracker.Core;
 using OriModding.BF.Core;
 using System.Reflection;
 using System;
-using OriBFArchipelago.MapTracker.Menu;
+using OriBFArchipelago.MapTracker.UI;
 
 namespace OriBFArchipelago
 {

@@ -122,7 +122,7 @@ namespace OriBFArchipelago.Core
             }
         }
 
-        public static bool ShowSettings { get; set; }
+        public static bool ShowSettings { get; set; }       
 
         public static int Get(RandomizerSetting setting)
         {

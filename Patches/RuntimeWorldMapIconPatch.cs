@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using OriBFArchipelago.MapTracker.Core;
 using OriBFArchipelago.MapTracker.Logic;
+using OriBFArchipelago.MapTracker.UI;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -27,7 +28,7 @@ namespace OriBFArchipelago.Patches
                 if (IsDuplicateIcon(__instance))
                     return false;
 
-                switch (MaptrackerSettings.GetIconVisibility())
+                switch (MaptrackerSettings.IconVisibility)
                 {
                     case IconVisibilityEnum.All:
                         __result = true;
@@ -76,23 +77,21 @@ namespace OriBFArchipelago.Patches
                 {
                     // Get the private m_iconGameObject field using reflection
                     var gameObject = (GameObject)typeof(RuntimeWorldMapIcon).GetField("m_iconGameObject", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
-                    var area = (RuntimeGameWorldArea)typeof(RuntimeWorldMapIcon).GetField("Area", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
 
-                    //if (new WorldMapIconType[] { WorldMapIconType.KeystoneDoorOpen, WorldMapIconType.BreakableWallBroken, WorldMapIconType.StompableFloorBroken, WorldMapIconType.EnergyGateOpen }.Contains(__instance.Icon))
-                    //    return;
 
-                    //if (gameObject != null)
-                    //{
-                    //    IconHoverEffect existingHoverEffect = gameObject.GetComponent<IconHoverEffect>();
+                    if (gameObject != null)
+                    {
+                        IconHoverEffectUI existingHoverEffect = gameObject.GetComponent<IconHoverEffectUI>();
 
-                    //    if (existingHoverEffect != null)
-                    //        return;
+                        if (existingHoverEffect != null)
+                            return;
 
-                    //    IconHoverEffect hoverEffect = gameObject.AddComponent<IconHoverEffect>();
-                    //    hoverEffect.IconType = __instance;
-                    //    hoverEffect.MapUI = AreaMapUI.Instance;
-                    //    hoverEffect.Area = area;
-                    //}
+                        var area = (RuntimeGameWorldArea)typeof(RuntimeWorldMapIcon).GetField("Area", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
+                        IconHoverEffectUI hoverEffect = gameObject.AddComponent<IconHoverEffectUI>();
+                        hoverEffect.IconType = __instance;
+                        hoverEffect.MapUI = AreaMapUI.Instance;
+                        hoverEffect.Area = area;
+                    }
                 }
             }
             catch (System.Exception ex)
