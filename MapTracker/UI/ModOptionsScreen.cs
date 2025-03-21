@@ -3,7 +3,6 @@ using BepInEx.Configuration;
 using Game;
 using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
-using System;
 using System.Linq;
 using UnityEngine;
 
