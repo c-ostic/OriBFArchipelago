@@ -2,6 +2,7 @@
 using BepInEx.Configuration;
 using Game;
 using OriBFArchipelago.MapTracker.Core;
+using System;
 using System.Linq;
 using UnityEngine;
 
@@ -18,8 +19,7 @@ namespace OriBFArchipelago.MapTracker.UI
         private static ConfigEntry<string> MapVisibility { get; set; }
         private static ConfigEntry<string> IconVisibility { get; set; }
         private static ConfigEntry<bool> EnableLogicUI { get; set; }
-
-
+        private static ConfigEntry<bool> DisableMapSway { get; set; }
 
 
         public ModOptionsScreen()
@@ -58,6 +58,7 @@ namespace OriBFArchipelago.MapTracker.UI
             MapVisibility = config.Bind(CONFIGSECTION, "MapVisibility", $"{MapVisibilityEnum.Visible}", "Sets map visibility");
             IconVisibility = config.Bind(CONFIGSECTION, "IconVisibility", $"{IconVisibilityEnum.In_Logic}", "Sets icon visibility");
             EnableLogicUI = config.Bind(CONFIGSECTION, "EnableItemUI", false, "Sets enableitemui");
+            DisableMapSway = config.Bind(CONFIGSECTION, "DisableMapSway", false, "Sets disablemapsway");
             ModLogger.Debug("Settings initialized successfully");
         }
 
@@ -67,6 +68,7 @@ namespace OriBFArchipelago.MapTracker.UI
             AddMultiToggle(setting: MapVisibility, label: "Map visiblity", tooltip: "Options: " + string.Join(", ", EnumParser.GetEnumNames(typeof(MapVisibilityEnum))), options: EnumParser.GetEnumNames(typeof(MapVisibilityEnum)));
             AddMultiToggle(setting: IconVisibility, label: "Icon visibility", tooltip: "Options: " + string.Join(", ", EnumParser.GetEnumNames(typeof(IconVisibilityEnum))), options: EnumParser.GetEnumNames(typeof(IconVisibilityEnum)));
             AddToggle(setting: EnableLogicUI, label: "Icon info", tooltip: "Enables a small window on the top right that information about the item location. This can be triggered with the mouse, or the dot that appears in the middle of the map when using controller");
+            AddToggle(setting: DisableMapSway, label: "Disable map sway", tooltip: "Disables the swap in the map. Usefull when enabling Item UI for better pointing at icons.");
             ModLogger.Debug("UI components set up successfully");
         }
 
@@ -100,6 +102,11 @@ namespace OriBFArchipelago.MapTracker.UI
         public static bool GetEnableLogicUI()
         {
             return EnableLogicUI?.Value ?? false;
+        }
+
+        internal static bool GetDisableMapSway()
+        {
+            return DisableMapSway?.Value ?? false;
         }
     }
 }
