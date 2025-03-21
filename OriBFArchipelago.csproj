@@ -11,9 +11,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PostBuildEvent >
+    <PostBuildEvent Condition="'$(ComputerName)' == 'DESKTOP-4FG0L6M'">
       xcopy "$(TargetDir)OriBFArchipelago.dll" "G:\SteamLibrary\steamapps\common\Ori DE\BepInEx\plugins\OriBFArchipelago\" /Y
-
     </PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
