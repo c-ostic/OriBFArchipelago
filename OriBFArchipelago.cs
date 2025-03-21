@@ -1,14 +1,12 @@
 ﻿using BepInEx;
 using HarmonyLib;
-using Archipelago.MultiClient.Net;
-using Archipelago.MultiClient.Net.Enums;
-using System;
-using Game;
-using System.Reflection;
-using BepInEx.Logging;
-using OriModding.BF.Core;
-using System.IO;
 using OriBFArchipelago.Core;
+using OriBFArchipelago.MapTracker.Core;
+using OriBFArchipelago.MapTracker.UI;
+using OriBFArchipelago.Patches;
+using OriModding.BF.Core;
+using System;
+using System.Reflection;
 
 namespace OriBFArchipelago
 {
@@ -18,8 +16,10 @@ namespace OriBFArchipelago
         private void Awake()
         {
             // Plugin startup logic
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
-
+            ModLogger.Initialize(PluginInfo.PLUGIN_NAME, Logger);
+            ModLogger.Info($"Plugin {PluginInfo.PLUGIN_GUID} v{GetAssemblyVersion()} is starting...");
+            ModLogger.Info($"Plugin {PluginInfo.PLUGIN_GUID} has loaded successfully!");
+            
             var harmony = new Harmony(PluginInfo.PLUGIN_GUID);
             harmony.PatchAll();
 
@@ -30,6 +30,15 @@ namespace OriBFArchipelago
             Controllers.Add<RandomizerManager>(null, "Randomizer");
             Controllers.Add<Keybinder>(null, "Randomizer");
             Controllers.Add<RandomizerSettings>(null, "Randomizer");
+            Controllers.Add<IconHoverUI>(null, "MapTracker");            
         }
+
+        public string GetAssemblyVersion()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            Version version = assembly.GetName().Version;
+            return version.ToString();
+        }
+
     }
 }

@@ -10,6 +10,11 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <PostBuildEvent Condition="'$(ComputerName)' == 'DESKTOP-4FG0L6M'">
+      xcopy "$(TargetDir)OriBFArchipelago.dll" "G:\SteamLibrary\steamapps\common\Ori DE\BepInEx\plugins\OriBFArchipelago\" /Y
+    </PostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Archipelago.MultiClient.Net" Version="6.2.0" />
     <PackageReference Include="AsyncBridge" Version="0.3.1" />
