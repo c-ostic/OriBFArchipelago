@@ -34,13 +34,8 @@ namespace OriBFArchipelago.MapTracker.Logic
                     return tp?.IsActivaded ?? false;
                 }
 
-                //if (IsCollectedPetrifiedPlant(icon))
-                //return false;
-
-
-
-
-
+                if ((MaptrackerSettings.CollectedCustomIcons.Contains(icon.Guid)))
+                    return false;
 
                 var trackerItem = LocationLookup.Get(icon.Guid);
                 if (icon.Icon == WorldMapIconType.AbilityPedestal && trackerItem == null)
@@ -86,7 +81,7 @@ namespace OriBFArchipelago.MapTracker.Logic
                 default:
                     return false;
             }
-        }        
+        }
 
         private static bool IsDuplicateIcon(RuntimeWorldMapIcon icon)
         {

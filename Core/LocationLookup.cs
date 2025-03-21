@@ -1,4 +1,5 @@
-﻿using OriBFArchipelago.MapTracker.Core;
+﻿using Game;
+using OriBFArchipelago.MapTracker.Core;
 using OriModding.BF.UiLib.Map;
 using System;
 using System.Collections.Generic;
@@ -95,6 +96,8 @@ namespace OriBFArchipelago.Core
 
     internal class LocationLookup
     {
+
+        private static List<MoonGuid> loggedInvalidLocations => new List<MoonGuid>();
         public static Location Get(MoonGuid moonGuid)
         {
             // If this is the first time this is called, populate the locationByGuid dictionary
@@ -114,8 +117,11 @@ namespace OriBFArchipelago.Core
             if (target == null) //attempt to get location by iconguid
                 target = locations.FirstOrDefault(d => d.IconGuid == moonGuid);
 
-            if (target == null)
-                ModLogger.Debug("Invalid location: " + moonGuid.ToString());
+            if (target == null && !loggedInvalidLocations.Any(d=>d == moonGuid))
+            {
+                loggedInvalidLocations.Add(moonGuid);
+                ModLogger.Debug($"Invalid location: {moonGuid} - Player position: {Characters.Sein.Position}");
+            }
 
             return target;
         }
