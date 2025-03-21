@@ -66,16 +66,8 @@ namespace OriBFArchipelago.Core
 
         public RandomizerOptions(Dictionary<string, object> apSlotData)
         {
-
-            foreach (var item in apSlotData.Keys)
-            {
-                ModLogger.Debug($"{item}: {apSlotData[item]}");
-            }
-
             try
             {
-
-
                 if (apSlotData != null)
                 {
                     Goal = apSlotData.TryGetValue("goal", out object goalOption) ? (GoalOptions)Enum.ToObject(typeof(GoalOptions), goalOption) : GoalOptions.AllSkillTrees;

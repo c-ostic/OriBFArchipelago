@@ -14,7 +14,7 @@ namespace OriBFArchipelago.Patches
         }
         static void Postfix(OptionsScreen __instance)
         {
-            CustomMenuManager.RegisterOptionsScreen<ModOptionsScreen>("Tracker options", 100);
+            CustomMenuManager.RegisterOptionsScreen<MapTrackerOptionsScreen>("Tracker options", 100);
         }
     }
 }

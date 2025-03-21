@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace OriBFArchipelago.MapTracker.UI
 {
-    internal class ModOptionsScreen : BaseModOptionsScreen
+    internal class MapTrackerOptionsScreen : BaseModOptionsScreen
     {
         private const string CONFIGSECTION = "MapTracker";
 
@@ -18,11 +18,11 @@ namespace OriBFArchipelago.MapTracker.UI
 
         private static ConfigEntry<string> MapVisibility { get; set; }
         private static ConfigEntry<string> IconVisibility { get; set; }
-        private static ConfigEntry<bool> EnableLogicUI { get; set; }
+        private static ConfigEntry<bool> EnableIconInfocUI { get; set; }
         private static ConfigEntry<bool> DisableMapSway { get; set; }
 
 
-        public ModOptionsScreen()
+        public MapTrackerOptionsScreen()
         {
             ModLogger.Debug("Loaded MaptrackerSettingsScreen");
         }
@@ -57,7 +57,7 @@ namespace OriBFArchipelago.MapTracker.UI
             ModLogger.Debug("Initializing settings");
             MapVisibility = config.Bind(CONFIGSECTION, "MapVisibility", $"{MapVisibilityEnum.Visible}", "Sets map visibility");
             IconVisibility = config.Bind(CONFIGSECTION, "IconVisibility", $"{IconVisibilityEnum.In_Logic}", "Sets icon visibility");
-            EnableLogicUI = config.Bind(CONFIGSECTION, "EnableItemUI", false, "Sets enableitemui");
+            EnableIconInfocUI = config.Bind(CONFIGSECTION, "EnableItemUI", false, "Sets enableitemui");
             DisableMapSway = config.Bind(CONFIGSECTION, "DisableMapSway", false, "Sets disablemapsway");
             ModLogger.Debug("Settings initialized successfully");
         }
@@ -67,7 +67,7 @@ namespace OriBFArchipelago.MapTracker.UI
             ModLogger.Debug("Setting up UI components");
             AddMultiToggle(setting: MapVisibility, label: "Map visiblity", tooltip: "Options: " + string.Join(", ", EnumParser.GetEnumNames(typeof(MapVisibilityEnum))), options: EnumParser.GetEnumNames(typeof(MapVisibilityEnum)));
             AddMultiToggle(setting: IconVisibility, label: "Icon visibility", tooltip: "Options: " + string.Join(", ", EnumParser.GetEnumNames(typeof(IconVisibilityEnum))), options: EnumParser.GetEnumNames(typeof(IconVisibilityEnum)));
-            AddToggle(setting: EnableLogicUI, label: "Icon info", tooltip: "Enables a small window on the top right that information about the item location. This can be triggered with the mouse, or the dot that appears in the middle of the map when using controller");
+            AddToggle(setting: EnableIconInfocUI, label: "Icon info", tooltip: "Enables a small window on the top right that information about the item location. This can be triggered with the mouse, or the dot that appears in the middle of the map when using controller");
             AddToggle(setting: DisableMapSway, label: "Disable map sway", tooltip: "Disables the swap in the map. Usefull when enabling Item UI for better pointing at icons.");
             ModLogger.Debug("UI components set up successfully");
         }
@@ -76,18 +76,29 @@ namespace OriBFArchipelago.MapTracker.UI
         {
             try
             {
-                if (Characters.Sein.Active && !Characters.Sein.IsSuspended && !Characters.Sein.Controller.IsSwimming && Characters.Sein.Controller.CanMove)
+                
+                if (Characters.Sein == null)
                 {
-                    Game.UI.Menu.HideMenuScreen(true);
-                    var original = TeleporterController.Instance.Teleporters.FirstOrDefault();
-                    var originalPos = original.WorldPosition; //Save original position - fornlorn cavern
-                    original.WorldPosition = new Vector3(189, -219, 0); //Set position to starting location
-                    TeleporterController.BeginTeleportation(original);
-                    ModLogger.Debug("Teleport to start");
-                    original.WorldPosition = originalPos; //Return position to original otherwise forlorn will always teleport to starting location
+                    RandomizerMessager.instance.AddMessage("You have to start a game before you can use this ability.");
+                    return;
                 }
-                else
+                Game.UI.Menu.HideMenuScreen(true);
+                if (!Characters.Sein.Active || Characters.Sein.IsSuspended || Characters.Sein.Controller.IsSwimming || !Characters.Sein.Controller.CanMove)
+                {
+                    ModLogger.Debug($"{Characters.Sein.Active}");
+                    ModLogger.Debug($"{Characters.Sein.IsSuspended}");
+                    ModLogger.Debug($"{Characters.Sein.Controller.IsSwimming}");
+                    ModLogger.Debug($"{Characters.Sein.Controller.CanMove}");
                     RandomizerMessager.instance.AddMessage("You can not teleport from here. Get to a save place where you can freely stand.");
+                    return;
+                }
+                
+                var original = TeleporterController.Instance.Teleporters.FirstOrDefault();
+                var originalPos = original.WorldPosition; //Save original position - fornlorn cavern
+                original.WorldPosition = new Vector3(189, -219, 0); //Set position to starting location
+                TeleporterController.BeginTeleportation(original);
+                ModLogger.Debug("Teleport to start");
+                original.WorldPosition = originalPos; //Return position to original otherwise forlorn will always teleport to starting location
             }
             catch (System.Exception ex)
             {
@@ -104,9 +115,9 @@ namespace OriBFArchipelago.MapTracker.UI
         {
             return EnumParser.GetEnumValue<IconVisibilityEnum>(IconVisibility.Value);
         }
-        public static bool GetEnableLogicUI()
+        public static bool GetEnableIconInfocUI()
         {
-            return EnableLogicUI?.Value ?? false;
+            return EnableIconInfocUI?.Value ?? false;
         }
 
         internal static bool GetDisableMapSway()

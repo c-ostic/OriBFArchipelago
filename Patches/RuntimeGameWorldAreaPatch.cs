@@ -12,19 +12,34 @@ namespace OriBFArchipelago.Patches
     [HarmonyPatch(typeof(RuntimeGameWorldArea))]
     internal class RuntimeGameWorldAreaPatch
     {
+        private static bool AddedCustomIcons = false;
         [HarmonyPatch("Initialize")]
         [HarmonyPostfix]
         internal static void Initialize_Postfix(RuntimeGameWorldArea __instance)
         {
             try
             {   //todo: Check if this works as intended
+                if (AddedCustomIcons)
+                    return;
                 var locations = LocationLookup.GetLocations().Where(d => d.CustomIconType != CustomWorldMapIconType.None);
                 foreach (var location in locations)
                 {
-                    ModLogger.Debug($"Adding custom icon for {location.Name} - {location.CustomIconType}");
+                    
                     var customIcon = new CustomWorldMapIcon(location.CustomIconType, location.WorldPosition, location.MoonGuid);
+                    //todo: Make this work with locationlookup
+
+                    if (location.Name == "Sunstone")
+                        customIcon.Type = CustomWorldMapIconType.Sunstone;
+                    else if (location.Name == "GumonSeal")
+                        customIcon.Type = CustomWorldMapIconType.WaterVein;
+                    else if (location.Name == "GinsoEscapeExit")
+                        customIcon.Type = CustomWorldMapIconType.CleanWater;
+
+                    ModLogger.Debug($"Adding custom icon for {location.Name} - {location.CustomIconType}");
+
                     CustomWorldMapIconManager.Register(customIcon);
                 }
+                AddedCustomIcons = true;
             }
             catch (System.Exception ex)
             {

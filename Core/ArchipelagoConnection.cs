@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -54,12 +53,10 @@ namespace OriBFArchipelago.Core
          */
         public bool Init(string hostname, int port, string user, string password)
         {
-
             this.hostname = hostname;
             this.port = port;
             slotName = user;
             this.password = password;
-            RandomizerMessager.instance.AddMessage($"Attempting to connect to {hostname}:{port} {user}");
 
             session = ArchipelagoSessionFactory.CreateSession(hostname, port);
 
@@ -113,6 +110,7 @@ namespace OriBFArchipelago.Core
                 result = new LoginFailure(e.GetBaseException().Message);
             }
 
+            RandomizerMessager.instance.Clear();
             if (!result.Successful)
             {
                 LoginFailure failure = (LoginFailure)result;

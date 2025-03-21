@@ -2,10 +2,11 @@
 using HarmonyLib;
 using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
-using OriModding.BF.Core;
-using System.Reflection;
-using System;
 using OriBFArchipelago.MapTracker.UI;
+using OriBFArchipelago.Patches;
+using OriModding.BF.Core;
+using System;
+using System.Reflection;
 
 namespace OriBFArchipelago
 {
@@ -29,7 +30,7 @@ namespace OriBFArchipelago
             Controllers.Add<RandomizerManager>(null, "Randomizer");
             Controllers.Add<Keybinder>(null, "Randomizer");
             Controllers.Add<RandomizerSettings>(null, "Randomizer");
-            Controllers.Add<ModOptionsScreen>(null, "MapTracker");
+            Controllers.Add<IconHoverUI>(null, "MapTracker");            
         }
 
         public string GetAssemblyVersion()

@@ -19,10 +19,10 @@ namespace OriBFArchipelago.MapTracker.Core
         public static List<MoonGuid> CollectedCustomIcons { get; set; }
 
 
-        public static bool EnableLogicUI { get { return ModOptionsScreen.GetEnableLogicUI(); } }
-        public static MapVisibilityEnum MapVisibility { get { return ModOptionsScreen.GetMapVisibility(); } }
-        public static IconVisibilityEnum IconVisibility { get { return ModOptionsScreen.GetIconVisibility(); } }
-        public static bool DisableMapSway { get { return ModOptionsScreen.GetDisableMapSway(); } }
+        public static bool EnableIconInfocUI { get { return MapTrackerOptionsScreen.GetEnableIconInfocUI(); } }
+        public static MapVisibilityEnum MapVisibility { get { return MapTrackerOptionsScreen.GetMapVisibility(); } }
+        public static IconVisibilityEnum IconVisibility { get { return MapTrackerOptionsScreen.GetIconVisibility(); } }
+        public static bool DisableMapSway { get { return MapTrackerOptionsScreen.GetDisableMapSway(); } }
         public static void LoadSettings()
         {
             try
