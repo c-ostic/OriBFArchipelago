@@ -35,7 +35,7 @@ namespace OriBFArchipelago.MapTracker.Logic
         /// <summary>
         /// Check if a pickup is accessible with the given inventory at a specific difficulty level
         /// </summary>
-        public bool IsPickupAccessible(string pickupName, Dictionary<string, int> inventory, DifficultyOptions difficultyLevel = DifficultyOptions.Casual)
+        public bool IsPickupAccessible(string pickupName, Dictionary<string, int> inventory, DifficultyOptions difficultyLevel)
         {
             string location = FindPickupLocation(pickupName);
             if (location == null)
@@ -57,11 +57,7 @@ namespace OriBFArchipelago.MapTracker.Logic
         /// <summary>
         /// Check if a location is reachable with the given inventory at a specific difficulty level
         /// </summary>
-        public bool IsLocationReachable(
-            string targetLocation,
-            Dictionary<string, int> inventory,
-            string startLocation,
-            DifficultyOptions difficultyLevel = DifficultyOptions.Casual)
+        public bool IsLocationReachable(string targetLocation, Dictionary<string, int> inventory, string startLocation, DifficultyOptions difficultyLevel)
         {
             if (targetLocation == startLocation)
                 return true;
@@ -104,16 +100,18 @@ namespace OriBFArchipelago.MapTracker.Logic
         /// <summary>
         /// Check if a destination can be accessed from a location with the given inventory at a specific difficulty level
         /// </summary>
-        private bool CanAccess(string fromLocation, string toDestination, Dictionary<string, int> inventory, DifficultyOptions difficultyLevel = DifficultyOptions.Casual)
+        private bool CanAccess(string fromLocation, string toDestination, Dictionary<string, int> inventory, DifficultyOptions difficultyLevel)
         {
+            //            ModLogger.Debug($"Checking {fromLocation} - {toDestination} - {difficultyLevel}");
             if (!_logic.ContainsKey(fromLocation) || !_logic[fromLocation].ContainsKey(toDestination))
                 return false;
 
             var requirementSets = GetDifficultyRequirements(fromLocation, toDestination, difficultyLevel);
+
             foreach (var reqSet in requirementSets)
             {
+                //ModLogger.Debug(string.Join(", ", reqSet.ToArray()));
                 bool canSatisfySet = true;
-
                 foreach (var req in reqSet)
                 {
                     if (!CanSatisfyRequirement(req, inventory))
@@ -141,13 +139,16 @@ namespace OriBFArchipelago.MapTracker.Logic
 
             // Loop through the filtered values
 
-            var strDiff = maxDifficulty.ToString().ToLower();
             foreach (var difficulty in filteredDifficulties)
             {
-                if (!locationRequirements.ContainsKey(strDiff))
+                var loweredDifficulty = difficulty.ToString().ToLower();
+                if (!locationRequirements.ContainsKey(loweredDifficulty))
+                {
+                    //ModLogger.Debug($"{fromLocation} does not contain {difficulty}");
                     continue;
+                }
 
-                var difficultiyRequirements = locationRequirements[strDiff];
+                var difficultiyRequirements = locationRequirements[loweredDifficulty];
                 if (difficultiyRequirements != null && difficultiyRequirements.Any())
                     requirements.AddRange(difficultiyRequirements);
             }
@@ -161,7 +162,6 @@ namespace OriBFArchipelago.MapTracker.Logic
         /// </summary>
         private bool CanSatisfyRequirement(string requirement, Dictionary<string, int> inventory)
         {
-            //todo: Implement collect and check against options
             // Special cases
             if (requirement == "Free" || requirement == "Open" || requirement == "None")
                 return true;
