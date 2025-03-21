@@ -37,27 +37,6 @@ namespace OriBFArchipelago.MapTracker.Logic
             }
         }
 
-
-        private static List<KeyDoor> _keyDoors;
-        public static List<KeyDoor> KeyDoors
-        {
-            get
-            {
-                if (_keyDoors != null)
-                    return _keyDoors;
-
-                _keyDoors = new List<KeyDoor>
-                {
-                    new KeyDoor(new MoonGuid("-1339740894 1318671638 1367314854 947958608"), "First key door", 2, WorldArea.Glades, false),
-                    new KeyDoor(new MoonGuid("1038130459 1118045924 -858373469 79112879"), "Second key door", 2, WorldArea.Glades, false),
-                    //new KeyDoor(new MoonGuid(""), "Third key door", 4, WorldArea.Glades, false)
-
-                };
-                return _keyDoors;
-
-            }
-        }
-
         public static Dictionary<string, int> Inventory { get; set; }
 
         public static Dictionary<string, int> GetInventory()
@@ -79,32 +58,56 @@ namespace OriBFArchipelago.MapTracker.Logic
         private static void UpdateMapStones()
         {
             //todo: implement mapstone area logic
-            SetInventoryValue("MapStone", RandomizerManager.Receiver.GetCurrentMapstonesCount());
+            if (RandomizerManager.Options.MapStoneLogic == MapStoneOptions.AreaSpecific)
+                UpdateAreaSpecificMapStones(); //todo implement
+            else if (RandomizerManager.Options.MapStoneLogic == MapStoneOptions.Progressive)
+                UpdateProgressiveMapStones(); //todo implement
+            else
+                UpdateGenericMapStones();
+
         }
+
+        private static void UpdateAreaSpecificMapStones()
+        {
+            foreach (var item in EnumParser.GetEnumNames(typeof(InventoryItem)).Where(d => d.EndsWith("MapStone")))
+            {
+                var inventoryItem = EnumParser.GetEnumValue<InventoryItem>(item);
+                SetInventoryValue(item, RandomizerManager.Receiver.GetItemCount(inventoryItem));
+            }
+        }
+        private static void UpdateProgressiveMapStones()
+        {
+            //todo implement
+        }
+
+        private static void UpdateGenericMapStones()
+        {
+            SetInventoryValue("MapStone", RandomizerManager.Receiver.GetItemCount(InventoryItem.MapStone));
+        }
+
 
         private static void UpdateKeystones()
         {
             //todo: implement keystone area logic
-            var currentKeystoneCount = RandomizerManager.Receiver.GetCurrentKeystonesCount();
-            currentKeystoneCount += KeyDoors.Where(x => x.IsOpened)?.Sum(d => d.RequiredKeystones) ?? 0;
-            SetInventoryValue("KeyStone", currentKeystoneCount);
+            if (RandomizerManager.Options.KeyStoneLogic == KeyStoneOptions.AreaSpecific)
+                UpdateAreaSpecificKeystones(); //todo implement
+            else
+                UpdateGenericKeystones();
         }
-        internal static void OpenKeyDoor(MoonGuid guid)
+
+        private static void UpdateAreaSpecificKeystones()
         {
-            var door = KeyDoors.FirstOrDefault(d => d.Guid == guid);
-            if (door == null)
+            foreach (var item in EnumParser.GetEnumNames(typeof(InventoryItem)).Where(d => d.EndsWith("KeyStone")))
             {
-                ModLogger.Debug($"Door with id {guid} not found");
-                return;
+                var inventoryItem = EnumParser.GetEnumValue<InventoryItem>(item);
+                SetInventoryValue(item, RandomizerManager.Receiver.GetItemCount(inventoryItem));
             }
-
-            if (door.IsOpened)
-                return;
-
-            door.IsOpened = true;
-            UpdateKeystones();
         }
 
+        private static void UpdateGenericKeystones()
+        {
+            SetInventoryValue("KeyStone", RandomizerManager.Receiver.GetItemCount(InventoryItem.KeyStone));
+        }
 
         private static void UpdateKeys()
         {
@@ -129,8 +132,11 @@ namespace OriBFArchipelago.MapTracker.Logic
         }
 
         private static void SetInventoryValue(string entryName, int value)
-        {
+        {            
             InitializeInventory();
+            if (value == 0)
+                return;
+
             if (!Inventory.ContainsKey(entryName))
                 AddInventoryItem(entryName, value);
 
@@ -175,7 +181,7 @@ namespace OriBFArchipelago.MapTracker.Logic
         }
         private static void UpdateEnergy()
         {
-            SetInventoryValue("EnergyCell", (int)Characters.Sein?.Energy?.Max);
+            SetInventoryValue("EnergyCell", (int)(Characters.Sein?.Energy?.Max ?? 0));
         }
         private static void InitializeInventory()
         {
@@ -186,23 +192,6 @@ namespace OriBFArchipelago.MapTracker.Logic
 
 
 
-    }
-
-    internal class KeyDoor
-    {
-        public MoonGuid Guid { get; set; }
-        public string Name { get; set; }
-        public int RequiredKeystones { get; set; }
-        public WorldArea Area { get; set; }
-        public bool IsOpened { get; set; }
-        public KeyDoor(MoonGuid guid, string name, int requiredKeyStones, WorldArea area, bool isOpened = false)
-        {
-            Guid = guid;
-            Name = name;
-            RequiredKeystones = requiredKeyStones;
-            Area = area;
-            IsOpened = isOpened;
-        }
     }
 
     internal class Teleporter

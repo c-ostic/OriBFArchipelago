@@ -16,7 +16,6 @@ namespace OriBFArchipelago.Patches
         [HarmonyPostfix]
         internal static void Initialize_Postfix(RuntimeGameWorldArea __instance)
         {
-
             try
             {   //todo: Check if this works as intended
                 var locations = LocationLookup.GetLocations().Where(d => d.CustomIconType != CustomWorldMapIconType.None);
@@ -63,7 +62,6 @@ namespace OriBFArchipelago.Patches
                 DiscoveredAreas.Clear();
             }
         }
-
     }
 
     public static class RuntimeGameWorldAreaExtensions

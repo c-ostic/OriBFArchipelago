@@ -1,4 +1,5 @@
 ﻿using MonoMod.Utils;
+using OriBFArchipelago.MapTracker.Core;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -75,7 +76,7 @@ namespace OriBFArchipelago.Core
         private void OnGUI()
         {
             // Show options
-            if (ShowSettings)
+            if (ShowSettings && Game.UI.Menu.CurrentScreen == MenuScreenManager.Screens.WorldMap)
             {
                 textStyle.fontSize = (int)(25 * (Screen.width / baseScreenSize.x));
 

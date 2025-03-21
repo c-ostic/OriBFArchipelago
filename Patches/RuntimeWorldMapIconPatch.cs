@@ -68,10 +68,7 @@ namespace OriBFArchipelago.Patches
         {
             try
             {
-                if (__instance.Icon == WorldMapIconType.KeystoneDoorOpen)
-                {
-                    LogicInventory.OpenKeyDoor(__instance.Guid);
-
+        
                 }
                 if (__instance.Icon != WorldMapIconType.Invisible && __instance.IsVisible(AreaMapUI.Instance))
                 {

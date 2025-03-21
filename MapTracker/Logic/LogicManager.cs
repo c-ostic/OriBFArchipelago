@@ -52,7 +52,7 @@ namespace OriBFArchipelago.MapTracker.Logic
                 if (trackerItem == null)
                     return false;
 
-                return _logicChecker.IsPickupAccessible(trackerItem.Name, LogicInventory.GetInventory());
+                return _logicChecker.IsPickupAccessible(trackerItem.Name, LogicInventory.GetInventory(), RandomizerManager.Options.LogicDifficulty);
             }
             catch (Exception ex)
             {
