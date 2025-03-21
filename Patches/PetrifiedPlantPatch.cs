@@ -11,8 +11,7 @@ namespace OriBFArchipelago.Patches
         {
             if (__instance.NoHealthLeft && __instance.Entity is PetrifiedPlant)
             {
-                RandomizerManager.Connection.CheckLocation(__instance.Entity.MoonGuid);
-                MaptrackerSettings.AddPetrifiedPlant(__instance.Entity.MoonGuid);
+                RandomizerManager.Connection.CheckLocation(__instance.Entity.MoonGuid);               
             }
         }
     }

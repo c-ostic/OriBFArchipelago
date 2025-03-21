@@ -51,13 +51,13 @@ namespace OriBFArchipelago.MapTracker.Core
         {
             _collectedCustomItems.SetSerializedValue(string.Join(",", CollectedCustomIcons.Select(c => c.ToString()).ToArray()));
         }
-        public static void AddPetrifiedPlant(MoonGuid moonGuid)
+        public static void AddCustomIconCheck(MoonGuid moonGuid)
         {
             if (!CollectedCustomIcons.Contains(moonGuid))
             {
-                var plants = new List<MoonGuid>(CollectedCustomIcons);
-                plants.Add(moonGuid);
-                CollectedCustomIcons = plants;
+                var collectedCustomIcons = new List<MoonGuid>(CollectedCustomIcons);
+                collectedCustomIcons.Add(moonGuid);
+                CollectedCustomIcons = collectedCustomIcons;
                 ModLogger.Debug($"Added petrified plant: {moonGuid}");
             }
         }
