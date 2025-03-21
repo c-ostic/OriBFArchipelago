@@ -47,6 +47,7 @@ namespace OriBFArchipelago.MapTracker.UI
                     GUILayout.BeginVertical();
 
                     var trackerItem = LogicManager.Get(Icon);
+                    
 
                     GUILayout.BeginHorizontal();
                     GUILayout.Label($"Name: {trackerItem?.Name ?? " - "}", textStyle, GUILayout.ExpandWidth(false));
@@ -62,6 +63,10 @@ namespace OriBFArchipelago.MapTracker.UI
 
                     GUILayout.BeginHorizontal();
                     GUILayout.Label($"Area: {Area?.Area?.name}", textStyle, GUILayout.ExpandWidth(false));
+                    GUILayout.EndHorizontal();
+
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label($"In Logic: {(LogicManager.IsInLogic(Icon) ? "yes" : "no" )}", textStyle, GUILayout.ExpandWidth(false));
                     GUILayout.EndHorizontal();
 
                     //todo: Add logic information - rotate through multiple every x-seconds?

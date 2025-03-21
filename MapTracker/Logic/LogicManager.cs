@@ -81,10 +81,6 @@ namespace OriBFArchipelago.MapTracker.Logic
                 case WorldMapIconType.EnergyGateOpen:
                 case WorldMapIconType.KeystoneDoorFour:
                 case WorldMapIconType.KeystoneDoorOpen:
-                case WorldMapIconType.EnergyGateTwelve:
-                case WorldMapIconType.EnergyGateTen:
-                case WorldMapIconType.EnergyGateEight:
-                case WorldMapIconType.EnergyGateSix:
                 case WorldMapIconType.EnergyGateFour:
                     return true;
                 default:
