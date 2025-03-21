@@ -4609,7 +4609,8 @@ namespace OriBFArchipelago.MapTracker.Logic
   ""MistyPreKeystone2"": {
   }
 }";
-        private string location_rules = @"
+
+private string location_rules = @"
 {
   ""TeleporterNetwork"": {
   },
