@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using Game;
+using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
 using System;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace OriBFArchipelago.MapTracker.UI
 
         private static ConfigFile _config;
         private static bool _isInitialized;
-        
+
         private static ConfigEntry<string> MapVisibility { get; set; }
         private static ConfigEntry<string> IconVisibility { get; set; }
         private static ConfigEntry<bool> EnableLogicUI { get; set; }
@@ -76,13 +77,18 @@ namespace OriBFArchipelago.MapTracker.UI
         {
             try
             {
-                Game.UI.Menu.HideMenuScreen(true);
-                var original = TeleporterController.Instance.Teleporters.FirstOrDefault();
-                var originalPos = original.WorldPosition; //Save original position - fornlorn cavern
-                original.WorldPosition = new Vector3(189, -219, 0); //Set position to starting location
-                TeleporterController.BeginTeleportation(original); 
-                ModLogger.Debug("Teleport to start");
-                original.WorldPosition = originalPos; //Return position to original otherwise forlorn will always teleport to starting location
+                if (Characters.Sein.Active && !Characters.Sein.IsSuspended && !Characters.Sein.Controller.IsSwimming && Characters.Sein.Controller.CanMove)
+                {
+                    Game.UI.Menu.HideMenuScreen(true);
+                    var original = TeleporterController.Instance.Teleporters.FirstOrDefault();
+                    var originalPos = original.WorldPosition; //Save original position - fornlorn cavern
+                    original.WorldPosition = new Vector3(189, -219, 0); //Set position to starting location
+                    TeleporterController.BeginTeleportation(original);
+                    ModLogger.Debug("Teleport to start");
+                    original.WorldPosition = originalPos; //Return position to original otherwise forlorn will always teleport to starting location
+                }
+                else
+                    RandomizerMessager.instance.AddMessage("You can not teleport from here. Get to a save place where you can freely stand.");
             }
             catch (System.Exception ex)
             {
@@ -92,7 +98,7 @@ namespace OriBFArchipelago.MapTracker.UI
 
 
         public static MapVisibilityEnum GetMapVisibility()
-        {            
+        {
             return EnumParser.GetEnumValue<MapVisibilityEnum>(MapVisibility.Value);
         }
         public static IconVisibilityEnum GetIconVisibility()
