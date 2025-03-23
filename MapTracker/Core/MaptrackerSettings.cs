@@ -61,8 +61,7 @@ namespace OriBFArchipelago.MapTracker.Core
             {
                 var collectedCustomIcons = new List<MoonGuid>(CollectedCustomIcons);
                 collectedCustomIcons.Add(moonGuid);
-                CollectedCustomIcons = collectedCustomIcons;
-                ModLogger.Debug($"Added petrified plant: {moonGuid}");
+                CollectedCustomIcons = collectedCustomIcons;                
             }
         }
 

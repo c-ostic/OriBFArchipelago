@@ -19,18 +19,17 @@ namespace OriBFArchipelago.MapTracker.Logic
 
                 _teleporters = new List<Teleporter>
                 {
+                    //new Teleporter( new MoonGuid("535515012 1334527363 694602174 1078580914"),"horuFields",""), //Excluded due to enclosed area.
                     new Teleporter( new MoonGuid("-116578275 1111087997 412427670 -1249908721"), "forlorn", "TPForlorn"),
                     new Teleporter( new MoonGuid("1192718876 1302593798 1929767334 1228332312"),"ginsoTree","TPGinso"),
-                    new Teleporter( new MoonGuid("535515012 1334527363 694602174 1078580914"),"horuFields",""),
                     new Teleporter( new MoonGuid("1392867786 1221127759 -1187823465 2065923254"),"mangroveFalls","TPBlackroot"),
-                    new Teleporter( new MoonGuid("-1403163413 1192454842 -61150018 -775781366"),"mangroveFalls",""),
                     new Teleporter( new MoonGuid("1752643371 1284208868 -838119773 -772240063"),"moonGrotto","TPGrotto"),
                     new Teleporter( new MoonGuid("-222749108 1226712869 1550796190 1752513159"),"mountHoru","TPHoru"),
                     new Teleporter( new MoonGuid("-526679870 1154615959 -822258040 -1157635306"),"sorrowPass","TPValley"),
                     new Teleporter( new MoonGuid("1728896576 1241211625 810412199 -1853282216"),"spiritTree","TPGrove"),
                     new Teleporter( new MoonGuid("-426388372 1251161513 2131007642 -178890301"),"sunkenGlades","TPGlades"),
                     new Teleporter( new MoonGuid("1413930166 1176009348 411655079 -1337676822"),"swamp","TPSwamp"),
-                    new Teleporter( new MoonGuid("290349702 1160050707 663397788 1544872441"),"valleyOfTheWind","")
+                    new Teleporter( new MoonGuid("290349702 1160050707 663397788 1544872441"),"valleyOfTheWind","TPSorrow") //Yes, valleyOfTheWind teleporter goes to sorrow peak and visa versa. This is a "bug" in the original game.
                 };
 
                 return _teleporters;
@@ -139,7 +138,7 @@ namespace OriBFArchipelago.MapTracker.Logic
         }
 
         private static void SetInventoryValue(string entryName, int value)
-        {            
+        {
             InitializeInventory();
             if (value == 0)
                 return;
@@ -169,16 +168,12 @@ namespace OriBFArchipelago.MapTracker.Logic
 
                 var match = Teleporters.FirstOrDefault(d => d.GameIdentifier.Equals(teleporter.Identifier));
                 if (match == null || string.IsNullOrEmpty(match.LogicIdentifier))
-                {
-                    ModLogger.Debug($"Cant find teleporter: {teleporter.Identifier}");
                     continue;
-                }
 
                 if (match.IsActivaded)
                     continue;
 
                 match.IsActivaded = true;
-                ModLogger.Debug($"Matched teleporter: {match.GameIdentifier} to {match.LogicIdentifier}");
                 AddInventoryItem(match.LogicIdentifier);
             }
         }

@@ -35,7 +35,6 @@ namespace OriBFArchipelago.Patches
                     else if (location.Name == "GinsoEscapeExit")
                         customIcon.Type = CustomWorldMapIconType.CleanWater;
 
-                    ModLogger.Debug($"Adding custom icon for {location.Name} - {location.CustomIconType}");
 
                     CustomWorldMapIconManager.Register(customIcon);
                 }
