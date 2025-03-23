@@ -4622,7 +4622,7 @@ private string location_rules = @"
       ""casual"": [ [ ""Free"" ] ]
     },
     ""FronkeyFight"": {
-      ""casual"": [ [ ""SpiritFlame"" ] ]
+      ""casual"": [ [ ""Free"" ] ]
     },
     ""GladesKeystone1"": {
       ""casual"": [ [ ""SpiritFlame"" ] ]
