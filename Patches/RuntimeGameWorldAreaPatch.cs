@@ -12,7 +12,7 @@ namespace OriBFArchipelago.Patches
     [HarmonyPatch(typeof(RuntimeGameWorldArea))]
     internal class RuntimeGameWorldAreaPatch
     {
-        private static bool AddedCustomIcons = false;
+        public static bool AddedCustomIcons = false;
         [HarmonyPatch("Initialize")]
         [HarmonyPostfix]
         internal static void Initialize_Postfix(RuntimeGameWorldArea __instance)
@@ -47,7 +47,7 @@ namespace OriBFArchipelago.Patches
             }
         }
 
-        private static List<string> DiscoveredAreas { get; set; }
+        public static List<string> DiscoveredAreas { get; set; }
         static RuntimeGameWorldAreaPatch()
         {
             DiscoveredAreas = new List<string>();

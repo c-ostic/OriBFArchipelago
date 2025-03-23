@@ -117,7 +117,7 @@ namespace OriBFArchipelago.Core
             if (target == null) //attempt to get location by iconguid
                 target = locations.FirstOrDefault(d => d.IconGuid == moonGuid);
 
-            if (target == null && !loggedInvalidLocations.Any(d=>d == moonGuid))
+            if (target == null && !loggedInvalidLocations.Any(d => d == moonGuid))
             {
                 loggedInvalidLocations.Add(moonGuid);
                 ModLogger.Debug($"Invalid location: {moonGuid} - Player position: {Characters.Sein.Position}");

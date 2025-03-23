@@ -39,6 +39,13 @@ namespace OriBFArchipelago.MapTracker.Logic
 
         public static Dictionary<string, int> Inventory { get; set; }
 
+        public static void Clear()
+        {
+            if (Inventory != null)
+                Inventory.Clear();
+
+            Teleporters.ForEach(d => d.IsActivaded = false);
+        }
         public static Dictionary<string, int> GetInventory()
         {
             InitializeInventory();

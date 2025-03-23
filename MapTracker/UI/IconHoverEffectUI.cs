@@ -20,7 +20,8 @@ namespace OriBFArchipelago.MapTracker.UI
 
         void Update()
         {
-            if (MapUI == null) return;
+            if (MapUI == null)
+                return;
 
             if (GameSettings.Instance.CurrentControlScheme == ControlScheme.Controller)
             {

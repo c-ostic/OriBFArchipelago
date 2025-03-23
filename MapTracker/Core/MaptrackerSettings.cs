@@ -1,6 +1,8 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
+using OriBFArchipelago.MapTracker.Logic;
 using OriBFArchipelago.MapTracker.UI;
+using OriBFArchipelago.Patches;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,6 +29,8 @@ namespace OriBFArchipelago.MapTracker.Core
         {
             try
             {
+                Reset();
+
                 _config = new ConfigFile(SaveSlotFilePath, true);
                 InitializeSettings();
                 ModLogger.Debug($"Loading settings: {_config.ConfigFilePath}");
@@ -66,6 +70,16 @@ namespace OriBFArchipelago.MapTracker.Core
         {
             if (File.Exists(SaveSlotFilePath))
                 File.Delete(SaveSlotFilePath);
+        }
+
+        internal static void Reset()
+        {
+            //todo: This is a "quick fix". All settings should be in a seperate class and handled there
+            ModLogger.Info("Resetting maptracker settings");
+            RuntimeGameWorldAreaPatch.DiscoveredAreas = new List<string>();
+            RuntimeGameWorldAreaPatch.AddedCustomIcons = false;
+            CollectedCustomIcons = new List<MoonGuid>();
+            LogicInventory.Clear();
         }
     }
 }

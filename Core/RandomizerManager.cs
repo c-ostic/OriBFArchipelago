@@ -229,7 +229,7 @@ namespace OriBFArchipelago.Core
          */
         public void QuitSaveSlot()
         {
-            Console.WriteLine($"Quitting save slot {SaveSlotsManager.CurrentSlotIndex}");
+            Console.WriteLine($"Quitting save slot {SaveSlotsManager.CurrentSlotIndex}");            
             RandomizerSettings.InGame = false;
             connection.Disconnect();
             connection = null;

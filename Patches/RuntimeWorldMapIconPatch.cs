@@ -69,6 +69,9 @@ namespace OriBFArchipelago.Patches
             try
             {
 
+                if (__instance.Icon == WorldMapIconType.SavePedestal)
+                    return;
+
                 if (__instance.Icon != WorldMapIconType.Invisible && __instance.IsVisible(AreaMapUI.Instance))
                 {
                     // Get the private m_iconGameObject field using reflection
