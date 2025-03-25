@@ -163,7 +163,10 @@ namespace OriBFArchipelago.MapTracker.Logic
         private bool CanSatisfyRequirement(string requirement, Dictionary<string, int> inventory)
         {
             // Special cases
-            if (requirement == "Free" || requirement == "Open" || requirement == "None")
+            if (requirement == "None")
+                return false;
+
+            if (requirement == "Free" || requirement == "Open")
                 return true;
 
             if (requirement == "OpenWorld")
