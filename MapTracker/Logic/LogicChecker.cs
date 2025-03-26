@@ -179,10 +179,14 @@ namespace OriBFArchipelago.MapTracker.Logic
                 var itemName = parts[0];
                 var count = int.Parse(parts[1]);
 
-                // Special case for HealthCell - only count if damage boost is enabled
-                if (itemName == "HealthCell" && !RandomizerManager.Options.EnableDamageBoost)
-                    return false;
+                if (itemName == "HealthCell")
+                {
+                    // Special case for HealthCell - only count if damage boost is enabled
+                    if (!RandomizerManager.Options.EnableDamageBoost)
+                        return false;
 
+                    count += 3; //To account for starting with 3 healthcells.
+                }
                 return inventory.ContainsKey(itemName) && inventory[itemName] >= count;
             }
 
