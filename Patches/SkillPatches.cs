@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using OriBFArchipelago.Core;
+using OriBFArchipelago.MapTracker.Logic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,6 +50,16 @@ namespace OriBFArchipelago.Patches
                     $"Press {Keybinder.ToString(KeybindAction.Help)} to see other keybinds.");
             }
             return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(PlayerAbilities), nameof(PlayerAbilities.SetAbility))]
+    internal class PlayerAbilitiesPatch
+    {
+        private static void Postfix(AbilityType ability, bool value)
+        {
+            if (value)
+                LogicInventory.AddAbility(ability);
         }
     }
 }

@@ -120,6 +120,13 @@ namespace OriBFArchipelago.Core
                 messageQueue.Enqueue(new RandomizerMessage(message, RandomizerSettings.Get(RandomizerSetting.MessageDuration)));
             }
         }
+        public void Clear()
+        {
+            foreach (var message in messageQueue)
+            {
+                message.currentDuration = 0;
+            }
+        }
 
         public void AddMessage(LogMessage message)
         {
