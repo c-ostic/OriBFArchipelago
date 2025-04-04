@@ -153,6 +153,13 @@ namespace OriBFArchipelago.Core
             }
         }
 
+        public bool CopySaveSlot(int from, int to)
+        {
+            saveSlots[to] = saveSlots[from];
+            RandomizerIO.WriteSlotData(saveSlots);
+            InspectSaveSlot(to);
+            return true;
+        }
         /**
          * Called when attempting to start a save slot
          * Returns false if there is a problem with the save slot data or archipelago connection
@@ -229,7 +236,7 @@ namespace OriBFArchipelago.Core
          */
         public void QuitSaveSlot()
         {
-            Console.WriteLine($"Quitting save slot {SaveSlotsManager.CurrentSlotIndex}");            
+            Console.WriteLine($"Quitting save slot {SaveSlotsManager.CurrentSlotIndex}");
             RandomizerSettings.InGame = false;
             connection.Disconnect();
             connection = null;
@@ -337,6 +344,7 @@ namespace OriBFArchipelago.Core
     {
         private static void Prefix(int from, int to)
         {
+            RandomizerManager.instance.CopySaveSlot(from, to);
             RandomizerIO.CopySaveFile(from, to);
         }
     }
