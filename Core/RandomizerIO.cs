@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using BepInEx;
 using HarmonyLib;
+using OriBFArchipelago.MapTracker.Core;
 
 namespace OriBFArchipelago.Core
 {
@@ -180,7 +182,9 @@ namespace OriBFArchipelago.Core
 
             string originalLocationFileName = $"Slot{originalSaveSlot}Locations.txt";
             string originalLocationFullPath = $"{SAVE_FILE_PATH}\\{originalLocationFileName}";
-            
+
+            var originalMaptrackerSettingsPath = Paths.ConfigPath + $"/MapTracker/Slot{originalSaveSlot}.cfg";
+
             // New file paths
             string newInventoryFileName = $"Slot{copySaveSlot}.txt";
             string newInventoryFullPath = $"{SAVE_FILE_PATH}\\{newInventoryFileName}";
@@ -188,14 +192,21 @@ namespace OriBFArchipelago.Core
             string newLocationFileName = $"Slot{copySaveSlot}Locations.txt";
             string newLocationFullPath = $"{SAVE_FILE_PATH}\\{newLocationFileName}";
 
+            var newMaptrackerSettingsPath = Paths.ConfigPath + $"/MapTracker/Slot{copySaveSlot}.cfg";
+
+
             try
             {
-                File.Copy(originalInventoryFullPath, newInventoryFullPath);
-                File.Copy(originalLocationFullPath, newLocationFullPath);
+                if (File.Exists(originalInventoryFullPath))
+                    File.Copy(originalInventoryFullPath, newInventoryFullPath);
+                if (File.Exists(originalLocationFullPath))
+                    File.Copy(originalLocationFullPath, newLocationFullPath);
+                if (File.Exists(originalMaptrackerSettingsPath))
+                    File.Copy(originalMaptrackerSettingsPath, newMaptrackerSettingsPath);
             }
             catch (IOException e)
             {
-                Console.WriteLine($"Could not copy the file: {e}");
+                ModLogger.Debug($"Could not copy the file: {e}");
                 return false;
             }
 
@@ -316,7 +327,7 @@ namespace OriBFArchipelago.Core
                 }
 
                 StringBuilder sb = new StringBuilder();
-                
+
 
                 foreach (KeyValuePair<int, SlotData> pair in data)
                 {
@@ -344,7 +355,7 @@ namespace OriBFArchipelago.Core
                 return false;
             }
         }
-        
+
         /**
          * Read settings from file
          * If the file is not found, an empty dictionary is returned and the function returns false
