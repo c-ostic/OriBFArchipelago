@@ -5,11 +5,12 @@ using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Packets;
 using Game;
+using OriBFArchipelago.MapTracker.Core;
+using OriModding.BF.UiLib.Map;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -109,6 +110,7 @@ namespace OriBFArchipelago.Core
                 result = new LoginFailure(e.GetBaseException().Message);
             }
 
+            RandomizerMessager.instance.Clear();
             if (!result.Successful)
             {
                 LoginFailure failure = (LoginFailure)result;
@@ -151,9 +153,9 @@ namespace OriBFArchipelago.Core
         {
             // Kills the player if a death link is queued
             if (queueDeath &&
-                Characters.Sein.Active && 
-                !Characters.Sein.IsSuspended && 
-                Characters.Sein.Controller.CanMove && 
+                Characters.Sein.Active &&
+                !Characters.Sein.IsSuspended &&
+                Characters.Sein.Controller.CanMove &&
                 !UI.MainMenuVisible)
             {
                 queueDeath = false;
@@ -201,7 +203,7 @@ namespace OriBFArchipelago.Core
         {
             string itemName = helper.PeekItem().ItemName;
 
-            RandomizerManager.Receiver.ReceiveItem((InventoryItem) Enum.Parse(typeof(InventoryItem), itemName));
+            RandomizerManager.Receiver.ReceiveItem((InventoryItem)Enum.Parse(typeof(InventoryItem), itemName));
 
             if (itemName == "Relic")
             {
@@ -260,8 +262,10 @@ namespace OriBFArchipelago.Core
                 return;
             }
 
-            if (RandomizerManager.Options.MapStoneLogic == MapStoneOptions.Progressive &&
-                    mapLocations.Contains(location.Name))
+            if (location.CustomIconType != CustomWorldMapIconType.None)
+                MaptrackerSettings.AddCustomIconCheck(location.MoonGuid);
+
+            if (RandomizerManager.Options.MapStoneLogic == MapStoneOptions.Progressive && mapLocations.Contains(location.Name))
             {
                 // track the original location in addition to the progressive location
                 RandomizerManager.Receiver.CheckLocation(location.Name);
@@ -318,7 +322,7 @@ namespace OriBFArchipelago.Core
         private void UpdateMapLocations()
         {
             List<string> foundMaps = new List<string>();
-            
+
             foreach (string mapLocation in mapLocations)
             {
                 if (RandomizerManager.Receiver.IsLocationChecked(mapLocation))

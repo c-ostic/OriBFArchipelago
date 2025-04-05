@@ -1,9 +1,7 @@
 ﻿using MonoMod.Utils;
+using OriBFArchipelago.MapTracker.Core;
 using System;
 using System.Collections.Generic;
-using System.Drawing.Text;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace OriBFArchipelago.Core
@@ -78,7 +76,7 @@ namespace OriBFArchipelago.Core
         private void OnGUI()
         {
             // Show options
-            if (ShowSettings)
+            if (ShowSettings && Game.UI.Menu.CurrentScreen == MenuScreenManager.Screens.WorldMap)
             {
                 textStyle.fontSize = (int)(25 * (Screen.width / baseScreenSize.x));
 
@@ -126,6 +124,8 @@ namespace OriBFArchipelago.Core
         }
 
         public static bool ShowSettings { get; set; }
+        public static bool InSaveSelect { get; set; }
+        public static bool InGame { get; set; }
 
         public static int Get(RandomizerSetting setting)
         {
