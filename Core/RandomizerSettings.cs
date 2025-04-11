@@ -1,5 +1,4 @@
 ﻿using MonoMod.Utils;
-using OriBFArchipelago.MapTracker.Core;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,6 +21,8 @@ namespace OriBFArchipelago.Core
         // Since message duration will be a slider, it needs a min and max
         private const float MIN_MESSAGE_DURATION = 2f;
         private const float MAX_MESSAGE_DURATION = 10f;
+
+        public static bool EnableDebug => true; //Enables debug settings; use only for programmers
 
         private static Dictionary<RandomizerSetting, int> defaultSettings = new Dictionary<RandomizerSetting, int>
         {

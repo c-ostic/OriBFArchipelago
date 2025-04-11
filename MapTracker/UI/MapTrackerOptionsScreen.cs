@@ -9,7 +9,7 @@ namespace OriBFArchipelago.MapTracker.UI
         private const string CONFIGSECTION = "MapTracker";
 
 
-        private static ConfigFile _config;        
+        private static ConfigFile _config;
 
         private static ConfigEntry<string> MapVisibility { get; set; }
         private static ConfigEntry<string> IconVisibility { get; set; }
