@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static SceneMetaData;
 
 namespace OriBFArchipelago.Core
 {
@@ -23,7 +24,9 @@ namespace OriBFArchipelago.Core
         ExpSmall,
         ExpMedium,
         ExpLarge,
-        ProgressiveMap
+        ProgressiveMap,
+        SavePedestal,
+        HoruDoor
     }
 
     internal class Location
@@ -426,6 +429,7 @@ namespace OriBFArchipelago.Core
             new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000007")), "ProgressiveMap7", WorldArea.Void, LocationType.ProgressiveMap, new Vector2(0.0f, 48.0f)),
             new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000008")), "ProgressiveMap8", WorldArea.Void, LocationType.ProgressiveMap, new Vector2(0.0f, 52.0f)),
             new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000009")), "ProgressiveMap9", WorldArea.Void, LocationType.ProgressiveMap, new Vector2(0.0f, 56.0f))
+            //New locations
         };
     }
 }

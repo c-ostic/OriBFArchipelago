@@ -52,14 +52,4 @@ namespace OriBFArchipelago.Patches
             return true;
         }
     }
-
-    [HarmonyPatch(typeof(PlayerAbilities), nameof(PlayerAbilities.SetAbility))]
-    internal class PlayerAbilitiesPatch
-    {
-        private static void Postfix(AbilityType ability, bool value)
-        {
-            if (value)
-                LogicInventory.AddAbility(ability);
-        }
-    }
 }

@@ -28,26 +28,14 @@ namespace OriBFArchipelago.MapTracker.Logic
                 if (IsDuplicateIcon(icon))
                     return false;
 
-                if (icon.Icon == WorldMapIconType.SavePedestal)
-                {
-                    var tp = LogicInventory.Teleporters.FirstOrDefault(d => d.Guid == icon.Guid);
-                    return tp?.IsActivaded ?? false;
-                }
-
                 if ((MaptrackerSettings.CollectedCustomIcons.Contains(icon.Guid)))
                     return false;
 
                 var trackerItem = LocationLookup.Get(icon.Guid);
-                if (icon.Icon == WorldMapIconType.AbilityPedestal && trackerItem == null)
-                {
-                    ModLogger.Debug($"Failed to find ability pedestal: {icon.Guid}");
-                    return false;
-                }
-
                 if (trackerItem == null)
                     return false;
 
-                return _logicChecker.IsPickupAccessible(trackerItem.Name, LogicInventory.GetInventory(), RandomizerManager.Options.LogicDifficulty);
+                return _logicChecker.IsPickupAccessible(trackerItem.Name, RandomizerManager.Receiver.GetAllItems(), RandomizerManager.Options.LogicDifficulty);
             }
             catch (Exception ex)
             {

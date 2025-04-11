@@ -78,7 +78,6 @@ namespace OriBFArchipelago.MapTracker.Core
             RuntimeGameWorldAreaPatch.DiscoveredAreas = new List<string>();
             RuntimeGameWorldAreaPatch.AddedCustomIcons = false;
             CollectedCustomIcons = new List<MoonGuid>();
-            LogicInventory.Clear();
         }
     }
 }

@@ -1,10 +1,9 @@
-﻿using System;
+﻿using BepInEx;
+using OriBFArchipelago.MapTracker.Core;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using BepInEx;
-using HarmonyLib;
-using OriBFArchipelago.MapTracker.Core;
 
 namespace OriBFArchipelago.Core
 {

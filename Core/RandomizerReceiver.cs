@@ -1,5 +1,6 @@
 ﻿using Game;
 using OriBFArchipelago.Extensions;
+using OriBFArchipelago.MapTracker.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -228,6 +229,16 @@ namespace OriBFArchipelago.Core
             return checkedLocations.Contains(location) || unsavedCheckedLocations.Contains(location);
         }
 
+        public Dictionary<string, int> GetAllItems()
+        {
+            var rValue = new Dictionary<string, int>();
+            foreach (InventoryItem item in Enum.GetValues(typeof(InventoryItem)))
+            {
+                var value = savedInventory.Get(item) + unsavedInventory.Get(item);
+                rValue.Add(item.ToString(), value);
+            }
+            return rValue;
+        }
         /**
          * Returns a list of all locally checked locations
          */
