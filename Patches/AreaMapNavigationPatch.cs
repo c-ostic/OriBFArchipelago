@@ -19,15 +19,16 @@ namespace OriBFArchipelago.Patches
         [HarmonyPatch("UpdatePlane")]
         [HarmonyPrefix]
         static bool Prefix(AreaMapNavigation __instance)
-        { 
+        {
             //Disables the sway in the map
             if (!MaptrackerSettings.DisableMapSway)
-                return true;        
-                try {
-            var mapPivot = AccessTools.Field(typeof(AreaMapNavigation), "MapPivot").GetValue(__instance) as Transform;
-            float zoom = __instance.Zoom;
-            __instance.MapPlaneSize = Vector2.one * zoom;
-            mapPivot.position = -__instance.ScrollPosition * zoom;
+                return true;
+            try
+            {
+                var mapPivot = AccessTools.Field(typeof(AreaMapNavigation), "MapPivot").GetValue(__instance) as Transform;
+                float zoom = __instance.Zoom;
+                __instance.MapPlaneSize = Vector2.one * zoom;
+                mapPivot.position = -__instance.ScrollPosition * zoom;
 
             }
             catch (Exception ex)

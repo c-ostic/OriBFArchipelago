@@ -37,6 +37,7 @@ namespace OriBFArchipelago.Core
         public WorldArea Area { get; private set; }
         public LocationType Type { get; private set; }
         public CustomWorldMapIconType CustomIconType { get; private set; }
+        public WorldMapIconType IconType { get; private set; }
         public Vector2 WorldPosition { get; private set; }
 
         public Location(MoonGuid moonGuid, string name, WorldArea area, LocationType type, Vector2 worldPosition, MoonGuid iconGuid = null)
@@ -48,8 +49,27 @@ namespace OriBFArchipelago.Core
             WorldPosition = worldPosition;
             IconGuid = iconGuid;
             CustomIconType = GetCustomWorldMapIcon(type);
+            IconType = GetWorldMapIcon(type);
         }
 
+        private WorldMapIconType GetWorldMapIcon(LocationType type)
+        {
+            switch (type)
+            {
+                case LocationType.ExpSmall:
+                case LocationType.ExpMedium:
+                case LocationType.ExpLarge:
+                    return WorldMapIconType.Experience;
+                case LocationType.Skill:
+                    return WorldMapIconType.AbilityPedestal;
+                case LocationType.AbilityCell:
+                    return WorldMapIconType.AbilityPoint;
+                case LocationType.Keystone:
+                    return WorldMapIconType.Keystone;
+                default:
+                    return WorldMapIconType.BreakableWall;
+            }
+        }
         private CustomWorldMapIconType GetCustomWorldMapIcon(LocationType type)
         { //todo: maybe move this into the location class and have it set icon on generation
             switch (type)
@@ -134,11 +154,11 @@ namespace OriBFArchipelago.Core
             if (loggedInvalidLocations == null)
                 loggedInvalidLocations = new List<MoonGuid>();
 
-            if (target == null && !loggedInvalidLocations.Any(d => d == moonGuid))
-            {
-                loggedInvalidLocations.Add(moonGuid);
-                ModLogger.Debug($"Invalid location: {moonGuid} - Player position: {Characters.Sein.Position}");
-            }
+            //if (target == null && !loggedInvalidLocations.Any(d => d == moonGuid))
+            //{
+            //    loggedInvalidLocations.Add(moonGuid);
+            //    //ModLogger.Debug($"Invalid location: {moonGuid} - Player position: {Characters.Sein.Position}");
+            //}
 
             return target;
         }

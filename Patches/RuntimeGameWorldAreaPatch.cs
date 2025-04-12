@@ -6,12 +6,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace OriBFArchipelago.Patches
 {
     [HarmonyPatch(typeof(RuntimeGameWorldArea))]
     internal class RuntimeGameWorldAreaPatch
     {
+        public static Condition StoredMistyWoodsCondition { get; set; }
         public static bool AddedCustomIcons = false;
         [HarmonyPatch("Initialize")]
         [HarmonyPostfix]
@@ -21,12 +23,15 @@ namespace OriBFArchipelago.Patches
             {   //todo: Check if this works as intended
                 if (AddedCustomIcons)
                     return;
-                var locations = LocationLookup.GetLocations().Where(d => d.CustomIconType != CustomWorldMapIconType.None);
+
+                var locations = LocationLookup.GetLocations().Where(d => d.CustomIconType != CustomWorldMapIconType.None || d.Area == WorldArea.Misty);
                 foreach (var location in locations)
                 {
-                    
-                    var customIcon = new CustomWorldMapIcon(location.CustomIconType, location.WorldPosition, location.MoonGuid);
-                    //todo: Make this work with locationlookup
+                    CustomWorldMapIcon customIcon;
+                    if (location.CustomIconType == CustomWorldMapIconType.None)
+                        customIcon = new CustomWorldMapIcon(location.IconType, location.WorldPosition, location.MoonGuid);
+                    else
+                        customIcon = new CustomWorldMapIcon(location.CustomIconType, location.WorldPosition, location.MoonGuid);
 
                     if (location.Name == "Sunstone")
                         customIcon.Type = CustomWorldMapIconType.Sunstone;
@@ -34,7 +39,6 @@ namespace OriBFArchipelago.Patches
                         customIcon.Type = CustomWorldMapIconType.WaterVein;
                     else if (location.Name == "GinsoEscapeExit")
                         customIcon.Type = CustomWorldMapIconType.CleanWater;
-
 
                     CustomWorldMapIconManager.Register(customIcon);
                 }
@@ -65,14 +69,37 @@ namespace OriBFArchipelago.Patches
                 ModLogger.Debug("Discovering all areas");
                 var face = GameWorld.Instance.RuntimeAreas.FirstOrDefault().Area.CageStructureTool.Faces.OrderBy(d => d.ID).FirstOrDefault();
                 var id = face.ID.ToString();
-                GameWorld.Instance.RuntimeAreas.ForEach(c => c.DiscoverAllAreas());
+                GameWorld.Instance.RuntimeAreas.ForEach(area =>
+                {
+                    area.DiscoverAllAreas();
+                    if (area.Area.AreaName.ToString() == "MISTY WOODS")
+                    {
+                        if (area.Area.VisitableCondition != null)
+                            StoredMistyWoodsCondition = area.Area.VisitableCondition;
+
+                        area.Area.VisitableCondition = null;
+                        Transform mapPivot = AreaMapUI.Instance.transform.Find("mapPivot");
+                        mapPivot.FindChild("mistyWoodsFog").gameObject.SetActive(false);
+                        mapPivot.FindChild("mistyWoods").gameObject.SetActive(true);
+                    }
+                });
                 DiscoveredAreas.Add(id);
 
             }
             else if (mapVisibility == MapVisibilityEnum.Not_Visible && DiscoveredAreas.Count > 0)
             {
                 ModLogger.Debug("Undiscovering all areas");
-                GameWorld.Instance.RuntimeAreas.ForEach(c => c.UnDiscoverAllAreas());
+                GameWorld.Instance.RuntimeAreas.ForEach(area =>
+                {
+                    area.UnDiscoverAllAreas();
+                    if (area.Area.AreaName.ToString() == "MISTY WOODS")
+                    {
+                        area.Area.VisitableCondition = StoredMistyWoodsCondition;
+                        Transform mapPivot = AreaMapUI.Instance.transform.Find("mapPivot");
+                        mapPivot.FindChild("mistyWoodsFog").gameObject.SetActive(true);
+                        mapPivot.FindChild("mistyWoods").gameObject.SetActive(false);
+                    }
+                });
                 DiscoveredAreas.Clear();
             }
         }
