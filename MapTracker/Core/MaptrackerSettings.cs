@@ -9,10 +9,11 @@ namespace OriBFArchipelago.MapTracker.Core
     internal class MaptrackerSettings
     {
         private static string OldSaveSlotFilePath { get { return Paths.ConfigPath + $"/MapTrackerSlot{SaveSlotsUI.Instance.CurrentSaveSlot.SaveSlotIndex}.cfg"; } }
-        public static bool EnableIconInfocUI { get { return MapTrackerOptionsScreen.GetEnableIconInfocUI(); } }
-        public static MapVisibilityEnum MapVisibility { get { return MapTrackerOptionsScreen.GetMapVisibility(); } }
-        public static IconVisibilityEnum IconVisibility { get { return MapTrackerOptionsScreen.GetIconVisibility(); } }
-        public static bool DisableMapSway { get { return MapTrackerOptionsScreen.GetDisableMapSway(); } }
+        public static bool EnableIconInfocUI { get { return MapTrackerOptionsScreen.EnableIconInfocUI; } }
+        public static MapVisibilityEnum MapVisibility { get { return MapTrackerOptionsScreen.MapVisibility; } }
+        public static IconVisibilityEnum IconVisibility { get { return MapTrackerOptionsScreen.IconVisibility; } }
+        public static IconVisibilityLogicEnum IconVisibilityLogic { get { return MapTrackerOptionsScreen.IconVisibilityLogic; } }
+        public static bool DisableMapSway { get { return MapTrackerOptionsScreen.DisableMapSway; } }
 
         internal static void Delete()
         { //Keep this to cleanup old config files

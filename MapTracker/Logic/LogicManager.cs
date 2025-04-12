@@ -32,8 +32,8 @@ namespace OriBFArchipelago.MapTracker.Logic
                 if (trackerItem == null)
                     return false;
 
-                //if (RandomizerManager.Receiver.IsLocationChecked(trackerItem.Name))
-                //    return false;
+                if (MaptrackerSettings.IconVisibilityLogic == IconVisibilityLogicEnum.Archipelago && RandomizerManager.Receiver.IsLocationChecked(trackerItem.Name))
+                    return false;
 
                 return _logicChecker.IsPickupAccessible(trackerItem.Name, RandomizerManager.Receiver.GetAllItems(), RandomizerManager.Options.LogicDifficulty);
             }
@@ -42,12 +42,6 @@ namespace OriBFArchipelago.MapTracker.Logic
                 ModLogger.Error($"Error at IsInLogic: {ex}");
                 return false;
             }
-
-            //check petrifiedplants
-            //get item name by locations.
-            //check item against logic
-            //build inventory
-            //more?
         }
 
         private static bool IsIgnoredIconType(WorldMapIconType iconType)

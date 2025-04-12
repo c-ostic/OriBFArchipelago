@@ -1,5 +1,7 @@
-﻿using BepInEx;
+﻿using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
+using BepInEx;
 using BepInEx.Configuration;
+using Game;
 using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
 using System;
@@ -12,10 +14,11 @@ namespace OriBFArchipelago.MapTracker.UI
         private const string CONFIGSECTION = "MapTracker";
         private static ConfigFile _config;
 
-        private static ConfigEntry<string> MapVisibility { get; set; }
-        private static ConfigEntry<string> IconVisibility { get; set; }
-        private static ConfigEntry<bool> EnableIconInfocUI { get; set; }
-        private static ConfigEntry<bool> DisableMapSway { get; set; }
+        private static ConfigEntry<string> _mapVisibility { get; set; }
+        private static ConfigEntry<string> _iconVisibility { get; set; }
+        private static ConfigEntry<string> _iconVisibilityLogic { get; set; }
+        private static ConfigEntry<bool> _enableIconInfocUI { get; set; }
+        private static ConfigEntry<bool> _disableMapSway { get; set; }
 
         private static string ConfigSavePath { get { return RandomizerIO.GetFilePath("MapTracker.cfg"); } }
         private static string OldConfigSavePath { get { return Paths.ConfigPath + $"/OriBFMapTracker/Tracker.cfg"; } }
@@ -23,7 +26,7 @@ namespace OriBFArchipelago.MapTracker.UI
         {
             ModLogger.Debug("Loaded MaptrackerSettingsScreen");
         }
-        
+
         public override void InitScreen()
         {
             try
@@ -55,10 +58,11 @@ namespace OriBFArchipelago.MapTracker.UI
         private void InitializeSettings(ConfigFile config)
         {
             ModLogger.Debug("Initializing settings");
-            MapVisibility = config.Bind(CONFIGSECTION, "MapVisibility", $"{MapVisibilityEnum.Visible}", "Sets map visibility");
-            IconVisibility = config.Bind(CONFIGSECTION, "IconVisibility", $"{IconVisibilityEnum.In_Logic}", "Sets icon visibility");
-            EnableIconInfocUI = config.Bind(CONFIGSECTION, "EnableItemUI", false, "Sets enableitemui");
-            DisableMapSway = config.Bind(CONFIGSECTION, "DisableMapSway", false, "Sets disablemapsway");
+            _mapVisibility = config.Bind(CONFIGSECTION, "MapVisibility", $"{MapVisibilityEnum.Visible}", "Sets map visibility");
+            _iconVisibility = config.Bind(CONFIGSECTION, "IconVisibility", $"{IconVisibilityEnum.In_Logic}", "Sets icon visibility");
+            _iconVisibilityLogic = config.Bind(CONFIGSECTION, "IconVisiblityLogic", $"{IconVisibilityLogicEnum.Game}", "Sets icon visibility logic");
+            _enableIconInfocUI = config.Bind(CONFIGSECTION, "EnableItemUI", false, "Sets enableitemui");
+            _disableMapSway = config.Bind(CONFIGSECTION, "DisableMapSway", false, "Sets disablemapsway");
             ModLogger.Debug("Settings initialized successfully");
         }
 
@@ -66,30 +70,19 @@ namespace OriBFArchipelago.MapTracker.UI
         {
             ModLogger.Debug("Setting up UI components");
             AddButton("Teleport to start", "Teleports Ori to the starting area.", TeleporterManager.TeleportToStart);
-            AddMultiToggle(setting: MapVisibility, label: "Map visiblity", tooltip: "Options: " + string.Join(", ", EnumParser.GetEnumNames(typeof(MapVisibilityEnum))), options: EnumParser.GetEnumNames(typeof(MapVisibilityEnum)));
-            AddMultiToggle(setting: IconVisibility, label: "Icon visibility", tooltip: "Options: " + string.Join(", ", EnumParser.GetEnumNames(typeof(IconVisibilityEnum))), options: EnumParser.GetEnumNames(typeof(IconVisibilityEnum)));
-            AddToggle(setting: EnableIconInfocUI, label: "Icon info", tooltip: "Enables a small window on the top right that information about the item location. This can be triggered with the mouse, or the dot that appears in the middle of the map when using controller");
-            AddToggle(setting: DisableMapSway, label: "Disable map sway", tooltip: "Disables the swap in the map. Usefull when enabling Item UI for better pointing at icons.");
+            AddMultiToggle(_mapVisibility, "Map visiblity", "Not Visibile: Normal game logic for showing maps\nVisible: Shows all maps always", EnumParser.GetEnumNames<MapVisibilityEnum>());
+            AddMultiToggle(_iconVisibility, "Icon visibility", "None: Never show icons\nOriginal: Show icons based on normal game logic.\nIn Logic: Shows icons in logic and icon logic (Setting below)\nAll: Show all uncollected icons in game", EnumParser.GetEnumNames<IconVisibilityEnum>());
+            AddMultiToggle(_iconVisibilityLogic, "Icon logic", "Game: Shows items collected in game, dying without saving will reshow the icon.\nArchipelago: Shows icons based on archipelago. Dying will keep icons hidden except for goal required items.", EnumParser.GetEnumNames<IconVisibilityLogicEnum>());
+            AddToggle(_enableIconInfocUI, "Icon info", "Enables a small window on the top right that information about the item location. This can be triggered with the mouse, or the dot that appears in the middle of the map when using controller");
+            AddToggle(_disableMapSway, "Disable map sway", "Disables the swap in the map. Usefull when enabling Item UI for better pointing at icons.");
             ModLogger.Debug("UI components set up successfully");
         }
 
-        public static MapVisibilityEnum GetMapVisibility()
-        {
-            return EnumParser.GetEnumValue<MapVisibilityEnum>(MapVisibility.Value);
-        }
-        public static IconVisibilityEnum GetIconVisibility()
-        {
-            return EnumParser.GetEnumValue<IconVisibilityEnum>(IconVisibility.Value);
-        }
-        public static bool GetEnableIconInfocUI()
-        {
-            return EnableIconInfocUI?.Value ?? false;
-        }
-
-        internal static bool GetDisableMapSway()
-        {
-            return DisableMapSway?.Value ?? false;
-        }
+        internal static MapVisibilityEnum MapVisibility => EnumParser.GetEnumValue<MapVisibilityEnum>(_mapVisibility.Value);
+        internal static IconVisibilityEnum IconVisibility => EnumParser.GetEnumValue<IconVisibilityEnum>(_iconVisibility.Value);
+        internal static IconVisibilityLogicEnum IconVisibilityLogic => EnumParser.GetEnumValue<IconVisibilityLogicEnum>(_iconVisibilityLogic.Value);
+        internal static bool EnableIconInfocUI => _enableIconInfocUI?.Value ?? false;
+        internal static bool DisableMapSway => _disableMapSway?.Value ?? false;
     }
 }
 

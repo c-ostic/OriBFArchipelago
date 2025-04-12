@@ -23,6 +23,12 @@
         All = 3
     }
 
+    enum IconVisibilityLogicEnum
+    {
+        Game,
+        Archipelago
+    }
+
     enum MapVisibilityEnum
     {
         Not_Visible = 0,

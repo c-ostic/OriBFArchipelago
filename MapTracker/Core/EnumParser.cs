@@ -5,9 +5,9 @@ namespace OriBFArchipelago.MapTracker.Core
 {
     internal class EnumParser
     {
-        internal static string[] GetEnumNames(Type enumType)
+        internal static string[] GetEnumNames<T>() where T : Enum
         {
-            var names = Enum.GetNames(enumType);
+            var names = Enum.GetNames(typeof(T));
             var parsednames = names.Select(c => c.Replace("_", " "));
             return parsednames.ToArray();
         }
