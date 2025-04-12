@@ -30,10 +30,7 @@ namespace OriBFArchipelago.Core
         private RandomizerInventory onLoadInventory;
 
         // locally saves the locations that have been checked in game
-        private List<string> checkedLocations;
-
-        // similar purpose to unsavedInventory
-        private List<string> unsavedCheckedLocations;
+        private Dictionary<string, LocationStatus> checkedLocations;
 
         // the number of the associated save slot in Ori
         private int saveSlot;
@@ -58,7 +55,7 @@ namespace OriBFArchipelago.Core
         public bool Init(bool isNew, int saveSlot, string apSlotName)
         {
             this.saveSlot = saveSlot;
-
+            RandomizerSettings.ActiveSaveSlot = saveSlot;
             SuspensionManager.Register(this);
 
             itemQueue = new Queue<InventoryItem>();
@@ -66,13 +63,12 @@ namespace OriBFArchipelago.Core
 
             onLoadInventory = new RandomizerInventory(VERSION, apSlotName);
             unsavedInventory = new RandomizerInventory(VERSION, apSlotName);
-            unsavedCheckedLocations = new List<string>();
+            checkedLocations = new Dictionary<string, LocationStatus>();
 
             if (isNew)
             {
                 // If this is a new slot, create a new inventory
                 savedInventory = new RandomizerInventory(VERSION, apSlotName);
-                checkedLocations = new List<string>();
                 if (RandomizerIO.WriteSaveFile(saveSlot, savedInventory, checkedLocations))
                 {
                     Console.Write($"Successfully created new inventory for slot {saveSlot}");
@@ -218,7 +214,12 @@ namespace OriBFArchipelago.Core
          */
         public void CheckLocation(string location)
         {
-            unsavedCheckedLocations.Add(location);
+            if (checkedLocations.ContainsKey(location))
+                checkedLocations[location] = LocationStatus.UnsavedCheck;
+            else
+                checkedLocations.Add(location, LocationStatus.UnsavedCheck);
+
+            RandomizerIO.SaveLocations(RandomizerSettings.ActiveSaveSlot, checkedLocations);
         }
 
         /**
@@ -226,7 +227,7 @@ namespace OriBFArchipelago.Core
          */
         public bool IsLocationChecked(string location)
         {
-            return checkedLocations.Contains(location) || unsavedCheckedLocations.Contains(location);
+            return checkedLocations.ContainsKey(location) ? checkedLocations[location] > LocationStatus.Unchecked : false;
         }
 
         public Dictionary<string, int> GetAllItems()
@@ -244,8 +245,7 @@ namespace OriBFArchipelago.Core
          */
         public IEnumerable<string> GetAllLocations()
         {
-            
-            return checkedLocations.Concat(unsavedCheckedLocations);
+            return checkedLocations.Where(d => d.Value > LocationStatus.Unchecked).Select(d => d.Key);
         }
 
         /**
@@ -258,7 +258,10 @@ namespace OriBFArchipelago.Core
 
             // Remove any tracking of used items and checked locations
             unsavedInventory.Reset();
-            unsavedCheckedLocations.Clear();
+            foreach (var location in checkedLocations.Where(d => d.Value == LocationStatus.UnsavedCheck))
+            {
+                checkedLocations[location.Key] = LocationStatus.UnsavedAndDied;
+            }
         }
 
         /**
@@ -276,10 +279,12 @@ namespace OriBFArchipelago.Core
                 onLoadInventory.AddAll(unsavedInventory);
                 unsavedInventory.Reset();
 
-                checkedLocations.AddRange(unsavedCheckedLocations);
-                unsavedCheckedLocations.Clear();
+                foreach (var location in checkedLocations.Where(d => d.Value == LocationStatus.UnsavedCheck))
+                {
+                    checkedLocations[location.Key] = LocationStatus.Checked;
+                }
             }
-            
+
             RandomizerIO.WriteSaveFile(saveSlot, savedInventory, checkedLocations);
             Resync();
         }

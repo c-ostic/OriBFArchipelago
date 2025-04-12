@@ -127,6 +127,7 @@ namespace OriBFArchipelago.Core
         public static bool ShowSettings { get; set; }
         public static bool InSaveSelect { get; set; }
         public static bool InGame { get; set; }
+        public static int ActiveSaveSlot { get; set; }
 
         public static int Get(RandomizerSetting setting)
         {

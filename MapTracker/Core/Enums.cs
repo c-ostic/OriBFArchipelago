@@ -1,6 +1,12 @@
 ﻿namespace OriBFArchipelago.MapTracker.Core
 {
-
+    enum LocationStatus
+    {
+        Unchecked = 1,
+        UnsavedAndDied = 2,
+        UnsavedCheck = 3,
+        Checked = 4
+    }
     enum GameDifficulty
     {
         Casual = 1,
