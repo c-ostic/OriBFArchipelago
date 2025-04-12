@@ -273,9 +273,6 @@ namespace OriBFArchipelago.Core
         private static bool Prefix()
         {
             var canStart = RandomizerManager.instance.StartSaveSlot(false);
-            if (canStart)
-                MaptrackerSettings.LoadSettings();
-
             return canStart;
         }
     }
@@ -289,9 +286,6 @@ namespace OriBFArchipelago.Core
         private static bool Prefix()
         {
             var canStart = RandomizerManager.instance.StartSaveSlot(true);
-            if (canStart)
-                MaptrackerSettings.LoadSettings();
-
             return canStart;
         }
     }

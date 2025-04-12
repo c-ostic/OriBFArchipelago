@@ -28,12 +28,12 @@ namespace OriBFArchipelago.MapTracker.Logic
                 if (IsDuplicateIcon(icon))
                     return false;
 
-                if ((MaptrackerSettings.CollectedCustomIcons.Contains(icon.Guid)))
-                    return false;
-
                 var trackerItem = LocationLookup.Get(icon.Guid);
                 if (trackerItem == null)
                     return false;
+
+                //if (RandomizerManager.Receiver.IsLocationChecked(trackerItem.Name))
+                //    return false;
 
                 return _logicChecker.IsPickupAccessible(trackerItem.Name, RandomizerManager.Receiver.GetAllItems(), RandomizerManager.Options.LogicDifficulty);
             }

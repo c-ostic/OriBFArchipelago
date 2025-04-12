@@ -262,9 +262,6 @@ namespace OriBFArchipelago.Core
                 return;
             }
 
-            if (location.CustomIconType != CustomWorldMapIconType.None)
-                MaptrackerSettings.AddCustomIconCheck(location.MoonGuid);
-
             if (RandomizerManager.Options.MapStoneLogic == MapStoneOptions.Progressive && mapLocations.Contains(location.Name))
             {
                 // track the original location in addition to the progressive location

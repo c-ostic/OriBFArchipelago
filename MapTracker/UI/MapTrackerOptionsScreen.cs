@@ -1,14 +1,15 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
+using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
+using System;
+using System.IO;
 
 namespace OriBFArchipelago.MapTracker.UI
 {
     internal class MapTrackerOptionsScreen : BaseModOptionsScreen
     {
         private const string CONFIGSECTION = "MapTracker";
-
-
         private static ConfigFile _config;
 
         private static ConfigEntry<string> MapVisibility { get; set; }
@@ -16,18 +17,22 @@ namespace OriBFArchipelago.MapTracker.UI
         private static ConfigEntry<bool> EnableIconInfocUI { get; set; }
         private static ConfigEntry<bool> DisableMapSway { get; set; }
 
-
+        private static string ConfigSavePath { get { return RandomizerIO.GetFilePath("MapTracker.cfg"); } }
+        private static string OldConfigSavePath { get { return Paths.ConfigPath + $"/OriBFMapTracker/Tracker.cfg"; } }
         public MapTrackerOptionsScreen()
         {
             ModLogger.Debug("Loaded MaptrackerSettingsScreen");
         }
-
-        // Override the InitScreen method to add your custom settings
+        
         public override void InitScreen()
         {
             try
             {
-                _config = new ConfigFile(Paths.ConfigPath + $"/OriBFMapTracker/Tracker.cfg", true);
+                if (File.Exists(OldConfigSavePath)) //Keep this to accomodate older versions. Removing in 2to4 patches
+                    CopyOldConfigToNew();
+
+                _config = new ConfigFile(ConfigSavePath, true);
+
                 ModLogger.Debug($"Loading settings: {_config.ConfigFilePath}");
                 InitializeSettings(_config);
                 SetComponents();
@@ -35,6 +40,15 @@ namespace OriBFArchipelago.MapTracker.UI
             catch (System.Exception ex)
             {
                 ModLogger.Error($"Error in InitScreen: {ex.ToString()}");
+            }
+        }
+
+        private void CopyOldConfigToNew()
+        {
+            if (File.Exists(OldConfigSavePath))
+            {
+                File.WriteAllText(ConfigSavePath, File.ReadAllText(OldConfigSavePath));
+                File.Delete(OldConfigSavePath);
             }
         }
 
