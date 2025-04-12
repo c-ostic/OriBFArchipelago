@@ -92,7 +92,6 @@ namespace OriBFArchipelago.Patches
                     area.UnDiscoverAllAreas();
                     if (area.Area.AreaName.ToString() == "MISTY WOODS")
                     {
-                        
                         area.Area.VisitableCondition = StoredMistyWoodsCondition;
                         SetMistyWoodsVisibility(false);
                     }
