@@ -26,7 +26,7 @@ namespace OriBFArchipelago.Core
         ExpLarge,
         ProgressiveMap,
         SavePedestal,
-        HoruDoor
+        Goal
     }
 
     internal class Location
@@ -68,9 +68,10 @@ namespace OriBFArchipelago.Core
                     return CustomWorldMapIconType.None;
                 case LocationType.Plant:
                     return CustomWorldMapIconType.Plant;
+                case LocationType.Cutscene:
                 case LocationType.Event:
                     return CustomWorldMapIconType.WindRestored;
-                case LocationType.Cutscene:
+                case LocationType.Goal:
                     return CustomWorldMapIconType.HoruRoom;
                 default:
                     return CustomWorldMapIconType.None;
@@ -95,12 +96,22 @@ namespace OriBFArchipelago.Core
         {
             return Name;
         }
+
+        internal bool IsGoalRequiredItem()
+        {
+            var goal = RandomizerManager.Options?.Goal ?? GoalOptions.AllMaps;
+            if (goal == GoalOptions.AllSkillTrees && Type == LocationType.Skill)
+                return true;
+            else if (goal == GoalOptions.AllMaps && Type == LocationType.Map)
+                return true;
+            //todo: Check for warth fragments and world tour
+            return false;
+        }
     }
 
     internal class LocationLookup
     {
-
-        private static List<MoonGuid> loggedInvalidLocations => new List<MoonGuid>();
+        private static List<MoonGuid> loggedInvalidLocations { get; set; }
         public static Location Get(MoonGuid moonGuid)
         {
             // If this is the first time this is called, populate the locationByGuid dictionary
@@ -119,6 +130,9 @@ namespace OriBFArchipelago.Core
             locationByGuid.TryGetValue(moonGuid, out Location target);
             if (target == null) //attempt to get location by iconguid
                 target = locations.FirstOrDefault(d => d.IconGuid == moonGuid);
+
+            if (loggedInvalidLocations == null)
+                loggedInvalidLocations = new List<MoonGuid>();
 
             if (target == null && !loggedInvalidLocations.Any(d => d == moonGuid))
             {
@@ -428,8 +442,13 @@ namespace OriBFArchipelago.Core
             new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000006")), "ProgressiveMap6", WorldArea.Void, LocationType.ProgressiveMap, new Vector2(0.0f, 44.0f)),
             new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000007")), "ProgressiveMap7", WorldArea.Void, LocationType.ProgressiveMap, new Vector2(0.0f, 48.0f)),
             new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000008")), "ProgressiveMap8", WorldArea.Void, LocationType.ProgressiveMap, new Vector2(0.0f, 52.0f)),
-            new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000009")), "ProgressiveMap9", WorldArea.Void, LocationType.ProgressiveMap, new Vector2(0.0f, 56.0f))
+            new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000009")), "ProgressiveMap9", WorldArea.Void, LocationType.ProgressiveMap, new Vector2(0.0f, 56.0f)),
+            new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000010")), "Goal", WorldArea.Horu, LocationType.Goal, new Vector2(19,104))
             //New locations
+
+            //door l4 - 14 190 0
+            //door r4 - 123 195 0
+            //goal: 19 99 0
         };
     }
 }

@@ -1,9 +1,6 @@
 ﻿using HarmonyLib;
 using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
-using OriBFArchipelago.MapTracker.Logic;
-using System;
-using System.Collections.Generic;
 
 namespace OriBFArchipelago.Patches
 {

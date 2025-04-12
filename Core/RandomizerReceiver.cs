@@ -225,11 +225,24 @@ namespace OriBFArchipelago.Core
         /**
          * Checks if a location has been locally reached
          */
-        public bool IsLocationChecked(string location)
+        public bool IsLocationChecked(string location, bool isGoalRequiredItem = false)
         {
-            return checkedLocations.ContainsKey(location) ? checkedLocations[location] > LocationStatus.Unchecked : false;
+            var checkStatus = isGoalRequiredItem ? LocationStatus.UnsavedCheck : LocationStatus.UnsavedAndDied;
+            return checkedLocations.ContainsKey(location) ? checkedLocations[location] >= checkStatus : false;
         }
 
+        public void UpdateGoal()
+        {
+            if (RandomizerManager.Connection.IsGoalComplete(false))
+            {
+                unsavedInventory.Add(InventoryItem.GoalCompleted);
+                ModLogger.Debug("Goal completed");
+            }
+            else
+                ModLogger.Debug("Checking goal: Goal not met yet");
+            //if (RandomizerManager.Connection.IsGoalComplete(false))
+            //    unsavedInventory.Add(InventoryItem.GoalCompleted);
+        }
         public Dictionary<string, int> GetAllItems()
         {
             var rValue = new Dictionary<string, int>();
@@ -246,6 +259,10 @@ namespace OriBFArchipelago.Core
         public IEnumerable<string> GetAllLocations()
         {
             return checkedLocations.Where(d => d.Value > LocationStatus.Unchecked).Select(d => d.Key);
+        }
+        public LocationStatus GetLocationStatus(string locationName)
+        {
+            return checkedLocations.ContainsKey(locationName) ? checkedLocations[locationName] : LocationStatus.Unchecked;
         }
 
         /**

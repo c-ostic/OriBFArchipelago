@@ -47,27 +47,40 @@ namespace OriBFArchipelago.MapTracker.UI
                     GUILayout.BeginVertical();
 
                     var trackerItem = LogicManager.Get(Icon);
-                    
+
+
+                    if (trackerItem != null)
+                    {
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label($"Name: {trackerItem.Name}", textStyle, GUILayout.ExpandWidth(false));
+                        GUILayout.EndHorizontal();
+
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label($"Item: {trackerItem.Type}", textStyle, GUILayout.ExpandWidth(false));
+                        GUILayout.EndHorizontal();
+                    }
+
+                    if (RandomizerSettings.EnableDebug)
+                    {
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label($"Position: {Icon.Position}", textStyle, GUILayout.ExpandWidth(false));
+                        GUILayout.EndHorizontal();
+
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label($"Area: {Area?.Area?.name}", textStyle, GUILayout.ExpandWidth(false));
+                        GUILayout.EndHorizontal();
+                    }
 
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label($"Name: {trackerItem?.Name ?? " - "}", textStyle, GUILayout.ExpandWidth(false));
+                    GUILayout.Label($"In Logic: {(LogicManager.IsInLogic(Icon) ? "yes" : "no")}", textStyle, GUILayout.ExpandWidth(false));
                     GUILayout.EndHorizontal();
 
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label($"Item: {trackerItem?.Type}", textStyle, GUILayout.ExpandWidth(false));
-                    GUILayout.EndHorizontal();
-
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label($"Position: {Icon.Position}", textStyle, GUILayout.ExpandWidth(false));
-                    GUILayout.EndHorizontal();
-
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label($"Area: {Area?.Area?.name}", textStyle, GUILayout.ExpandWidth(false));
-                    GUILayout.EndHorizontal();
-
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label($"In Logic: {(LogicManager.IsInLogic(Icon) ? "yes" : "no" )}", textStyle, GUILayout.ExpandWidth(false));
-                    GUILayout.EndHorizontal();
+                    if (trackerItem != null)
+                    {
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label($"Status: {RandomizerManager.Receiver.GetLocationStatus(trackerItem.Name)}", textStyle, GUILayout.ExpandWidth(false));
+                        GUILayout.EndHorizontal();
+                    }
 
                     //todo: Add logic information - rotate through multiple every x-seconds?
 

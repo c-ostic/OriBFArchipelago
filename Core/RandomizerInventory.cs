@@ -89,6 +89,7 @@ namespace OriBFArchipelago.Core
         EnemyEX,
 
         GinsoEscapeComplete,
+        GoalCompleted
     }
 
     /**

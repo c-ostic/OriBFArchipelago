@@ -10,6 +10,7 @@ using OriModding.BF.UiLib.Map;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -203,31 +204,50 @@ namespace OriBFArchipelago.Core
         {
             string itemName = helper.PeekItem().ItemName;
 
-            RandomizerManager.Receiver.ReceiveItem((InventoryItem)Enum.Parse(typeof(InventoryItem), itemName));
+            var inventoryItem = EnumParser.GetEnumValue<InventoryItem>(itemName);
+            RandomizerManager.Receiver.ReceiveItem(inventoryItem);
 
-            if (itemName == "Relic")
-            {
-                Location location = LocationLookup.Get(helper.PeekItem().LocationName);
-                if (location != null)
-                {
-                    session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].GetAsync<string[]>(x =>
-                    {
-                        string[] areas = x;
-                        if (!areas.Contains(location.Area.ToString()))
-                        {
-                            session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY] += new string[] { location.Area.ToString() };
-                        }
-                    });
-                }
-                else
-                {
-                    Console.WriteLine("Found Relic from unknown location");
-                }
-            }
+            if (IsGoalItem(inventoryItem))
+                RandomizerManager.Receiver.UpdateGoal();
+            //If goal item, update goal
+            if (inventoryItem == InventoryItem.Relic)
+                ReceiveRelic(helper);
 
             helper.DequeueItem();
         }
 
+        private bool IsGoalItem(InventoryItem item)
+        {
+            switch (item)
+            {
+                case InventoryItem.Relic:
+                    return true;
+                case InventoryItem.WarmthFragment:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private void ReceiveRelic(ReceivedItemsHelper helper)
+        {
+            Location location = LocationLookup.Get(helper.PeekItem().LocationName);
+            if (location != null)
+            {
+                session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].GetAsync<string[]>(x =>
+                {
+                    string[] areas = x;
+                    if (!areas.Contains(location.Area.ToString()))
+                    {
+                        session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY] += new string[] { location.Area.ToString() };
+                    }
+                });
+            }
+            else
+            {
+                Console.WriteLine("Found Relic from unknown location");
+            }
+        }
         /**
          * Upon receiving a death link from the server, kill the player
          */
@@ -258,9 +278,7 @@ namespace OriBFArchipelago.Core
         public void CheckLocation(Location location)
         {
             if (location is null)
-            {
                 return;
-            }
 
             if (RandomizerManager.Options.MapStoneLogic == MapStoneOptions.Progressive && mapLocations.Contains(location.Name))
             {
@@ -270,6 +288,9 @@ namespace OriBFArchipelago.Core
                 int nextMap = RandomizerManager.Receiver.GetItemCount(InventoryItem.MapStoneUsed);
                 location = LocationLookup.Get("ProgressiveMap" + nextMap);
             }
+
+            if (location.Type == LocationType.Skill || location.Type == LocationType.Map)
+                RandomizerManager.Receiver.UpdateGoal();
 
             if (Connected)
             {
@@ -422,121 +443,163 @@ namespace OriBFArchipelago.Core
         /**
          * Check if the goal condition has been met
          */
-        public bool IsGoalComplete()
+        public bool IsGoalComplete(bool showCompletionMessage = true)
         {
-            if (Connected)
+            if (!Connected)
+                return false;
+
+            bool hasMetGoal = CheckGoalCompletion(out StringBuilder message);
+            if (showCompletionMessage)
+                RandomizerMessager.instance.AddMessage(message.ToString());
+            return hasMetGoal;
+        }
+
+        private bool CheckGoalCompletion(out StringBuilder message)
+        {
+            message = new StringBuilder();
+
+            switch (RandomizerManager.Options.Goal)
             {
-                bool hasMetGoal = true;
-                StringBuilder message = new StringBuilder();
+                case GoalOptions.AllSkillTrees:
+                    return CheckAllSkillTreesGoal(message);
+                case GoalOptions.AllMaps:
+                    return CheckAllMapsGoal(message);
+                case GoalOptions.WarmthFragments:
+                    return CheckWarmthFragmentsGoal(message);
+                case GoalOptions.WorldTour:
+                    return CheckWorldTourGoal(message);
+                default:
+                    return true;
+            }
+        }
 
-                if (RandomizerManager.Options.Goal == GoalOptions.AllSkillTrees)
-                {
-                    int countTrees = 0;
-                    List<string> uncheckedTrees = new List<string>();
-                    foreach (string goalLocation in skillTreeLocations)
-                    {
-                        // Uses internal tracking of trees to avoid desyncs with the server
-                        if (!RandomizerManager.Receiver.IsLocationChecked(goalLocation))
-                        {
-                            hasMetGoal = false;
-                            uncheckedTrees.Add(goalLocation);
-                        }
-                        else
-                        {
-                            countTrees++;
-                        }
-                    }
-                    message.Append($"{countTrees} of out 10 trees checked. \n");
-                    if (!hasMetGoal)
-                    {
-                        message.Append("Missing ");
-                        foreach (string tree in uncheckedTrees)
-                        {
-                            message.Append(tree).Append(", ");
-                        }
-                        message.Remove(message.Length - 2, 2); // remove last comma
-                    }
-                }
-                else if (RandomizerManager.Options.Goal == GoalOptions.AllMaps)
-                {
-                    int countMaps = 0;
-                    List<string> uncheckedMaps = new List<string>();
-                    foreach (string goalLocation in mapLocations)
-                    {
-                        // Uses internal tracking of trees to avoid desyncs with the server and any problems with
-                        // the death rollback (since these locations can be unchecked in game but not on the ap server)
-                        if (!RandomizerManager.Receiver.IsLocationChecked(goalLocation))
-                        {
-                            hasMetGoal = false;
-                            uncheckedMaps.Add(goalLocation);
-                        }
-                        else
-                        {
-                            countMaps++;
-                        }
-                    }
-                    message.Append($"{countMaps} of out 9 maps checked. \n");
-                    if (!hasMetGoal)
-                    {
-                        message.Append("Missing ");
-                        foreach (string map in uncheckedMaps)
-                        {
-                            message.Append(map).Append(", ");
-                        }
-                        message.Remove(message.Length - 2, 2); // remove last comma
-                    }
-                }
-                else if (RandomizerManager.Options.Goal == GoalOptions.WarmthFragments)
-                {
-                    int collectedWarmthFragments = RandomizerManager.Receiver.GetItemCount(InventoryItem.WarmthFragment);
-                    int requiredWarmthFragments = RandomizerManager.Options.WarmthFragmentsRequired;
-                    int availableWarmthFragments = RandomizerManager.Options.WarmthFragmentsAvailable;
-                    hasMetGoal = collectedWarmthFragments >= requiredWarmthFragments;
-                    message.Append($"Collected {collectedWarmthFragments} out of {requiredWarmthFragments} warmth fragments needed. \n");
-                    if (!hasMetGoal)
-                        message.Append($"{availableWarmthFragments - collectedWarmthFragments} remain in multiworld");
-                }
-                else if (RandomizerManager.Options.Goal == GoalOptions.WorldTour)
-                {
-                    int collectedRelics = RandomizerManager.Receiver.GetItemCount(InventoryItem.Relic);
-                    int requiredRelics = RandomizerManager.Options.RelicCount;
-                    WorldArea[] relicAreas = RandomizerManager.Options.WorldTourAreas;
-                    hasMetGoal = collectedRelics >= requiredRelics;
-                    message.Append($"Collected {collectedRelics} out of {requiredRelics} relics.");
+        private bool CheckAllSkillTreesGoal(StringBuilder message)
+        {
+            int countTrees = 0;
+            List<string> uncheckedTrees = new List<string>();
 
-                    if (!hasMetGoal)
-                    {
-                        Task.Factory.StartNew(() =>
-                        session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].GetAsync<string[]>(x =>
-                        {
-                            // Since relic data is retrieved async, it needs its own string builder message
-                            StringBuilder relicMessage = new StringBuilder();
-
-                            relicMessage.Append($"Remaining relics can be found in ");
-                            foreach (WorldArea area in relicAreas)
-                            {
-                                string[] areas = x;
-                                if (!areas.Contains(area.ToString()))
-                                {
-                                    relicMessage.Append(area).Append(", ");
-                                }
-                            }
-                            relicMessage.Remove(relicMessage.Length - 2, 2); // remove last comma
-
-                            RandomizerMessager.instance.AddMessage(relicMessage.ToString());
-                        }));
-                    }
+            foreach (string goalLocation in skillTreeLocations)
+            {
+                if (!RandomizerManager.Receiver.IsLocationChecked(goalLocation))
+                {
+                    uncheckedTrees.Add(goalLocation);
                 }
                 else
-                    hasMetGoal = true;
-
-                RandomizerMessager.instance.AddMessage(message.ToString());
-
-                return hasMetGoal;
+                {
+                    countTrees++;
+                }
             }
-            else
+
+            AppendSkillTreesMessage(message, countTrees, uncheckedTrees);
+            return uncheckedTrees.Count == 0;
+        }
+
+        private void AppendSkillTreesMessage(StringBuilder message, int countTrees, List<string> uncheckedTrees)
+        {
+            message.Append($"{countTrees} out of 10 trees checked. \n");
+            if (uncheckedTrees.Count > 0)
             {
-                return false;
+                message.Append("Missing ");
+                foreach (string tree in uncheckedTrees)
+                {
+                    message.Append(tree).Append(", ");
+                }
+                message.Remove(message.Length - 2, 2); // remove last comma
+            }
+        }
+
+        private bool CheckAllMapsGoal(StringBuilder message)
+        {
+            int countMaps = 0;
+            List<string> uncheckedMaps = new List<string>();
+
+            foreach (string goalLocation in mapLocations)
+            {
+                if (!RandomizerManager.Receiver.IsLocationChecked(goalLocation))
+                {
+                    uncheckedMaps.Add(goalLocation);
+                }
+                else
+                {
+                    countMaps++;
+                }
+            }
+
+            AppendMapsMessage(message, countMaps, uncheckedMaps);
+            return uncheckedMaps.Count == 0;
+        }
+
+        private void AppendMapsMessage(StringBuilder message, int countMaps, List<string> uncheckedMaps)
+        {
+            message.Append($"{countMaps} out of 9 maps checked. \n");
+            if (uncheckedMaps.Count > 0)
+            {
+                message.Append("Missing ");
+                foreach (string map in uncheckedMaps)
+                {
+                    message.Append(map).Append(", ");
+                }
+                message.Remove(message.Length - 2, 2); // remove last comma
+            }
+        }
+
+        private bool CheckWarmthFragmentsGoal(StringBuilder message)
+        {
+            int collectedWarmthFragments = RandomizerManager.Receiver.GetItemCount(InventoryItem.WarmthFragment);
+            int requiredWarmthFragments = RandomizerManager.Options.WarmthFragmentsRequired;
+            int availableWarmthFragments = RandomizerManager.Options.WarmthFragmentsAvailable;
+
+            bool goalComplete = collectedWarmthFragments >= requiredWarmthFragments;
+
+            AppendWarmthFragmentsMessage(message, collectedWarmthFragments, requiredWarmthFragments, availableWarmthFragments, goalComplete);
+            return goalComplete;
+        }
+
+        private void AppendWarmthFragmentsMessage(StringBuilder message, int collected, int required, int available, bool goalComplete)
+        {
+            message.Append($"Collected {collected} out of {required} warmth fragments needed. \n");
+            if (!goalComplete)
+            {
+                message.Append($"{available - collected} remain in multiworld");
+            }
+        }
+
+        private bool CheckWorldTourGoal(StringBuilder message)
+        {
+            int collectedRelics = RandomizerManager.Receiver.GetItemCount(InventoryItem.Relic);
+            int requiredRelics = RandomizerManager.Options.RelicCount;
+            WorldArea[] relicAreas = RandomizerManager.Options.WorldTourAreas;
+
+            bool goalComplete = collectedRelics >= requiredRelics;
+
+            AppendWorldTourMessage(message, collectedRelics, requiredRelics, relicAreas, goalComplete);
+            return goalComplete;
+        }
+
+        private void AppendWorldTourMessage(StringBuilder message, int collected, int required, WorldArea[] relicAreas, bool goalComplete)
+        {
+            message.Append($"Collected {collected} out of {required} relics.");
+
+            if (!goalComplete)
+            {
+                Task.Factory.StartNew(() =>
+                session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].GetAsync<string[]>(x =>
+                {
+                    StringBuilder relicMessage = new StringBuilder();
+
+                    relicMessage.Append($"Remaining relics can be found in ");
+                    foreach (WorldArea area in relicAreas)
+                    {
+                        string[] areas = x;
+                        if (!areas.Contains(area.ToString()))
+                        {
+                            relicMessage.Append(area).Append(", ");
+                        }
+                    }
+                    relicMessage.Remove(relicMessage.Length - 2, 2); // remove last comma
+
+                    RandomizerMessager.instance.AddMessage(relicMessage.ToString());
+                }));
             }
         }
     }

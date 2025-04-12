@@ -32,7 +32,7 @@ namespace OriBFArchipelago.MapTracker.Logic
                 if (trackerItem == null)
                     return false;
 
-                if (MaptrackerSettings.IconVisibilityLogic == IconVisibilityLogicEnum.Archipelago && RandomizerManager.Receiver.IsLocationChecked(trackerItem.Name))
+                if (MaptrackerSettings.IconVisibilityLogic == IconVisibilityLogicEnum.Archipelago && RandomizerManager.Receiver.IsLocationChecked(trackerItem.Name, trackerItem.IsGoalRequiredItem()))
                     return false;
 
                 return _logicChecker.IsPickupAccessible(trackerItem.Name, RandomizerManager.Receiver.GetAllItems(), RandomizerManager.Options.LogicDifficulty);

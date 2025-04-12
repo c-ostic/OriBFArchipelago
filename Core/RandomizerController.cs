@@ -1,6 +1,7 @@
 ﻿using Core;
 using Game;
 using HarmonyLib;
+using OriBFArchipelago.MapTracker.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +34,9 @@ namespace OriBFArchipelago.Core
                 $"Tip! Press ({Keybinder.ToString(KeybindAction.GoalProgress)}) to see your goal progress.",
                 $"Tip! Press ({Keybinder.ToString(KeybindAction.ListStones)}) to see your keystones and mapstones.",
                 $"Disconnected from the server? Press ({Keybinder.ToString(KeybindAction.Reconnect)}) to reconnect.",
-                "Tip! You can adjust some randomizer settings in the bottom left corner of the pause menu."
+                "Tip! You can adjust some randomizer settings in the bottom left corner of the pause menu.",
+                "Tip! You can adjust the maptracker settings in the options & settings menu.",
+                "Don't forget that you can hint items if you are stuck!"
             };
         }
 
@@ -144,8 +147,8 @@ namespace OriBFArchipelago.Core
                         InventoryItem.BlackrootMapStone
                     };
 
-                string mapStoneString = mapStoneList.Where(x => RandomizerManager.Receiver.HasItem(x) && 
-                                                                !RandomizerManager.Receiver.HasItem(x+1))
+                string mapStoneString = mapStoneList.Where(x => RandomizerManager.Receiver.HasItem(x) &&
+                                                                !RandomizerManager.Receiver.HasItem(x + 1))
                                                     .Select(y => y.ToString())
                                                     .Join(z => z.ToString(), ", ");
 
@@ -180,6 +183,7 @@ namespace OriBFArchipelago.Core
 
             if (Keybinder.OnPressed(KeybindAction.GoalProgress))
             {
+                RandomizerManager.Receiver.UpdateGoal();
                 RandomizerManager.Connection.IsGoalComplete();
             }
 
