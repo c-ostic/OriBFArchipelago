@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace OriBFArchipelago.Patches
 {
@@ -13,6 +14,8 @@ namespace OriBFArchipelago.Patches
     internal class RuntimeGameWorldAreaPatch
     {
         public static bool AddedCustomIcons = false;
+        public static Condition StoredMistyWoodsCondition { get; set; }
+        
         [HarmonyPatch("Initialize")]
         [HarmonyPostfix]
         internal static void Initialize_Postfix(RuntimeGameWorldArea __instance)
@@ -65,16 +68,47 @@ namespace OriBFArchipelago.Patches
                 ModLogger.Debug("Discovering all areas");
                 var face = GameWorld.Instance.RuntimeAreas.FirstOrDefault().Area.CageStructureTool.Faces.OrderBy(d => d.ID).FirstOrDefault();
                 var id = face.ID.ToString();
-                GameWorld.Instance.RuntimeAreas.ForEach(c => c.DiscoverAllAreas());
+                GameWorld.Instance.RuntimeAreas.ForEach(area =>
+                {
+                    area.DiscoverAllAreas();
+                    if (area.Area.AreaName.ToString() == "MISTY WOODS")
+                    {
+                        if (area.Area.VisitableCondition != null)
+                        {
+                            StoredMistyWoodsCondition = area.Area.VisitableCondition;
+                        }
+                        area.Area.VisitableCondition = null;
+                        SetMistyWoodsVisibility(true);
+                    }
+                });
                 DiscoveredAreas.Add(id);
 
             }
             else if (mapVisibility == MapVisibilityEnum.Not_Visible && DiscoveredAreas.Count > 0)
             {
                 ModLogger.Debug("Undiscovering all areas");
-                GameWorld.Instance.RuntimeAreas.ForEach(c => c.UnDiscoverAllAreas());
+                GameWorld.Instance.RuntimeAreas.ForEach(area =>
+                {
+                    area.UnDiscoverAllAreas();
+                    if (area.Area.AreaName.ToString() == "MISTY WOODS")
+                    {
+                        area.Area.VisitableCondition = StoredMistyWoodsCondition;
+                        SetMistyWoodsVisibility(false);
+                    }
+                });
                 DiscoveredAreas.Clear();
             }
+        }
+
+        /**
+         * Set the visibility of Misty Woods with `isMistyWoodsVisible`. Remove the Misty Woods fog
+         * if `isMistyWoodsVisible` is true, otherwise the fog is active and Misty Woods is hidden.
+         */
+        private static void SetMistyWoodsVisibility(bool isMistyWoodsVisible)
+        {
+            Transform mapPivot = AreaMapUI.Instance.transform.Find("mapPivot");
+            mapPivot.FindChild("mistyWoodsFog").gameObject.SetActive(!isMistyWoodsVisible);
+            mapPivot.FindChild("mistyWoods").gameObject.SetActive(isMistyWoodsVisible);
         }
     }
 
