@@ -2,14 +2,13 @@
 using OriBFArchipelago.MapTracker.Core;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 
 namespace OriBFArchipelago.MapTracker.Logic
 {
     internal class LogicManager
     {
         private static LogicChecker _logicChecker;
+        public static LogicChecker LogicChecker { get { return _logicChecker ?? (_logicChecker = new LogicChecker()); } }
 
         internal static Location Get(RuntimeWorldMapIcon icon)
         {
@@ -19,9 +18,6 @@ namespace OriBFArchipelago.MapTracker.Logic
         {
             try
             {
-                if (_logicChecker == null)
-                    _logicChecker = new LogicChecker();
-
                 if (IsIgnoredIconType(icon.Icon))
                     return false;
 
@@ -35,7 +31,7 @@ namespace OriBFArchipelago.MapTracker.Logic
                 if (MaptrackerSettings.IconVisibilityLogic == IconVisibilityLogicEnum.Archipelago && RandomizerManager.Receiver.IsLocationChecked(trackerItem.Name, trackerItem.IsGoalRequiredItem()))
                     return false;
 
-                return _logicChecker.IsPickupAccessible(trackerItem.Name, RandomizerManager.Receiver.GetAllItems(), RandomizerManager.Options.LogicDifficulty);
+                return _logicChecker.IsPickupAccessible(trackerItem.Name, RandomizerManager.Options.LogicDifficulty, RandomizerManager.Receiver.GetAllItems(), RandomizerManager.Options);
             }
             catch (Exception ex)
             {
