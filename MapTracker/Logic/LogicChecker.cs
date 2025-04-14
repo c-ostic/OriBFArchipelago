@@ -185,7 +185,6 @@ namespace OriBFArchipelago.MapTracker.Logic
                     if (!RandomizerManager.Options.EnableDamageBoost)
                         return false;
 
-                    count += 3; //To account for starting with 3 healthcells.
                 }
                 return inventory.ContainsKey(itemName) && inventory[itemName] >= count;
             }
