@@ -307,6 +307,10 @@ namespace OriBFArchipelago.Core
             UpdateMapLocations();
         }
 
+        public IEnumerable<string> GetArchipelagoCheckedLocations()
+        {
+            return session.Locations.AllLocationsChecked.Select(d => session.Locations.GetLocationNameFromId(d));
+        }
         /**
          * Check location using MoonGuid
          */
@@ -332,6 +336,7 @@ namespace OriBFArchipelago.Core
                 .Select(x => session.Locations.GetLocationIdFromName(GAME_NAME, x));
             session.Locations.CompleteLocationChecks(ids.ToArray());
         }
+
 
         /**
          * Updates the datastorage value with map locations checked while using progressive mapstones

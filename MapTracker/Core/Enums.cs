@@ -3,8 +3,8 @@
     enum LocationStatus
     {
         Unchecked = 1,
-        UnsavedAndDied = 2,
-        UnsavedCheck = 3,
+        LostOnDeath = 2,
+        CheckedNotSaved = 3,
         Checked = 4
     }
     enum GameDifficulty

@@ -215,9 +215,9 @@ namespace OriBFArchipelago.Core
         public void CheckLocation(string location)
         {
             if (checkedLocations.ContainsKey(location))
-                checkedLocations[location] = LocationStatus.UnsavedCheck;
+                checkedLocations[location] = LocationStatus.CheckedNotSaved;
             else
-                checkedLocations.Add(location, LocationStatus.UnsavedCheck);
+                checkedLocations.Add(location, LocationStatus.CheckedNotSaved);
 
             RandomizerIO.SaveLocations(RandomizerSettings.ActiveSaveSlot, checkedLocations);
         }
@@ -227,21 +227,14 @@ namespace OriBFArchipelago.Core
          */
         public bool IsLocationChecked(string location, bool isGoalRequiredItem = false)
         {
-            var checkStatus = isGoalRequiredItem ? LocationStatus.UnsavedCheck : LocationStatus.UnsavedAndDied;
+            var checkStatus = isGoalRequiredItem ? LocationStatus.CheckedNotSaved : LocationStatus.LostOnDeath;
             return checkedLocations.ContainsKey(location) ? checkedLocations[location] >= checkStatus : false;
         }
 
         public void UpdateGoal()
         {
             if (RandomizerManager.Connection.IsGoalComplete(false))
-            {
                 unsavedInventory.Add(InventoryItem.GoalCompleted);
-                ModLogger.Debug("Goal completed");
-            }
-            else
-                ModLogger.Debug("Checking goal: Goal not met yet");
-            //if (RandomizerManager.Connection.IsGoalComplete(false))
-            //    unsavedInventory.Add(InventoryItem.GoalCompleted);
         }
         public Dictionary<string, int> GetAllItems()
         {
@@ -275,9 +268,10 @@ namespace OriBFArchipelago.Core
 
             // Remove any tracking of used items and checked locations
             unsavedInventory.Reset();
-            foreach (var location in checkedLocations.Where(d => d.Value == LocationStatus.UnsavedCheck))
+            var toCheckLocations = checkedLocations.Where(d => d.Value == LocationStatus.CheckedNotSaved).ToList();
+            foreach (var location in toCheckLocations)
             {
-                checkedLocations[location.Key] = LocationStatus.UnsavedAndDied;
+                checkedLocations[location.Key] = LocationStatus.LostOnDeath;
             }
         }
 
@@ -296,7 +290,8 @@ namespace OriBFArchipelago.Core
                 onLoadInventory.AddAll(unsavedInventory);
                 unsavedInventory.Reset();
 
-                foreach (var location in checkedLocations.Where(d => d.Value == LocationStatus.UnsavedCheck))
+                var toChangeLocations = checkedLocations.Where(d => d.Value == LocationStatus.CheckedNotSaved).ToList();
+                foreach (var location in toChangeLocations)
                 {
                     checkedLocations[location.Key] = LocationStatus.Checked;
                 }
@@ -305,7 +300,12 @@ namespace OriBFArchipelago.Core
             RandomizerIO.WriteSaveFile(saveSlot, savedInventory, checkedLocations);
             Resync();
         }
-
+        public void SyncArchipelagoCheckedLocations(IEnumerable<string> archipelagoLocations)
+        {
+            foreach (var location in archipelagoLocations)
+                if (!checkedLocations.ContainsKey(location))
+                    checkedLocations.Add(location, LocationStatus.LostOnDeath);
+        }
         /**
          * Called when the player tries to reconnect to the archipelago server from within the game
          */

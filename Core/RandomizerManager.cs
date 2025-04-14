@@ -183,7 +183,6 @@ namespace OriBFArchipelago.Core
 
             // Attempt to load the this slots data first
             receiver = new RandomizerReceiver();
-
             if (!receiver.Init(isNew, saveSlot, slotName))
             {
                 Console.WriteLine("Slot name provided does not match save file");
@@ -198,6 +197,8 @@ namespace OriBFArchipelago.Core
                 canStart = false;
                 Console.WriteLine("Could not connect to archipelago server");
             }
+
+            receiver.SyncArchipelagoCheckedLocations(connection.GetArchipelagoCheckedLocations());
 
             // Check if the game can start
             if (canStart)
