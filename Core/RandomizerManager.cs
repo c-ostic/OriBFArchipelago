@@ -20,7 +20,7 @@ namespace OriBFArchipelago.Core
 
         public static RandomizerOptions Options { get { return instance.options; } }
 
-        public static bool IsEditing { get { return instance.isEditing; } }
+        public static bool ArchipelagoIOFocussed { get { return instance.archipelagoIOFocussed; } }
 
         public static RandomizerManager instance;
 
@@ -29,7 +29,7 @@ namespace OriBFArchipelago.Core
         private ArchipelagoConnection connection;
         private RandomizerOptions options;
 
-        private bool failedToStart, isEditing;
+        private bool failedToStart, archipelagoIOFocussed;
         private Dictionary<int, SlotData> saveSlots;
 
         // strings associated with the gui buttons in OnGUI
@@ -53,7 +53,6 @@ namespace OriBFArchipelago.Core
 
             RandomizerSettings.InGame = false;
             failedToStart = false;
-            isEditing = false;
         }
 
         /**
@@ -85,55 +84,51 @@ namespace OriBFArchipelago.Core
             // Only display this UI when on the save select screen
             if (RandomizerSettings.InSaveSelect)
             {
+
                 GUILayout.BeginArea(new Rect(5, 5, 300, 200));
 
                 GUILayout.BeginVertical();
 
+                Dictionary<string, string> fields = new Dictionary<string, string>
+                {
+                    {"Slot Name", slotName},
+                    {"Server", server},
+                    {"Port", port},
+                    {"Password", password}
+                };
+
                 // Create an area for slot name
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Slot Name");
+                GUI.SetNextControlName("slotname");
                 slotName = GUILayout.TextField(slotName, 50, GUILayout.Width(200));
                 GUILayout.EndHorizontal();
 
                 // Create an area for server name
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Server");
+                GUI.SetNextControlName("server");
                 server = GUILayout.TextField(server, 50, GUILayout.Width(200));
                 GUILayout.EndHorizontal();
 
                 // Create an area for port number
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Port");
+                GUI.SetNextControlName("port");
                 port = GUILayout.TextField(port, 50, GUILayout.Width(200));
                 GUILayout.EndHorizontal();
 
                 // Create an area for password
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Password");
+                GUI.SetNextControlName("password");
                 password = GUILayout.TextField(password, 50, GUILayout.Width(200));
                 GUILayout.EndHorizontal();
-
-                GUILayout.BeginHorizontal();
-                if (isEditing)
-                {
-                    // Create a button to stop editing
-                    if (GUILayout.Button("Done"))
-                    {
-                        isEditing = false;
-                    }
-                }
-                else
-                {
-                    // Create a button to start editing
-                    if (GUILayout.Button("Edit"))
-                    {
-                        isEditing = true;
-                    }
-                }
-                GUILayout.EndHorizontal();
-
+                
                 GUILayout.EndVertical();
                 GUILayout.EndArea();
+
+                archipelagoIOFocussed = new string[] { "slotname", "server", "port", "password" }.Contains(GUI.GetNameOfFocusedControl());
             }
         }
 
@@ -352,7 +347,7 @@ namespace OriBFArchipelago.Core
     {
         private static bool Prefix()
         {
-            return !RandomizerManager.IsEditing;
+            return !RandomizerManager.ArchipelagoIOFocussed;
         }
     }
 }
