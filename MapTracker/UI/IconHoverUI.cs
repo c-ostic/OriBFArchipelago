@@ -63,6 +63,14 @@ namespace OriBFArchipelago.MapTracker.UI
                     if (RandomizerSettings.EnableDebug)
                     {
                         GUILayout.BeginHorizontal();
+                        GUILayout.Label($"Guid: {new System.Guid(Icon.Guid.ToByteArray())}", textStyle, GUILayout.ExpandWidth(false));
+                        GUILayout.EndHorizontal();
+
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label($"MoonGuid: {Icon.Guid}", textStyle, GUILayout.ExpandWidth(false));
+                        GUILayout.EndHorizontal();
+
+                        GUILayout.BeginHorizontal();
                         GUILayout.Label($"Position: {Icon.Position}", textStyle, GUILayout.ExpandWidth(false));
                         GUILayout.EndHorizontal();
 

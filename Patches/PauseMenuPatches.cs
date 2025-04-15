@@ -11,6 +11,7 @@ namespace OriBFArchipelago.Patches
         {
             RandomizerSettings.ShowSettings = true;
             RuntimeGameWorldAreaPatch.ToggleDiscoveredAreas(MaptrackerSettings.MapVisibility);
+            MaptrackerSettings.ResetCheckCount();
             return true;
         }
     }

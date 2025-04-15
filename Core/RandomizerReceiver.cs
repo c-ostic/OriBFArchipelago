@@ -56,6 +56,7 @@ namespace OriBFArchipelago.Core
         {
             this.saveSlot = saveSlot;
             RandomizerSettings.ActiveSaveSlot = saveSlot;
+            MaptrackerSettings.AllAreasDiscovered = false;
             SuspensionManager.Register(this);
 
             itemQueue = new Queue<InventoryItem>();

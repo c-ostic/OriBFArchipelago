@@ -1,4 +1,5 @@
-﻿using OriBFArchipelago.Core;
+﻿using JetBrains.Annotations;
+using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
 using System;
 using System.Collections.Generic;
@@ -21,17 +22,20 @@ namespace OriBFArchipelago.MapTracker.Logic
                 if (IsIgnoredIconType(icon.Icon))
                     return false;
 
-                if (IsDuplicateIcon(icon))
-                    return false;
-
                 var trackerItem = LocationLookup.Get(icon.Guid);
                 if (trackerItem == null)
                     return false;
-
+                
                 if (MaptrackerSettings.IconVisibilityLogic == IconVisibilityLogicEnum.Archipelago && RandomizerManager.Receiver.IsLocationChecked(trackerItem.Name, trackerItem.IsGoalRequiredItem()))
                     return false;
 
-                return LogicChecker.IsPickupAccessible(trackerItem.Name, RandomizerManager.Options.LogicDifficulty, RandomizerManager.Receiver.GetAllItems(), RandomizerManager.Options);
+                MaptrackerSettings.AddCheck(icon.Guid);
+
+                var checkIsInLogic = LogicChecker.IsPickupAccessible(trackerItem.Name, RandomizerManager.Options.LogicDifficulty, RandomizerManager.Receiver.GetAllItems(), RandomizerManager.Options);
+                if (checkIsInLogic)
+                    MaptrackerSettings.AddCheck(icon.Guid, checkIsInLogic);
+                return checkIsInLogic;
+
             }
             catch (Exception ex)
             {
@@ -59,19 +63,6 @@ namespace OriBFArchipelago.MapTracker.Logic
                 default:
                     return false;
             }
-        }
-
-        private static bool IsDuplicateIcon(RuntimeWorldMapIcon icon)
-        {
-            List<MoonGuid> duplicateIcons = new List<MoonGuid>{
-                 new MoonGuid("1607939702 1149860266 185564807 -1906561306"), //duplicate icon on bash
-                 new MoonGuid("1725611206 1201986298 -435475044 -1944513031"), //duplicate icon on ability point in burrows
-            };
-
-
-            if (duplicateIcons.Contains(icon.Guid))
-                return true;
-            return false;
         }
     }
 }

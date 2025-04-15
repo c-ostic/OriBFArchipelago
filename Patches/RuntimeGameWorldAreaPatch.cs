@@ -50,10 +50,8 @@ namespace OriBFArchipelago.Patches
             }
         }
 
-        public static List<string> DiscoveredAreas { get; set; }
         static RuntimeGameWorldAreaPatch()
         {
-            DiscoveredAreas = new List<string>();
             ModLogger.Debug($"Patching {nameof(RuntimeGameWorldAreaPatch)}");
         }
 
@@ -64,29 +62,40 @@ namespace OriBFArchipelago.Patches
                 ModLogger.Debug($"{nameof(GameWorld.Instance.RuntimeAreas)} is empty");
                 return;
             }
-            else if (mapVisibility == MapVisibilityEnum.Visible && DiscoveredAreas.Count == 0)
+            else if (mapVisibility == MapVisibilityEnum.Visible && !MaptrackerSettings.AllAreasDiscovered)
             {
-                ModLogger.Debug("Discovering all areas");
-                var face = GameWorld.Instance.RuntimeAreas.FirstOrDefault().Area.CageStructureTool.Faces.OrderBy(d => d.ID).FirstOrDefault();
-                var id = face.ID.ToString();
-                GameWorld.Instance.RuntimeAreas.ForEach(area =>
+                try
                 {
-                    area.DiscoverAllAreas();
-                    if (area.Area.AreaName.ToString() == "MISTY WOODS")
+                    ModLogger.Debug("Discovering all areas");
+                    var face = GameWorld.Instance?.RuntimeAreas?.FirstOrDefault()?.Area?.CageStructureTool?.Faces?.OrderBy(d => d.ID)?.FirstOrDefault();
+                    if (face == null)
+                        return;
+                    var id = face.ID.ToString();
+                    GameWorld.Instance.RuntimeAreas.ForEach(area =>
                     {
-                        if (area.Area.VisitableCondition != null)
-                            StoredMistyWoodsCondition = area.Area.VisitableCondition;
+                        area.DiscoverAllAreas();
+                        if (area.Area.AreaName.ToString() == "MISTY WOODS")
+                        {
+                            if (area.Area.VisitableCondition != null)
+                                StoredMistyWoodsCondition = area.Area.VisitableCondition;
 
-                        area.Area.VisitableCondition = null;
-                        Transform mapPivot = AreaMapUI.Instance.transform.Find("mapPivot");
-                        mapPivot.FindChild("mistyWoodsFog").gameObject.SetActive(false);
-                        mapPivot.FindChild("mistyWoods").gameObject.SetActive(true);
-                    }
-                });
-                DiscoveredAreas.Add(id);
-
+                            area.Area.VisitableCondition = null;
+                            Transform mapPivot = AreaMapUI.Instance.transform.Find("mapPivot");
+                            if (mapPivot != null)
+                            {
+                                mapPivot.FindChild("mistyWoodsFog").gameObject.SetActive(false);
+                                mapPivot.FindChild("mistyWoods").gameObject.SetActive(true);
+                            }
+                        }
+                    });
+                    MaptrackerSettings.AllAreasDiscovered = true;
+                }
+                catch (System.Exception ex)
+                {
+                    ModLogger.Error($"Toggle: {ex}");
+                }
             }
-            else if (mapVisibility == MapVisibilityEnum.Not_Visible && DiscoveredAreas.Count > 0)
+            else if (mapVisibility == MapVisibilityEnum.Not_Visible && MaptrackerSettings.AllAreasDiscovered)
             {
                 ModLogger.Debug("Undiscovering all areas");
                 GameWorld.Instance.RuntimeAreas.ForEach(area =>
@@ -100,7 +109,7 @@ namespace OriBFArchipelago.Patches
                         mapPivot.FindChild("mistyWoods").gameObject.SetActive(false);
                     }
                 });
-                DiscoveredAreas.Clear();
+                MaptrackerSettings.AllAreasDiscovered = false;
             }
         }
     }
