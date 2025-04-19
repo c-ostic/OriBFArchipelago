@@ -29,14 +29,13 @@ namespace OriBFArchipelago.Core
             // populate tips in start to make sure Keybinder has loaded the keybinds
             tips = new List<string>()
             {
-                $"Tip! Press ({Keybinder.ToString(KeybindAction.OpenTeleport)}) to teleport.",
-                $"Tip! Press ({Keybinder.ToString(KeybindAction.Help)}) to see all keybinds.",
-                $"Tip! Press ({Keybinder.ToString(KeybindAction.GoalProgress)}) to see your goal progress.",
-                $"Tip! Press ({Keybinder.ToString(KeybindAction.ListStones)}) to see your keystones and mapstones.",
+                $"Press ({Keybinder.ToString(KeybindAction.OpenTeleport)}) to teleport.",
+                $"Press ({Keybinder.ToString(KeybindAction.Help)}) to see all keybinds.",
+                $"Press ({Keybinder.ToString(KeybindAction.GoalProgress)}) to see your goal progress.",
+                $"Press ({Keybinder.ToString(KeybindAction.ListStones)}) to see your keystones and mapstones.",
                 $"Disconnected from the server? Press ({Keybinder.ToString(KeybindAction.Reconnect)}) to reconnect.",
-                "Tip! You can adjust some randomizer settings in the bottom left corner of the pause menu.",
-                "Tip! You can adjust the maptracker settings in the options & settings menu.",
-                "Don't forget that you can hint items if you are stuck!"
+                "You can adjust some randomizer settings in the bottom left corner of the pause menu.",
+                "You can adjust some maptracker settings in the Help & Options menu."
             };
         }
 
@@ -217,7 +216,7 @@ namespace OriBFArchipelago.Core
         {
             System.Random random = new System.Random();
             int index = random.Next(0, tips.Count);
-            RandomizerMessager.instance.AddMessage($"{tips[index]}");
+            RandomizerMessager.instance.AddMessage($"Tip: {tips[index]}");
         }
     }
 }
