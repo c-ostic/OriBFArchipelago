@@ -55,6 +55,7 @@ namespace OriBFArchipelago.Patches
             ModLogger.Debug($"Patching {nameof(RuntimeGameWorldAreaPatch)}");
         }
 
+
         public static void ToggleDiscoveredAreas(MapVisibilityEnum mapVisibility)
         {
             if (GameWorld.Instance?.RuntimeAreas == null)
@@ -62,54 +63,71 @@ namespace OriBFArchipelago.Patches
                 ModLogger.Debug($"{nameof(GameWorld.Instance.RuntimeAreas)} is empty");
                 return;
             }
-            else if (mapVisibility == MapVisibilityEnum.Visible && !MaptrackerSettings.AllAreasDiscovered)
-            {
-                try
-                {
-                    ModLogger.Debug("Discovering all areas");
-                    var face = GameWorld.Instance?.RuntimeAreas?.FirstOrDefault()?.Area?.CageStructureTool?.Faces?.OrderBy(d => d.ID)?.FirstOrDefault();
-                    if (face == null)
-                        return;
-                    var id = face.ID.ToString();
-                    GameWorld.Instance.RuntimeAreas.ForEach(area =>
-                    {
-                        area.DiscoverAllAreas();
-                        if (area.Area.AreaName.ToString() == "MISTY WOODS")
-                        {
-                            if (area.Area.VisitableCondition != null)
-                                StoredMistyWoodsCondition = area.Area.VisitableCondition;
+            ToggleMistyWoods(mapVisibility);
+            ToggleAreas(mapVisibility);
+        }
 
-                            area.Area.VisitableCondition = null;
-                            Transform mapPivot = AreaMapUI.Instance.transform.Find("mapPivot");
-                            if (mapPivot != null)
-                            {
-                                mapPivot.FindChild("mistyWoodsFog").gameObject.SetActive(false);
-                                mapPivot.FindChild("mistyWoods").gameObject.SetActive(true);
-                            }
-                        }
-                    });
-                    MaptrackerSettings.AllAreasDiscovered = true;
-                }
-                catch (System.Exception ex)
-                {
-                    ModLogger.Error($"Toggle: {ex}");
-                }
-            }
+        private static void ToggleAreas(MapVisibilityEnum mapVisibility)
+        {
+            if (mapVisibility == MapVisibilityEnum.Visible && !MaptrackerSettings.AllAreasDiscovered)
+                ShowAllAreas();
             else if (mapVisibility == MapVisibilityEnum.Not_Visible && MaptrackerSettings.AllAreasDiscovered)
+                HideAllAreas();
+        }
+
+        private static void ShowAllAreas()
+        {
+            try
             {
-                ModLogger.Debug("Undiscovering all areas");
+                ModLogger.Debug("Discovering all areas");
+                var face = GameWorld.Instance?.RuntimeAreas?.FirstOrDefault()?.Area?.CageStructureTool?.Faces?.OrderBy(d => d.ID)?.FirstOrDefault();
+                if (face == null)
+                    return;
+                var id = face.ID.ToString();
                 GameWorld.Instance.RuntimeAreas.ForEach(area =>
                 {
-                    area.UnDiscoverAllAreas();
+                    area.DiscoverAllAreas();
                     if (area.Area.AreaName.ToString() == "MISTY WOODS")
                     {
-                        area.Area.VisitableCondition = StoredMistyWoodsCondition;
-                        Transform mapPivot = AreaMapUI.Instance.transform.Find("mapPivot");
-                        mapPivot.FindChild("mistyWoodsFog").gameObject.SetActive(true);
-                        mapPivot.FindChild("mistyWoods").gameObject.SetActive(false);
+                        if (area.Area.VisitableCondition != null)
+                            StoredMistyWoodsCondition = area.Area.VisitableCondition;
+
+                        area.Area.VisitableCondition = null;
                     }
                 });
-                MaptrackerSettings.AllAreasDiscovered = false;
+                MaptrackerSettings.AllAreasDiscovered = true;
+            }
+            catch (System.Exception ex)
+            {
+                ModLogger.Error($"Toggle: {ex}");
+            }
+        }
+
+        private static void HideAllAreas()
+        {
+            ModLogger.Debug("Undiscovering all areas");
+            GameWorld.Instance.RuntimeAreas.ForEach(area =>
+            {
+                area.UnDiscoverAllAreas();
+                if (area.Area.AreaName.ToString() == "MISTY WOODS")
+                {
+                    area.Area.VisitableCondition = StoredMistyWoodsCondition;
+                }
+            });
+            MaptrackerSettings.AllAreasDiscovered = false;
+        }
+        private static void ToggleMistyWoods(MapVisibilityEnum mapVisibility)
+        {
+            Transform mapPivot = AreaMapUI.Instance?.transform?.Find("mapPivot");
+            if (mapPivot != null && mapVisibility == MapVisibilityEnum.Visible)
+            {
+                mapPivot.FindChild("mistyWoodsFog").gameObject.SetActive(false);
+                mapPivot.FindChild("mistyWoods").gameObject.SetActive(true);
+            }
+            else if (mapPivot != null && mapVisibility == MapVisibilityEnum.Not_Visible)
+            {
+                mapPivot.FindChild("mistyWoodsFog").gameObject.SetActive(true);
+                mapPivot.FindChild("mistyWoods").gameObject.SetActive(false);
             }
         }
     }
