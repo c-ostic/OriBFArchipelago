@@ -15,11 +15,12 @@ namespace OriBFArchipelago
     {
         private void Awake()
         {
+
             // Plugin startup logic
             ModLogger.Initialize(PluginInfo.PLUGIN_NAME, Logger);
             ModLogger.Info($"Plugin {PluginInfo.PLUGIN_GUID} v{GetAssemblyVersion()} is starting...");
             ModLogger.Info($"Plugin {PluginInfo.PLUGIN_GUID} has loaded successfully!");
-            
+
             var harmony = new Harmony(PluginInfo.PLUGIN_GUID);
             harmony.PatchAll();
 
@@ -30,7 +31,7 @@ namespace OriBFArchipelago
             Controllers.Add<RandomizerManager>(null, "Randomizer");
             Controllers.Add<Keybinder>(null, "Randomizer");
             Controllers.Add<RandomizerSettings>(null, "Randomizer");
-            Controllers.Add<IconHoverUI>(null, "MapTracker");            
+            Controllers.Add<IconHoverUI>(null, "MapTracker");
         }
 
         public string GetAssemblyVersion()

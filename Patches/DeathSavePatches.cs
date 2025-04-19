@@ -23,7 +23,6 @@ namespace OriBFArchipelago.Patches
         {
             RandomizerManager.Receiver.OnSave();
             RandomizerSettings.Save();
-            MaptrackerSettings.Save();
         }
     }
 }

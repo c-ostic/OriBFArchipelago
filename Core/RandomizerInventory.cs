@@ -89,6 +89,8 @@ namespace OriBFArchipelago.Core
         EnemyEX,
 
         GinsoEscapeComplete,
+        GoalCompleted,
+        SpiritFlame
     }
 
     /**
@@ -108,7 +110,8 @@ namespace OriBFArchipelago.Core
             InventoryItem.Climb,
             InventoryItem.ChargeJump,
             InventoryItem.Dash,
-            InventoryItem.Grenade
+            InventoryItem.Grenade,
+            InventoryItem.SpiritFlame
         };
 
         // useful list for teleporters

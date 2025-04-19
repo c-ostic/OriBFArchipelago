@@ -1,10 +1,8 @@
 ﻿using HarmonyLib;
 using OriBFArchipelago.Core;
-using OriBFArchipelago.MapTracker.Logic;
-using System;
+using OriBFArchipelago.MapTracker.Core;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace OriBFArchipelago.Patches
 {
@@ -45,21 +43,12 @@ namespace OriBFArchipelago.Patches
             }
             else if (LocationLookup.Get(__instance.MoonGuid)?.Name == "Sein")
             {
+                RandomizerManager.Receiver.ReceiveItem(InventoryItem.SpiritFlame);
                 RandomizerMessager.instance.AddMessage($"Good luck with the randomizer! \nTip: " +
                     $"Press {Keybinder.ToString(KeybindAction.OpenTeleport)} to teleport. \n" +
                     $"Press {Keybinder.ToString(KeybindAction.Help)} to see other keybinds.");
             }
             return true;
-        }
-    }
-
-    [HarmonyPatch(typeof(PlayerAbilities), nameof(PlayerAbilities.SetAbility))]
-    internal class PlayerAbilitiesPatch
-    {
-        private static void Postfix(AbilityType ability, bool value)
-        {
-            if (value)
-                LogicInventory.AddAbility(ability);
         }
     }
 }

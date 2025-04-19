@@ -1,6 +1,12 @@
 ﻿namespace OriBFArchipelago.MapTracker.Core
 {
-
+    enum LocationStatus
+    {
+        Unchecked = 1,
+        LostOnDeath = 2,
+        CheckedNotSaved = 3,
+        Checked = 4
+    }
     enum GameDifficulty
     {
         Casual = 1,
@@ -15,6 +21,12 @@
         Original = 1,
         In_Logic = 2,
         All = 3
+    }
+
+    enum IconVisibilityLogicEnum
+    {
+        Game,
+        Archipelago
     }
 
     enum MapVisibilityEnum

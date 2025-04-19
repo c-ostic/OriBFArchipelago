@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static SceneMetaData;
 
 namespace OriBFArchipelago.Core
 {
@@ -23,7 +24,9 @@ namespace OriBFArchipelago.Core
         ExpSmall,
         ExpMedium,
         ExpLarge,
-        ProgressiveMap
+        ProgressiveMap,
+        SavePedestal,
+        Goal
     }
 
     internal class Location
@@ -34,6 +37,7 @@ namespace OriBFArchipelago.Core
         public WorldArea Area { get; private set; }
         public LocationType Type { get; private set; }
         public CustomWorldMapIconType CustomIconType { get; private set; }
+        public WorldMapIconType IconType { get; private set; }
         public Vector2 WorldPosition { get; private set; }
 
         public Location(MoonGuid moonGuid, string name, WorldArea area, LocationType type, Vector2 worldPosition, MoonGuid iconGuid = null)
@@ -45,8 +49,27 @@ namespace OriBFArchipelago.Core
             WorldPosition = worldPosition;
             IconGuid = iconGuid;
             CustomIconType = GetCustomWorldMapIcon(type);
+            IconType = GetWorldMapIcon(type);
         }
 
+        private WorldMapIconType GetWorldMapIcon(LocationType type)
+        {
+            switch (type)
+            {
+                case LocationType.ExpSmall:
+                case LocationType.ExpMedium:
+                case LocationType.ExpLarge:
+                    return WorldMapIconType.Experience;
+                case LocationType.Skill:
+                    return WorldMapIconType.AbilityPedestal;
+                case LocationType.AbilityCell:
+                    return WorldMapIconType.AbilityPoint;
+                case LocationType.Keystone:
+                    return WorldMapIconType.Keystone;
+                default:
+                    return WorldMapIconType.BreakableWall;
+            }
+        }
         private CustomWorldMapIconType GetCustomWorldMapIcon(LocationType type)
         { //todo: maybe move this into the location class and have it set icon on generation
             switch (type)
@@ -65,9 +88,10 @@ namespace OriBFArchipelago.Core
                     return CustomWorldMapIconType.None;
                 case LocationType.Plant:
                     return CustomWorldMapIconType.Plant;
+                case LocationType.Cutscene:
                 case LocationType.Event:
                     return CustomWorldMapIconType.WindRestored;
-                case LocationType.Cutscene:
+                case LocationType.Goal:
                     return CustomWorldMapIconType.HoruRoom;
                 default:
                     return CustomWorldMapIconType.None;
@@ -92,12 +116,22 @@ namespace OriBFArchipelago.Core
         {
             return Name;
         }
+
+        internal bool IsGoalRequiredItem()
+        {
+            var goal = RandomizerManager.Options?.Goal ?? GoalOptions.AllMaps;
+            if (goal == GoalOptions.AllSkillTrees && Type == LocationType.Skill)
+                return true;
+            else if (goal == GoalOptions.AllMaps && Type == LocationType.Map)
+                return true;
+            //todo: Check for warth fragments and world tour
+            return false;
+        }
     }
 
     internal class LocationLookup
     {
-
-        private static List<MoonGuid> loggedInvalidLocations => new List<MoonGuid>();
+        private static List<MoonGuid> loggedInvalidLocations { get; set; }
         public static Location Get(MoonGuid moonGuid)
         {
             // If this is the first time this is called, populate the locationByGuid dictionary
@@ -117,11 +151,14 @@ namespace OriBFArchipelago.Core
             if (target == null) //attempt to get location by iconguid
                 target = locations.FirstOrDefault(d => d.IconGuid == moonGuid);
 
-            if (target == null && !loggedInvalidLocations.Any(d => d == moonGuid))
-            {
-                loggedInvalidLocations.Add(moonGuid);
-                ModLogger.Debug($"Invalid location: {moonGuid} - Player position: {Characters.Sein.Position}");
-            }
+            if (loggedInvalidLocations == null)
+                loggedInvalidLocations = new List<MoonGuid>();
+
+            //if (target == null && !loggedInvalidLocations.Any(d => d == moonGuid))
+            //{
+            //    loggedInvalidLocations.Add(moonGuid);
+            //    //ModLogger.Debug($"Invalid location: {moonGuid} - Player position: {Characters.Sein.Position}");
+            //}
 
             return target;
         }
@@ -397,7 +434,7 @@ namespace OriBFArchipelago.Core
             new Location(new MoonGuid(new Guid("46f35914-7b0b-4322-8c1d-3ffa1d9c8ab7")), "UpperSorrowLeftKeystone", WorldArea.Sorrow, LocationType.Keystone, new Vector2(-514.0f, 427.0f)),
             new Location(new MoonGuid(new Guid("d5b98071-5721-4e15-b2a4-62fde346be0d")), "UpperSorrowSpikeExp", WorldArea.Sorrow, LocationType.ExpMedium, new Vector2(-545.0f, 409.5f)),
             new Location(new MoonGuid(new Guid("8395174a-d06d-461b-ba37-b9dd97ee322b")), "UpperSorrowFarLeftKeystone", WorldArea.Sorrow, LocationType.Keystone, new Vector2(-592.0f, 445.0f)),
-            new Location(new MoonGuid(new Guid("24783b59-4196-4fcb-bd42-d1a925962e86")), "ChargeJumpSkillTree", WorldArea.Sorrow, LocationType.Skill, new Vector2(-696.0f, 408.0f)),
+            new Location(new MoonGuid(new Guid("24783b59-4196-4fcb-bd42-d1a925962e86")), "ChargeJumpSkillTree", WorldArea.Sorrow, LocationType.Skill, new Vector2(-696.0f, 408.0f), new MoonGuid(new Guid("bb66f074-a98b-4356-abcb-57cf153fad7a"))),
             new Location(new MoonGuid(new Guid("ce467c66-3616-4596-b052-3aa36b9daeab")), "AboveChargeJumpAbilityCell", WorldArea.Sorrow, LocationType.AbilityCell, new Vector2(-646.9f, 473.1f)),
             new Location(new MoonGuid(new Guid("50ffb37d-475f-48f3-911a-bb1c5ba6dd79")), "Sunstone", WorldArea.Sorrow, LocationType.Event, new Vector2(-560.0f, 600.0f)),
             new Location(new MoonGuid(new Guid("f8927d97-73bb-405d-bc66-a97d29b7de94")), "SunstonePlant", WorldArea.Sorrow, LocationType.Plant, new Vector2(-478.0f, 586.0f)),
@@ -408,7 +445,7 @@ namespace OriBFArchipelago.Core
             new Location(new MoonGuid(new Guid("40675dbd-5f3c-4e1c-86ee-c7241c5fdd52")), "MistyMortarCorridorUpperExp", WorldArea.Misty, LocationType.ExpMedium, new Vector2(-1083.0f, 8.3f)),
             new Location(new MoonGuid(new Guid("958dfa0f-6ab3-422e-b1e1-98a71eef37ba")), "MistyMortarCorridorHiddenExp", WorldArea.Misty, LocationType.ExpMedium, new Vector2(-1009.0f, -35.0f)),
             new Location(new MoonGuid(new Guid("5e563952-174f-42be-ab22-17a901dd29e0")), "MistyPlant", WorldArea.Misty, LocationType.Plant, new Vector2(-1102.0f, -67.0f)),
-            new Location(new MoonGuid(new Guid("a273c819-a2c7-44c9-8798-a6510fc25e0d")), "ClimbSkillTree", WorldArea.Misty, LocationType.Skill, new Vector2(-1188.0f, -100.0f), new MoonGuid("-1150881676 1129752971 -816329813 2058174229")),
+            new Location(new MoonGuid(new Guid("a273c819-a2c7-44c9-8798-a6510fc25e0d")), "ClimbSkillTree", WorldArea.Misty, LocationType.Skill, new Vector2(-1188.0f, -100.0f)),
             new Location(new MoonGuid(new Guid("920137e5-c082-428b-93a1-bcb8f67a0748")), "MistyKeystone3", WorldArea.Misty, LocationType.Keystone, new Vector2(-912.0f, -36.0f)),
             new Location(new MoonGuid(new Guid("43c5043b-4b30-4cc3-84e3-baedb5e5a378")), "MistyPostClimbSpikeCave", WorldArea.Misty, LocationType.ExpMedium, new Vector2(-837.7f, -123.5f)),
             new Location(new MoonGuid(new Guid("8eae37fc-ca7a-4f9b-904b-47384ed8ec39")), "MistyPostClimbAboveSpikePit", WorldArea.Misty, LocationType.ExpLarge, new Vector2(-796.0f, -144.0f)),
@@ -425,7 +462,8 @@ namespace OriBFArchipelago.Core
             new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000006")), "ProgressiveMap6", WorldArea.Void, LocationType.ProgressiveMap, new Vector2(0.0f, 44.0f)),
             new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000007")), "ProgressiveMap7", WorldArea.Void, LocationType.ProgressiveMap, new Vector2(0.0f, 48.0f)),
             new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000008")), "ProgressiveMap8", WorldArea.Void, LocationType.ProgressiveMap, new Vector2(0.0f, 52.0f)),
-            new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000009")), "ProgressiveMap9", WorldArea.Void, LocationType.ProgressiveMap, new Vector2(0.0f, 56.0f))
+            new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000009")), "ProgressiveMap9", WorldArea.Void, LocationType.ProgressiveMap, new Vector2(0.0f, 56.0f)),
+            new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000010")), "Goal", WorldArea.Horu, LocationType.Goal, new Vector2(19,104))           
         };
     }
 }

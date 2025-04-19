@@ -53,7 +53,8 @@ namespace OriBFArchipelago.Patches
         private static bool IsDuplicateIcon(RuntimeWorldMapIcon icon)
         {
             List<MoonGuid> duplicateIcons = new List<MoonGuid>{
-                 new MoonGuid("1607939702 1149860266 185564807 -1906561306"), //duplicate icon on bash              
+                 new MoonGuid("1607939702 1149860266 185564807 -1906561306"), //duplicate icon on bash
+                 new MoonGuid("1725611206 1201986298 -435475044 -1944513031"), //duplicate icon on ability point in burrows
             };
 
 

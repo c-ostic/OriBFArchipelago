@@ -1,5 +1,6 @@
 ﻿using Game;
 using OriBFArchipelago.Extensions;
+using OriBFArchipelago.MapTracker.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,10 +30,7 @@ namespace OriBFArchipelago.Core
         private RandomizerInventory onLoadInventory;
 
         // locally saves the locations that have been checked in game
-        private List<string> checkedLocations;
-
-        // similar purpose to unsavedInventory
-        private List<string> unsavedCheckedLocations;
+        private Dictionary<string, LocationStatus> checkedLocations;
 
         // the number of the associated save slot in Ori
         private int saveSlot;
@@ -57,7 +55,8 @@ namespace OriBFArchipelago.Core
         public bool Init(bool isNew, int saveSlot, string apSlotName)
         {
             this.saveSlot = saveSlot;
-
+            RandomizerSettings.ActiveSaveSlot = saveSlot;
+            MaptrackerSettings.AllAreasDiscovered = false;
             SuspensionManager.Register(this);
 
             itemQueue = new Queue<InventoryItem>();
@@ -65,13 +64,12 @@ namespace OriBFArchipelago.Core
 
             onLoadInventory = new RandomizerInventory(VERSION, apSlotName);
             unsavedInventory = new RandomizerInventory(VERSION, apSlotName);
-            unsavedCheckedLocations = new List<string>();
+            checkedLocations = new Dictionary<string, LocationStatus>();
 
             if (isNew)
             {
                 // If this is a new slot, create a new inventory
                 savedInventory = new RandomizerInventory(VERSION, apSlotName);
-                checkedLocations = new List<string>();
                 if (RandomizerIO.WriteSaveFile(saveSlot, savedInventory, checkedLocations))
                 {
                     Console.Write($"Successfully created new inventory for slot {saveSlot}");
@@ -217,24 +215,48 @@ namespace OriBFArchipelago.Core
          */
         public void CheckLocation(string location)
         {
-            unsavedCheckedLocations.Add(location);
+            if (checkedLocations.ContainsKey(location))
+                checkedLocations[location] = LocationStatus.CheckedNotSaved;
+            else
+                checkedLocations.Add(location, LocationStatus.CheckedNotSaved);
+
+            RandomizerIO.SaveLocations(RandomizerSettings.ActiveSaveSlot, checkedLocations);
         }
 
         /**
          * Checks if a location has been locally reached
          */
-        public bool IsLocationChecked(string location)
+        public bool IsLocationChecked(string location, bool isGoalRequiredItem = false)
         {
-            return checkedLocations.Contains(location) || unsavedCheckedLocations.Contains(location);
+            var checkStatus = isGoalRequiredItem ? LocationStatus.CheckedNotSaved : LocationStatus.LostOnDeath;
+            return checkedLocations.ContainsKey(location) ? checkedLocations[location] >= checkStatus : false;
         }
 
+        public void UpdateGoal()
+        {
+            if (RandomizerManager.Connection.IsGoalComplete(false))
+                unsavedInventory.Add(InventoryItem.GoalCompleted);
+        }
+        public Dictionary<string, int> GetAllItems()
+        {
+            var rValue = new Dictionary<string, int>();
+            foreach (InventoryItem item in Enum.GetValues(typeof(InventoryItem)))
+            {
+                var value = savedInventory.Get(item) + unsavedInventory.Get(item);
+                rValue.Add(item.ToString(), value);
+            }
+            return rValue;
+        }
         /**
          * Returns a list of all locally checked locations
          */
         public IEnumerable<string> GetAllLocations()
         {
-            
-            return checkedLocations.Concat(unsavedCheckedLocations);
+            return checkedLocations.Where(d => d.Value > LocationStatus.Unchecked).Select(d => d.Key);
+        }
+        public LocationStatus GetLocationStatus(string locationName)
+        {
+            return checkedLocations.ContainsKey(locationName) ? checkedLocations[locationName] : LocationStatus.Unchecked;
         }
 
         /**
@@ -247,7 +269,11 @@ namespace OriBFArchipelago.Core
 
             // Remove any tracking of used items and checked locations
             unsavedInventory.Reset();
-            unsavedCheckedLocations.Clear();
+            var toCheckLocations = checkedLocations.Where(d => d.Value == LocationStatus.CheckedNotSaved).ToList();
+            foreach (var location in toCheckLocations)
+            {
+                checkedLocations[location.Key] = LocationStatus.LostOnDeath;
+            }
         }
 
         /**
@@ -265,14 +291,22 @@ namespace OriBFArchipelago.Core
                 onLoadInventory.AddAll(unsavedInventory);
                 unsavedInventory.Reset();
 
-                checkedLocations.AddRange(unsavedCheckedLocations);
-                unsavedCheckedLocations.Clear();
+                var toChangeLocations = checkedLocations.Where(d => d.Value == LocationStatus.CheckedNotSaved).ToList();
+                foreach (var location in toChangeLocations)
+                {
+                    checkedLocations[location.Key] = LocationStatus.Checked;
+                }
             }
-            
+
             RandomizerIO.WriteSaveFile(saveSlot, savedInventory, checkedLocations);
             Resync();
         }
-
+        public void SyncArchipelagoCheckedLocations(IEnumerable<string> archipelagoLocations)
+        {
+            foreach (var location in archipelagoLocations)
+                if (!checkedLocations.ContainsKey(location))
+                    checkedLocations.Add(location, LocationStatus.LostOnDeath);
+        }
         /**
          * Called when the player tries to reconnect to the archipelago server from within the game
          */
@@ -318,6 +352,15 @@ namespace OriBFArchipelago.Core
             Sein.World.Keys.MountHoru = savedInventory.Get(InventoryItem.HoruKey) >= 1;
             Sein.World.Events.WaterPurified = savedInventory.Get(InventoryItem.CleanWater) >= 1;
             Sein.World.Events.WindRestored = savedInventory.Get(InventoryItem.Wind) >= 1;
+
+            if (savedInventory.Get(InventoryItem.SpiritFlame) == 0)
+            { //todo: this is temporary to be backwards compatible with v0.3.2
+                if (Characters.Sein.PlayerAbilities.SpiritFlame.HasAbility)
+                {
+                    savedInventory.Add(InventoryItem.SpiritFlame, 1);
+                    ModLogger.Debug("Set Sein in inventory");
+                }
+            }
 
             foreach (InventoryItem skillName in RandomizerInventory.skills)
             {

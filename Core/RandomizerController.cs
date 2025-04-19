@@ -1,6 +1,7 @@
 ﻿using Core;
 using Game;
 using HarmonyLib;
+using OriBFArchipelago.MapTracker.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,12 +29,13 @@ namespace OriBFArchipelago.Core
             // populate tips in start to make sure Keybinder has loaded the keybinds
             tips = new List<string>()
             {
-                $"Tip! Press ({Keybinder.ToString(KeybindAction.OpenTeleport)}) to teleport.",
-                $"Tip! Press ({Keybinder.ToString(KeybindAction.Help)}) to see all keybinds.",
-                $"Tip! Press ({Keybinder.ToString(KeybindAction.GoalProgress)}) to see your goal progress.",
-                $"Tip! Press ({Keybinder.ToString(KeybindAction.ListStones)}) to see your keystones and mapstones.",
+                $"Press ({Keybinder.ToString(KeybindAction.OpenTeleport)}) to teleport.",
+                $"Press ({Keybinder.ToString(KeybindAction.Help)}) to see all keybinds.",
+                $"Press ({Keybinder.ToString(KeybindAction.GoalProgress)}) to see your goal progress.",
+                $"Press ({Keybinder.ToString(KeybindAction.ListStones)}) to see your keystones and mapstones.",
                 $"Disconnected from the server? Press ({Keybinder.ToString(KeybindAction.Reconnect)}) to reconnect.",
-                "Tip! You can adjust some randomizer settings in the bottom left corner of the pause menu."
+                "You can adjust some randomizer settings in the bottom left corner of the pause menu.",
+                "You can adjust some maptracker settings in the Help & Options menu."
             };
         }
 
@@ -144,8 +146,8 @@ namespace OriBFArchipelago.Core
                         InventoryItem.BlackrootMapStone
                     };
 
-                string mapStoneString = mapStoneList.Where(x => RandomizerManager.Receiver.HasItem(x) && 
-                                                                !RandomizerManager.Receiver.HasItem(x+1))
+                string mapStoneString = mapStoneList.Where(x => RandomizerManager.Receiver.HasItem(x) &&
+                                                                !RandomizerManager.Receiver.HasItem(x + 1))
                                                     .Select(y => y.ToString())
                                                     .Join(z => z.ToString(), ", ");
 
@@ -180,6 +182,7 @@ namespace OriBFArchipelago.Core
 
             if (Keybinder.OnPressed(KeybindAction.GoalProgress))
             {
+                RandomizerManager.Receiver.UpdateGoal();
                 RandomizerManager.Connection.IsGoalComplete();
             }
 
@@ -213,7 +216,7 @@ namespace OriBFArchipelago.Core
         {
             System.Random random = new System.Random();
             int index = random.Next(0, tips.Count);
-            RandomizerMessager.instance.AddMessage($"{tips[index]}");
+            RandomizerMessager.instance.AddMessage($"Tip: {tips[index]}");
         }
     }
 }

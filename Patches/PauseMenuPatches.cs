@@ -1,8 +1,6 @@
 ﻿using HarmonyLib;
 using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
-using OriBFArchipelago.MapTracker.Logic;
-using System;
 
 namespace OriBFArchipelago.Patches
 {
@@ -13,12 +11,8 @@ namespace OriBFArchipelago.Patches
         {
             RandomizerSettings.ShowSettings = true;
             RuntimeGameWorldAreaPatch.ToggleDiscoveredAreas(MaptrackerSettings.MapVisibility);
+            MaptrackerSettings.ResetCheckCount();
             return true;
-        }
-        static void Postfix()
-        {
-            if (Game.UI.Menu.CurrentScreen == MenuScreenManager.Screens.WorldMap)
-                LogicInventory.UpdateInventory();
         }
     }
 
