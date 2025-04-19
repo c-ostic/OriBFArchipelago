@@ -196,11 +196,11 @@ namespace OriBFArchipelago.Core
             try
             {
                 if (File.Exists(originalInventoryFullPath))
-                    File.Copy(originalInventoryFullPath, newInventoryFullPath);
+                    File.Copy(originalInventoryFullPath, newInventoryFullPath, true);
                 if (File.Exists(originalLocationFullPath))
-                    File.Copy(originalLocationFullPath, newLocationFullPath);
+                    File.Copy(originalLocationFullPath, newLocationFullPath, true);
                 if (File.Exists(originalMaptrackerSettingsPath))
-                    File.Copy(originalMaptrackerSettingsPath, newMaptrackerSettingsPath);
+                    File.Copy(originalMaptrackerSettingsPath, newMaptrackerSettingsPath,true);
             }
             catch (IOException e)
             {
