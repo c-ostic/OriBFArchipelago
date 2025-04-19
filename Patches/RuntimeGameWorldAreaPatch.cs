@@ -63,7 +63,7 @@ namespace OriBFArchipelago.Patches
                 ModLogger.Debug($"{nameof(GameWorld.Instance.RuntimeAreas)} is empty");
                 return;
             }
-            ToggleMistyWoods(mapVisibility);
+            SetMistyWoodsVisibility(mapVisibility == MapVisibilityEnum.Visible);            
             ToggleAreas(mapVisibility);
         }
 
@@ -116,19 +116,13 @@ namespace OriBFArchipelago.Patches
             });
             MaptrackerSettings.AllAreasDiscovered = false;
         }
-        private static void ToggleMistyWoods(MapVisibilityEnum mapVisibility)
+        private static void SetMistyWoodsVisibility(bool isMistyWoodsVisible)
         {
-            Transform mapPivot = AreaMapUI.Instance?.transform?.Find("mapPivot");
-            if (mapPivot != null && mapVisibility == MapVisibilityEnum.Visible)
-            {
-                mapPivot.FindChild("mistyWoodsFog").gameObject.SetActive(false);
-                mapPivot.FindChild("mistyWoods").gameObject.SetActive(true);
-            }
-            else if (mapPivot != null && mapVisibility == MapVisibilityEnum.Not_Visible)
-            {
-                mapPivot.FindChild("mistyWoodsFog").gameObject.SetActive(true);
-                mapPivot.FindChild("mistyWoods").gameObject.SetActive(false);
-            }
+            Transform mapPivot = AreaMapUI.Instance.transform.Find("mapPivot");
+            if (mapPivot == null)
+                return;
+            mapPivot.FindChild("mistyWoodsFog").gameObject.SetActive(!isMistyWoodsVisible);
+            mapPivot.FindChild("mistyWoods").gameObject.SetActive(isMistyWoodsVisible);
         }
     }
 
