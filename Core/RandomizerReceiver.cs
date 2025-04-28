@@ -353,13 +353,16 @@ namespace OriBFArchipelago.Core
             Sein.World.Events.WaterPurified = savedInventory.Get(InventoryItem.CleanWater) >= 1;
             Sein.World.Events.WindRestored = savedInventory.Get(InventoryItem.Wind) >= 1;
 
-            if (savedInventory.Get(InventoryItem.SpiritFlame) == 0)
-            { //todo: this is temporary to be backwards compatible with v0.3.2
-                if (Characters.Sein.PlayerAbilities.SpiritFlame.HasAbility)
-                {
-                    savedInventory.Add(InventoryItem.SpiritFlame, 1);
-                    ModLogger.Debug("Set Sein in inventory");
-                }
+            if (savedInventory.Get(InventoryItem.SpiritFlame) == 0 && Characters.Sein.PlayerAbilities.SpiritFlame.HasAbility)
+            {  //todo: this is temporary to be backwards compatible with v0.3.2
+                ModLogger.Debug("Collecting sein based on compatibilty");
+                RandomizerManager.CollectSein();
+            }
+
+            if (savedInventory.Get(InventoryItem.SpiritFlame) == 0 && RandomizerManager.IsSeinCollected())
+            {   //Failsafe untill sein is properly included in randomizer
+                savedInventory.Add(InventoryItem.SpiritFlame, 1);
+                ModLogger.Debug("Collecting sein based on archipelago data");
             }
 
             foreach (InventoryItem skillName in RandomizerInventory.skills)
