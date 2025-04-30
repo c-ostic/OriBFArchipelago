@@ -1,5 +1,4 @@
 ﻿using OriBFArchipelago.Core;
-using OriBFArchipelago.MapTracker.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +13,7 @@ namespace OriBFArchipelago.MapTracker.Logic
         public LogicChecker()
         {
             _logic = new RulesData().GetFullLogic();
-            //_options = options ?? new OriOptions();
+
         }
 
         /// <summary>
@@ -35,21 +34,18 @@ namespace OriBFArchipelago.MapTracker.Logic
         /// <summary>
         /// Check if a pickup is accessible with the given inventory at a specific difficulty level
         /// </summary>
-        public bool IsPickupAccessible(string pickupName, Dictionary<string, int> inventory, DifficultyOptions difficultyLevel)
+        public bool IsPickupAccessible(string pickupName, DifficultyOptions difficultyLevel, Dictionary<string, int> inventory, RandomizerOptions options)
         {
             string location = FindPickupLocation(pickupName);
             if (location == null)
-            {
-                ModLogger.Debug($"Pickup {pickupName} not found in any location");
                 return false;
-            }
 
             // First check if we can reach the location containing the pickup
-            if (!IsLocationReachable(location, inventory, "SunkenGladesRunaway", difficultyLevel))
+            if (!IsLocationReachable(location, "SunkenGladesRunaway", difficultyLevel, inventory, options))
                 return false;
 
             // Now check if we can access the pickup itself
-            if (!CanAccess(location, pickupName, inventory, difficultyLevel))
+            if (!CanAccess(location, pickupName, difficultyLevel, inventory, options))
                 return false;
 
             return true;
@@ -57,7 +53,7 @@ namespace OriBFArchipelago.MapTracker.Logic
         /// <summary>
         /// Check if a location is reachable with the given inventory at a specific difficulty level
         /// </summary>
-        public bool IsLocationReachable(string targetLocation, Dictionary<string, int> inventory, string startLocation, DifficultyOptions difficultyLevel)
+        public bool IsLocationReachable(string targetLocation, string startLocation, DifficultyOptions difficultyLevel, Dictionary<string, int> inventory, RandomizerOptions options)
         {
             if (targetLocation == startLocation)
                 return true;
@@ -81,7 +77,7 @@ namespace OriBFArchipelago.MapTracker.Logic
                         // Only consider connections to other locations
                         if (_logic.ContainsKey(destination) && !visited.Contains(destination))
                         {
-                            if (CanAccess(current, destination, inventory, difficultyLevel))
+                            if (CanAccess(current, destination, difficultyLevel, inventory, options))
                             {
                                 if (destination == targetLocation)
                                     return true;
@@ -100,9 +96,8 @@ namespace OriBFArchipelago.MapTracker.Logic
         /// <summary>
         /// Check if a destination can be accessed from a location with the given inventory at a specific difficulty level
         /// </summary>
-        private bool CanAccess(string fromLocation, string toDestination, Dictionary<string, int> inventory, DifficultyOptions difficultyLevel)
+        private bool CanAccess(string fromLocation, string toDestination, DifficultyOptions difficultyLevel, Dictionary<string, int> inventory, RandomizerOptions options)
         {
-            //            ModLogger.Debug($"Checking {fromLocation} - {toDestination} - {difficultyLevel}");
             if (!_logic.ContainsKey(fromLocation) || !_logic[fromLocation].ContainsKey(toDestination))
                 return false;
 
@@ -110,11 +105,10 @@ namespace OriBFArchipelago.MapTracker.Logic
 
             foreach (var reqSet in requirementSets)
             {
-                //ModLogger.Debug(string.Join(", ", reqSet.ToArray()));
                 bool canSatisfySet = true;
                 foreach (var req in reqSet)
                 {
-                    if (!CanSatisfyRequirement(req, inventory))
+                    if (!CanSatisfyRequirement(req, inventory, options))
                     {
                         canSatisfySet = false;
                         break;
@@ -143,10 +137,7 @@ namespace OriBFArchipelago.MapTracker.Logic
             {
                 var loweredDifficulty = difficulty.ToString().ToLower();
                 if (!locationRequirements.ContainsKey(loweredDifficulty))
-                {
-                    //ModLogger.Debug($"{fromLocation} does not contain {difficulty}");
                     continue;
-                }
 
                 var difficultiyRequirements = locationRequirements[loweredDifficulty];
                 if (difficultiyRequirements != null && difficultiyRequirements.Any())
@@ -160,7 +151,7 @@ namespace OriBFArchipelago.MapTracker.Logic
         /// <summary>
         /// Check if a specific requirement can be satisfied with the given inventory
         /// </summary>
-        private bool CanSatisfyRequirement(string requirement, Dictionary<string, int> inventory)
+        private bool CanSatisfyRequirement(string requirement, Dictionary<string, int> inventory, RandomizerOptions options)
         {
             // Special cases
             if (requirement == "None")
@@ -182,10 +173,9 @@ namespace OriBFArchipelago.MapTracker.Logic
                 if (itemName == "HealthCell")
                 {
                     // Special case for HealthCell - only count if damage boost is enabled
-                    if (!RandomizerManager.Options.EnableDamageBoost)
+                    if (!options.EnableDamageBoost)
                         return false;
 
-                    count += 3; //To account for starting with 3 healthcells.
                 }
                 return inventory.ContainsKey(itemName) && inventory[itemName] >= count;
             }
@@ -194,47 +184,47 @@ namespace OriBFArchipelago.MapTracker.Logic
             switch (requirement)
             {
                 case "Lure":
-                    return RandomizerManager.Options.EnableLure;
+                    return options.EnableLure;
 
                 case "DoubleBash":
-                    return RandomizerManager.Options.EnableDoubleBash && HasItem("Bash", inventory);
+                    return options.EnableDoubleBash && HasItem("Bash", inventory);
 
                 case "GrenadeJump":
-                    return RandomizerManager.Options.EnableGrenadeJump &&
+                    return options.EnableGrenadeJump &&
                            HasItem("Climb", inventory) &&
                            HasItem("ChargeJump", inventory) &&
                            HasItem("Grenade", inventory);
 
                 case "ChargeFlameBurn":
-                    return RandomizerManager.Options.EnableChargeFlame &&
+                    return options.EnableChargeFlame &&
                            HasItem("ChargeFlame", inventory) &&
                            HasItem("AbilityCell", inventory, 3);
 
                 case "ChargeDash":
                 case "RocketJump":
-                    return RandomizerManager.Options.EnableChargeDash &&
+                    return options.EnableChargeDash &&
                            HasItem("Dash", inventory) &&
                            HasItem("AbilityCell", inventory, 6);
 
                 case "AirDash":
-                    return RandomizerManager.Options.EnableAirDash &&
+                    return options.EnableAirDash &&
                            HasItem("Dash", inventory) &&
                            HasItem("AbilityCell", inventory, 3);
 
                 case "TripleJump":
-                    return RandomizerManager.Options.EnableTripleJump &&
+                    return options.EnableTripleJump &&
                            HasItem("DoubleJump", inventory) &&
                            HasItem("AbilityCell", inventory, 12);
 
                 case "UltraDefense":
-                    return RandomizerManager.Options.EnableDamageBoost &&
+                    return options.EnableDamageBoost &&
                            HasItem("AbilityCell", inventory, 12);
 
                 case "BashGrenade":
                     return HasItem("Bash", inventory) && HasItem("Grenade", inventory);
 
                 case "Rekindle":
-                    return RandomizerManager.Options.EnableRekindle;
+                    return options.EnableRekindle;
 
                 default:
                     // Normal abilities like Dash, Climb, etc.

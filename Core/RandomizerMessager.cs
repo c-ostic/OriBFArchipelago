@@ -1,12 +1,8 @@
 ﻿using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.MessageLog.Parts;
-using Game;
-using OriModding.BF.Core;
 using System;
 using System.Collections.Generic;
-using System.IO.Ports;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace OriBFArchipelago.Core
@@ -15,6 +11,7 @@ namespace OriBFArchipelago.Core
     {
         // maximum number of messages before old messages are deleted so they don't flood the screen
         public const int MAX_MESSAGES = 20;
+        public const int MAX_LATESTMESSAGES = 15;
         // amount of duration time left when fade should begin (should not be larger than min duration
         public const float FADE_THRESHOLD = 2f;
 
@@ -37,6 +34,7 @@ namespace OriBFArchipelago.Core
             }
         }
 
+        private Queue<RandomizerMessage> latestMessagesQueue;
         private Queue<RandomizerMessage> messageQueue;
 
         private GUIStyle messageStyle, optionsStyle;
@@ -45,7 +43,7 @@ namespace OriBFArchipelago.Core
         {
             instance = this;
             messageQueue = new Queue<RandomizerMessage>();
-
+            latestMessagesQueue = new Queue<RandomizerMessage>(MAX_LATESTMESSAGES);
             messageStyle = new GUIStyle();
             messageStyle.wordWrap = true;
             messageStyle.fontStyle = FontStyle.Bold;
@@ -58,14 +56,18 @@ namespace OriBFArchipelago.Core
 
         private void OnGUI()
         {
-            messageStyle.fontSize = (int)(25 * (Screen.width / baseScreenSize.x));
+            IEnumerable<RandomizerMessage> queue = messageQueue;
+            if (RandomizerSettings.ShowSettings && Game.UI.Menu.CurrentScreen == MenuScreenManager.Screens.WorldMap)
+                queue = latestMessagesQueue;
+
+            messageStyle.fontSize = (int)(20 * (Screen.width / baseScreenSize.x));
 
             // Show messages
             GUILayout.BeginArea(new Rect(5, 5, Screen.width / 3, Screen.height));
 
             GUILayout.BeginVertical();
 
-            foreach (RandomizerMessage message in messageQueue)
+            foreach (RandomizerMessage message in queue.Reverse())
             {
                 float opacity = 1;
 
@@ -89,9 +91,15 @@ namespace OriBFArchipelago.Core
             GUILayout.EndVertical();
 
             GUILayout.EndArea();
-        }
+        }        
 
         private void Update()
+        {
+            ProcessMessageQueue();
+            ProcessLastMessagesQueue();
+        }
+
+        private void ProcessMessageQueue()
         {
             // dont want to clog up screen with messages, so remove oldest until under max
             while (messageQueue.Count > MAX_MESSAGES)
@@ -113,11 +121,19 @@ namespace OriBFArchipelago.Core
             }
         }
 
+        private void ProcessLastMessagesQueue()
+        {
+            while (latestMessagesQueue.Count >= MAX_LATESTMESSAGES)
+                latestMessagesQueue.Dequeue();
+        }
+
+
         public void AddMessage(string message)
         {
             if (RandomizerSettings.Get(RandomizerSetting.MessagerState) != 0)
             {
                 messageQueue.Enqueue(new RandomizerMessage(message, RandomizerSettings.Get(RandomizerSetting.MessageDuration)));
+                latestMessagesQueue.Enqueue(new RandomizerMessage(message,float.MaxValue));
             }
         }
         public void Clear()
@@ -134,7 +150,7 @@ namespace OriBFArchipelago.Core
 
             bool showMessage = false;
 
-            foreach(MessagePart part in message.Parts)
+            foreach (MessagePart part in message.Parts)
             {
                 // i'm unsure what messages has background color, but i'll check for it just to be safe
                 if (!part.IsBackgroundColor)
@@ -167,7 +183,7 @@ namespace OriBFArchipelago.Core
 
         private string ConvertColor(Archipelago.MultiClient.Net.Models.Color color)
         {
-            byte[] colorData = {color.R, color.G, color.B};
+            byte[] colorData = { color.R, color.G, color.B };
             return BitConverter.ToString(colorData).Replace("-", string.Empty);
         }
     }

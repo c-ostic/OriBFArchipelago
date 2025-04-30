@@ -1,38 +1,41 @@
-﻿using BepInEx;
+﻿using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
+using BepInEx;
 using BepInEx.Configuration;
 using Game;
 using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
-using System.Linq;
-using UnityEngine;
+using System;
+using System.IO;
 
 namespace OriBFArchipelago.MapTracker.UI
 {
     internal class MapTrackerOptionsScreen : BaseModOptionsScreen
     {
         private const string CONFIGSECTION = "MapTracker";
-
-
         private static ConfigFile _config;
-        private static bool _isInitialized;
 
-        private static ConfigEntry<string> MapVisibility { get; set; }
-        private static ConfigEntry<string> IconVisibility { get; set; }
-        private static ConfigEntry<bool> EnableIconInfocUI { get; set; }
-        private static ConfigEntry<bool> DisableMapSway { get; set; }
+        private static ConfigEntry<string> _mapVisibility { get; set; }
+        private static ConfigEntry<string> _iconVisibility { get; set; }
+        private static ConfigEntry<string> _iconVisibilityLogic { get; set; }
+        private static ConfigEntry<bool> _enableIconInfocUI { get; set; }
+        private static ConfigEntry<bool> _disableMapSway { get; set; }
 
-
+        private static string ConfigSavePath { get { return RandomizerIO.GetFilePath("MapTracker.cfg"); } }
+        private static string OldConfigSavePath { get { return Paths.ConfigPath + $"/OriBFMapTracker/Tracker.cfg"; } }
         public MapTrackerOptionsScreen()
         {
             ModLogger.Debug("Loaded MaptrackerSettingsScreen");
         }
 
-        // Override the InitScreen method to add your custom settings
         public override void InitScreen()
         {
             try
             {
-                _config = new ConfigFile(Paths.ConfigPath + $"/OriBFMapTracker/Tracker.cfg", true);
+                if (File.Exists(OldConfigSavePath)) //Keep this to accomodate older versions. Removing in 2to4 patches
+                    CopyOldConfigToNew();
+
+                _config = new ConfigFile(ConfigSavePath, true);
+
                 ModLogger.Debug($"Loading settings: {_config.ConfigFilePath}");
                 InitializeSettings(_config);
                 SetComponents();
@@ -43,87 +46,43 @@ namespace OriBFArchipelago.MapTracker.UI
             }
         }
 
-        private void OnEnable()
+        private void CopyOldConfigToNew()
         {
-            if (!_isInitialized && SaveSlotsUI.Instance != null && SaveSlotsUI.Instance.CurrentSaveSlot != null)
+            if (File.Exists(OldConfigSavePath))
             {
-                _isInitialized = true;
-                AddButton("Teleport to start", "Teleports Ori to the starting area.", TeleportToStart);
+                File.WriteAllText(ConfigSavePath, File.ReadAllText(OldConfigSavePath));
+                File.Delete(OldConfigSavePath);
             }
         }
 
         private void InitializeSettings(ConfigFile config)
         {
             ModLogger.Debug("Initializing settings");
-            MapVisibility = config.Bind(CONFIGSECTION, "MapVisibility", $"{MapVisibilityEnum.Visible}", "Sets map visibility");
-            IconVisibility = config.Bind(CONFIGSECTION, "IconVisibility", $"{IconVisibilityEnum.In_Logic}", "Sets icon visibility");
-            EnableIconInfocUI = config.Bind(CONFIGSECTION, "EnableItemUI", false, "Sets enableitemui");
-            DisableMapSway = config.Bind(CONFIGSECTION, "DisableMapSway", false, "Sets disablemapsway");
+            _mapVisibility = config.Bind(CONFIGSECTION, "MapVisibility", $"{MapVisibilityEnum.Visible}", "Sets map visibility");
+            _iconVisibility = config.Bind(CONFIGSECTION, "IconVisibility", $"{IconVisibilityEnum.In_Logic}", "Sets icon visibility");
+            _iconVisibilityLogic = config.Bind(CONFIGSECTION, "IconVisiblityLogic", $"{IconVisibilityLogicEnum.Game}", "Sets icon visibility logic");
+            _enableIconInfocUI = config.Bind(CONFIGSECTION, "EnableItemUI", false, "Sets enableitemui");
+            _disableMapSway = config.Bind(CONFIGSECTION, "DisableMapSway", false, "Sets disablemapsway");
             ModLogger.Debug("Settings initialized successfully");
         }
 
         private void SetComponents()
         {
             ModLogger.Debug("Setting up UI components");
-            AddMultiToggle(setting: MapVisibility, label: "Map visiblity", tooltip: "Options: " + string.Join(", ", EnumParser.GetEnumNames(typeof(MapVisibilityEnum))), options: EnumParser.GetEnumNames(typeof(MapVisibilityEnum)));
-            AddMultiToggle(setting: IconVisibility, label: "Icon visibility", tooltip: "Options: " + string.Join(", ", EnumParser.GetEnumNames(typeof(IconVisibilityEnum))), options: EnumParser.GetEnumNames(typeof(IconVisibilityEnum)));
-            AddToggle(setting: EnableIconInfocUI, label: "Icon info", tooltip: "Enables a small window on the top right that information about the item location. This can be triggered with the mouse, or the dot that appears in the middle of the map when using controller");
-            AddToggle(setting: DisableMapSway, label: "Disable map sway", tooltip: "Disables the swap in the map. Usefull when enabling Item UI for better pointing at icons.");
+            AddButton("Teleport to start", "Teleports Ori to the starting area.", TeleporterManager.TeleportToStart);
+            AddMultiToggle(_mapVisibility, "Map visiblity", "Not Visibile: Normal game logic for showing maps\nVisible: Shows all maps always", EnumParser.GetEnumNames<MapVisibilityEnum>());
+            AddMultiToggle(_iconVisibility, "Icon visibility", "None: Never show icons\nOriginal: Show icons based on normal game logic.\nIn Logic: Shows icons in logic and icon logic (Setting below)\nAll: Show all uncollected icons in game", EnumParser.GetEnumNames<IconVisibilityEnum>());
+            AddMultiToggle(_iconVisibilityLogic, "Icon logic", "Game: Shows items collected in game, dying without saving will reshow the icon.\nArchipelago: Shows icons based on archipelago. Dying will keep icons hidden except for goal required items.", EnumParser.GetEnumNames<IconVisibilityLogicEnum>());
+            AddToggle(_enableIconInfocUI, "Icon info", "Enables a small window on the top right that information about the item location. This can be triggered with the mouse, or the dot that appears in the middle of the map when using controller");
+            AddToggle(_disableMapSway, "Disable map sway", "Disables the swap in the map. Usefull when enabling Item UI for better pointing at icons.");
             ModLogger.Debug("UI components set up successfully");
         }
 
-        private void TeleportToStart()
-        {
-            try
-            {
-                
-                if (Characters.Sein == null)
-                {
-                    RandomizerMessager.instance.AddMessage("You have to start a game before you can use this ability.");
-                    return;
-                }
-                Game.UI.Menu.HideMenuScreen(true);
-                if (!Characters.Sein.Active || Characters.Sein.IsSuspended || Characters.Sein.Controller.IsSwimming || !Characters.Sein.Controller.CanMove)
-                {
-                    ModLogger.Debug($"{Characters.Sein.Active}");
-                    ModLogger.Debug($"{Characters.Sein.IsSuspended}");
-                    ModLogger.Debug($"{Characters.Sein.Controller.IsSwimming}");
-                    ModLogger.Debug($"{Characters.Sein.Controller.CanMove}");
-                    RandomizerMessager.instance.AddMessage("You can not teleport from here. Get to a save place where you can freely stand.");
-                    return;
-                }
-                
-                var original = TeleporterController.Instance.Teleporters.FirstOrDefault();
-                var originalPos = original.WorldPosition; //Save original position - fornlorn cavern
-                original.WorldPosition = new Vector3(189, -219, 0); //Set position to starting location
-                TeleporterController.BeginTeleportation(original);
-                ModLogger.Debug("Teleport to start");
-                original.WorldPosition = originalPos; //Return position to original otherwise forlorn will always teleport to starting location
-            }
-            catch (System.Exception ex)
-            {
-                ModLogger.Error(ex.ToString());
-            }
-        }
-
-
-        public static MapVisibilityEnum GetMapVisibility()
-        {
-            return EnumParser.GetEnumValue<MapVisibilityEnum>(MapVisibility.Value);
-        }
-        public static IconVisibilityEnum GetIconVisibility()
-        {
-            return EnumParser.GetEnumValue<IconVisibilityEnum>(IconVisibility.Value);
-        }
-        public static bool GetEnableIconInfocUI()
-        {
-            return EnableIconInfocUI?.Value ?? false;
-        }
-
-        internal static bool GetDisableMapSway()
-        {
-            return DisableMapSway?.Value ?? false;
-        }
+        internal static MapVisibilityEnum MapVisibility => EnumParser.GetEnumValue<MapVisibilityEnum>(_mapVisibility.Value);
+        internal static IconVisibilityEnum IconVisibility => EnumParser.GetEnumValue<IconVisibilityEnum>(_iconVisibility.Value);
+        internal static IconVisibilityLogicEnum IconVisibilityLogic => EnumParser.GetEnumValue<IconVisibilityLogicEnum>(_iconVisibilityLogic.Value);
+        internal static bool EnableIconInfocUI => _enableIconInfocUI?.Value ?? false;
+        internal static bool DisableMapSway => _disableMapSway?.Value ?? false;
     }
 }
 

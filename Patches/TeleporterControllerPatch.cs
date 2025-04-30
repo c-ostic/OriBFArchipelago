@@ -36,6 +36,9 @@ namespace OriBFArchipelago.Patches
                 Sein.World.Events.WaterPurified = false;
 
                 var ginsoTreeResurrectionSceneManagerScene = Scenes.Manager.GetSceneManagerScene("ginsoTreeResurrection");
+
+                if (ginsoTreeResurrectionSceneManagerScene == null)
+                    return; //Fixes a bug that causes the teleport animation to never end. Not sure why this is null at some points.
                 var ginsoTreeResurrectionScene = ginsoTreeResurrectionSceneManagerScene.SceneRoot;
 
                 // Revert the sequence of events when restoring Ginso tree

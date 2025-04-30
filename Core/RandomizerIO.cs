@@ -1,10 +1,10 @@
-﻿using System;
+﻿using BepInEx;
+using OriBFArchipelago.MapTracker.Core;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
-using BepInEx;
-using HarmonyLib;
-using OriBFArchipelago.MapTracker.Core;
 
 namespace OriBFArchipelago.Core
 {
@@ -35,16 +35,26 @@ namespace OriBFArchipelago.Core
         public const string SAVE_FILE_PATH = "ArchipelagoData";
         public const int NUM_SLOTS = 10;
 
+
+        public static string GetFilePath(string fileName)
+        {
+            try
+            {
+                return $"{SAVE_FILE_PATH}\\{fileName}";
+            }
+            catch (System.Exception ex)
+            {
+                ModLogger.Error($"Failed to get filepath: {fileName} {ex}");
+                return null;
+            }
+        }
         /**
          * Reads the save file associated with the given slot
          */
-        public static bool ReadSaveFile(int saveSlot, out RandomizerInventory inventory, out List<string> locations)
+        public static bool ReadSaveFile(int saveSlot, out RandomizerInventory inventory, out Dictionary<string, LocationStatus> locations)
         {
-            string inventoryFileName = $"Slot{saveSlot}.txt";
-            string inventoryFullPath = $"{SAVE_FILE_PATH}\\{inventoryFileName}";
-
-            string locationFileName = $"Slot{saveSlot}Locations.txt";
-            string locationFullPath = $"{SAVE_FILE_PATH}\\{locationFileName}";
+            string inventoryFullPath = GetFilePath($"Slot{saveSlot}.txt");
+            string locationFullPath = GetFilePath($"Slot{saveSlot}Locations.txt");
 
             try
             {
@@ -92,13 +102,20 @@ namespace OriBFArchipelago.Core
                 data = sr.ReadToEnd().Split('\n');
                 sr.Close();
 
-                locations = new List<string>();
+                locations = new Dictionary<string, LocationStatus>();
 
                 foreach (string line in data)
                 {
-                    if (string.IsNullOrEmpty(line.Trim())) continue;
+                    if (string.IsNullOrEmpty(line.Trim()))
+                        continue;
 
-                    locations.Add(line.Trim());
+                    if (line.Contains("="))
+                    {
+                        var splitLine = line.Split('=');
+                        locations.Add(splitLine[0], EnumParser.GetEnumValue<LocationStatus>(splitLine[1]));
+                    }
+                    else
+                        locations.Add(line.Trim(), LocationStatus.Checked); //To accomodate old lists
                 }
 
                 return true;
@@ -107,7 +124,7 @@ namespace OriBFArchipelago.Core
             {
                 Console.WriteLine($"Could not read save file: {e}");
                 inventory = new RandomizerInventory("", "");
-                locations = new List<string>();
+                locations = new Dictionary<string, LocationStatus>();
                 return false;
             }
         }
@@ -115,14 +132,9 @@ namespace OriBFArchipelago.Core
         /** 
          * Saves the given inventory to a file
          */
-        public static bool WriteSaveFile(int saveSlot, RandomizerInventory inventory, List<string> locations)
+        public static bool WriteSaveFile(int saveSlot, RandomizerInventory inventory, Dictionary<string, LocationStatus> locations)
         {
-            string inventoryFileName = $"Slot{saveSlot}.txt";
-            string inventoryFullPath = $"{SAVE_FILE_PATH}\\{inventoryFileName}";
-
-            string locationFileName = $"Slot{saveSlot}Locations.txt";
-            string locationFullPath = $"{SAVE_FILE_PATH}\\{locationFileName}";
-
+            string inventoryFullPath = GetFilePath($"Slot{saveSlot}.txt");
             // Write inventory
             try
             {
@@ -149,18 +161,7 @@ namespace OriBFArchipelago.Core
                 sw.Close();
 
                 // Save locations
-                sb = new StringBuilder();
-
-                foreach (string line in locations)
-                {
-                    sb.AppendLine(line);
-                }
-
-                sw = new StreamWriter(locationFullPath);
-
-                sw.Write(sb.ToString());
-
-                sw.Close();
+                SaveLocations(saveSlot, locations);
 
                 return true;
             }
@@ -171,38 +172,35 @@ namespace OriBFArchipelago.Core
             }
         }
 
+        public static void SaveLocations(int saveSlot, Dictionary<string, LocationStatus> locations)
+        {
+            string locationFullPath = GetFilePath($"Slot{saveSlot}Locations.txt");
+            File.WriteAllLines(locationFullPath, [.. locations.Select(d => $"{d.Key}={d.Value}")]);
+        }
         /**
          * Copy files of a saved game into another slot
          */
         public static bool CopySaveFile(int originalSaveSlot, int copySaveSlot)
         {
             // Original file paths
-            string originalInventoryFileName = $"Slot{originalSaveSlot}.txt";
-            string originalInventoryFullPath = $"{SAVE_FILE_PATH}\\{originalInventoryFileName}";
-
-            string originalLocationFileName = $"Slot{originalSaveSlot}Locations.txt";
-            string originalLocationFullPath = $"{SAVE_FILE_PATH}\\{originalLocationFileName}";
-
+            string originalInventoryFullPath = GetFilePath($"Slot{originalSaveSlot}.txt");
+            string originalLocationFullPath = GetFilePath($"Slot{originalSaveSlot}Locations.txt");
             var originalMaptrackerSettingsPath = Paths.ConfigPath + $"/MapTracker/Slot{originalSaveSlot}.cfg";
 
             // New file paths
-            string newInventoryFileName = $"Slot{copySaveSlot}.txt";
-            string newInventoryFullPath = $"{SAVE_FILE_PATH}\\{newInventoryFileName}";
-
-            string newLocationFileName = $"Slot{copySaveSlot}Locations.txt";
-            string newLocationFullPath = $"{SAVE_FILE_PATH}\\{newLocationFileName}";
-
+            string newInventoryFullPath = GetFilePath($"Slot{copySaveSlot}.txt");
+            string newLocationFullPath = GetFilePath($"Slot{copySaveSlot}Locations.txt");
             var newMaptrackerSettingsPath = Paths.ConfigPath + $"/MapTracker/Slot{copySaveSlot}.cfg";
 
 
             try
             {
                 if (File.Exists(originalInventoryFullPath))
-                    File.Copy(originalInventoryFullPath, newInventoryFullPath);
+                    File.Copy(originalInventoryFullPath, newInventoryFullPath, true);
                 if (File.Exists(originalLocationFullPath))
-                    File.Copy(originalLocationFullPath, newLocationFullPath);
+                    File.Copy(originalLocationFullPath, newLocationFullPath, true);
                 if (File.Exists(originalMaptrackerSettingsPath))
-                    File.Copy(originalMaptrackerSettingsPath, newMaptrackerSettingsPath);
+                    File.Copy(originalMaptrackerSettingsPath, newMaptrackerSettingsPath,true);
             }
             catch (IOException e)
             {
@@ -217,11 +215,8 @@ namespace OriBFArchipelago.Core
          */
         public static bool DeleteSaveFile(int saveSlot)
         {
-            string inventoryFileName = $"Slot{saveSlot}.txt";
-            string inventoryFullPath = $"{SAVE_FILE_PATH}\\{inventoryFileName}";
-
-            string locationFileName = $"Slot{saveSlot}Locations.txt";
-            string locationFullPath = $"{SAVE_FILE_PATH}\\{locationFileName}";
+            string inventoryFullPath = GetFilePath($"Slot{saveSlot}.txt");
+            string locationFullPath = GetFilePath($"Slot{saveSlot}Locations.txt");
 
             try
             {
@@ -318,8 +313,7 @@ namespace OriBFArchipelago.Core
         {
             try
             {
-                string fileName = $"SlotData.txt";
-                string fullPath = $"{SAVE_FILE_PATH}\\{fileName}";
+                string fullPath = GetFilePath("SlotData.txt");
 
                 if (!Directory.Exists(SAVE_FILE_PATH))
                 {
@@ -364,8 +358,7 @@ namespace OriBFArchipelago.Core
         {
             try
             {
-                string fileName = $"Settings.txt";
-                string fullPath = $"{SAVE_FILE_PATH}\\{fileName}";
+                string fullPath = GetFilePath("Settings.txt");
 
                 settings = new Dictionary<RandomizerSetting, int>();
 
@@ -424,8 +417,7 @@ namespace OriBFArchipelago.Core
         {
             try
             {
-                string fileName = $"Settings.txt";
-                string fullPath = $"{SAVE_FILE_PATH}\\{fileName}";
+                string fullPath = GetFilePath("Settings.txt");
 
                 StringBuilder sb = new StringBuilder();
 
@@ -461,8 +453,7 @@ namespace OriBFArchipelago.Core
         {
             try
             {
-                string fileName = $"Keybinds.txt";
-                string fullPath = $"{SAVE_FILE_PATH}\\{fileName}";
+                string fullPath = GetFilePath("Keybinds.txt");
 
                 keybinds = new Dictionary<KeybindAction, string>();
 
@@ -520,8 +511,7 @@ namespace OriBFArchipelago.Core
         {
             try
             {
-                string fileName = $"Keybinds.txt";
-                string fullPath = $"{SAVE_FILE_PATH}\\{fileName}";
+                string fullPath = GetFilePath("Keybinds.txt");
 
                 StringBuilder sb = new StringBuilder();
 

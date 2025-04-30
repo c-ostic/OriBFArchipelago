@@ -6495,6 +6495,11 @@ private string location_rules = @"
     }
   },
   ""HoruBasement"": {
+    ""Goal"":{
+      ""casual"":[
+        [""GoalCompleted""]
+      ]
+    },
     ""DoorWarpExp"": {
       ""casual"": [
         [ ""WallJump"", ""DoubleJump"" ],

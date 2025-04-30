@@ -1,15 +1,15 @@
-﻿using OriBFArchipelago.Core;
+﻿using JetBrains.Annotations;
+using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 
 namespace OriBFArchipelago.MapTracker.Logic
 {
     internal class LogicManager
     {
         private static LogicChecker _logicChecker;
+        public static LogicChecker LogicChecker { get { return _logicChecker ?? (_logicChecker = new LogicChecker()); } }
 
         internal static Location Get(RuntimeWorldMapIcon icon)
         {
@@ -19,47 +19,29 @@ namespace OriBFArchipelago.MapTracker.Logic
         {
             try
             {
-                if (_logicChecker == null)
-                    _logicChecker = new LogicChecker();
-
                 if (IsIgnoredIconType(icon.Icon))
                     return false;
 
-                if (IsDuplicateIcon(icon))
-                    return false;
-
-                if (icon.Icon == WorldMapIconType.SavePedestal)
-                {
-                    var tp = LogicInventory.Teleporters.FirstOrDefault(d => d.Guid == icon.Guid);
-                    return tp?.IsActivaded ?? false;
-                }
-
-                if ((MaptrackerSettings.CollectedCustomIcons.Contains(icon.Guid)))
-                    return false;
-
                 var trackerItem = LocationLookup.Get(icon.Guid);
-                if (icon.Icon == WorldMapIconType.AbilityPedestal && trackerItem == null)
-                {
-                    ModLogger.Debug($"Failed to find ability pedestal: {icon.Guid}");
-                    return false;
-                }
-
                 if (trackerItem == null)
                     return false;
+                
+                if (MaptrackerSettings.IconVisibilityLogic == IconVisibilityLogicEnum.Archipelago && RandomizerManager.Receiver.IsLocationChecked(trackerItem.Name, trackerItem.IsGoalRequiredItem()))
+                    return false;
 
-                return _logicChecker.IsPickupAccessible(trackerItem.Name, LogicInventory.GetInventory(), RandomizerManager.Options.LogicDifficulty);
+                MaptrackerSettings.AddCheck(icon.Guid);
+
+                var checkIsInLogic = LogicChecker.IsPickupAccessible(trackerItem.Name, RandomizerManager.Options.LogicDifficulty, RandomizerManager.Receiver.GetAllItems(), RandomizerManager.Options);
+                if (checkIsInLogic)
+                    MaptrackerSettings.AddCheck(icon.Guid, checkIsInLogic);
+                return checkIsInLogic;
+
             }
             catch (Exception ex)
             {
                 ModLogger.Error($"Error at IsInLogic: {ex}");
                 return false;
             }
-
-            //check petrifiedplants
-            //get item name by locations.
-            //check item against logic
-            //build inventory
-            //more?
         }
 
         private static bool IsIgnoredIconType(WorldMapIconType iconType)
@@ -81,19 +63,6 @@ namespace OriBFArchipelago.MapTracker.Logic
                 default:
                     return false;
             }
-        }
-
-        private static bool IsDuplicateIcon(RuntimeWorldMapIcon icon)
-        {
-            List<MoonGuid> duplicateIcons = new List<MoonGuid>{
-                 new MoonGuid("1607939702 1149860266 185564807 -1906561306"), //duplicate icon on bash
-                 new MoonGuid("1725611206 1201986298 -435475044 -1944513031"), //duplicate icon on ability point in burrows
-            };
-
-
-            if (duplicateIcons.Contains(icon.Guid))
-                return true;
-            return false;
         }
     }
 }
