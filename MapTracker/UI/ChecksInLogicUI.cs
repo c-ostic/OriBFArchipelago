@@ -41,6 +41,9 @@ namespace OriBFArchipelago.MapTracker.UI
             if (textStyle == null)
                 return;
 
+            if (MaptrackerSettings.ChecksLeft == 0)
+                return;
+
             float centerX = Screen.width / 2f;
 
             int checksInLogic = MaptrackerSettings.ChecksInLogic;

@@ -108,7 +108,7 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("SunkenGladesGrenadeAtWater", "Cutscene that shows the opening of the underwater door in sunken glades", [03, 04, 09, 17],new MoonGuid("1865222289 1321724071 -1742292036 -281605782")),
             new("SunkenGladesMapStone", "Cutscene that triggers when approaching the mapstone in sunken glades", [15], new MoonGuid("2113839868 1240904231 -2113682503 -2123470106")),
             new("WallJumpSkillTree", "Cutscene that explains what the trees are", [12, 14], new MoonGuid("-1930755400 1341760787 -1205985134 742195902")),
-
+            new("EnergyGate","Cutscene that explains energy gates",[14], new MoonGuid("-1546192206 1296366634 -822821188 -2033193275")),
 
             //Blackroot
             new("BeforeBlackrootStatue", "Cutscene before the statue from sunken glades to blackroot", [11], new MoonGuid("969124513 1142725948 -1552980856 552605659")),
@@ -137,6 +137,7 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("GumoAtSpitters", "Gumo enabling all the spitters",[06, 08, 11, 16, 17],new MoonGuid("792606551 1290633918 -1717577576 -2067970926")),
             new("GumoJumpingDown", "Gumo jumping down and activating lasers",[01, 03, 05, 12, 13, 15], new MoonGuid("-1958716129 1091670628 1187537581 -244205506")),
             new("FirstKuroAppearance","Kuro showing his face for the first time", [02, 03],new MoonGuid("1778853495 1203245955 -1472097121 977949109")),
+            new("OpenGinsoTree", "Opening of Ginso Tree", [05,06,09,10],new MoonGuid("395817233 1340225072 267074435 558261298")),
             //Moon
             new("GumoJumpingFurtherDown","Gumo jumping down after moon TP",[05, 06],new MoonGuid("-217466045 1309290050 -477348435 1521107282")),
             new("GumoGettingAttacked","Gumo getting attacked by the first miniboss",[01, 02, 05, 06, 07, 08, 22, 23], new MoonGuid("1644266034 1159348567 1319740331 -549778202")),
@@ -146,15 +147,37 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("RescueGump","Rescue gumo from the stone on top of him",[01, 02, 03, 04, 05, 06, 07, 08, 10, 12, 13, 14, 15, 16],new MoonGuid("53584786 1168928934 -777751624 1508091491")),
             new("GumoGiveWaterThing", "Gumo giving the Ginso Key to Ori", [01,02, 03,04,05, 07, 08, 10, 11, 17, 18, 19, 20, 21, 25], new MoonGuid("1376551603 1121813286 -104614488 1790121249")),
             //new("GumoRunOverGap", "Activates when running to the left of the gap at bottom grotto",[04, 08, 09],new MoonGuid("636825529 1114295791 195746239 1758731857")),
-            //Valley
+
+            //Valley of the Wind
             new("WaterLever", "Lever at the hollow grove side", [03, 04, 05, 09, 11, 18],new MoonGuid("-535165738 1133285013 -695290185 -1054012665")),
+            new("OpenValleyGate", "Opens the gate to valley of the wind",[02,07,08,09,14,19], new MoonGuid("901903725 1185454079 -233910905 1236736341")),
+            new("ShowKuroLurking", "Shows Kuro lurking to kill Ori when going into the open", [13,14, 22, 23], new MoonGuid("554625759 1196984167 -1411865209 368717326")),
+            new("KuroAtCliff", "Kuro overlooking the cliff, showing how to remove him",[05,06,16,17], new MoonGuid("-457224259 1076850475 402546573 -1836316074")),
+
 
             //Lost Grove
             new("DashGate", "Opening gate at dash area", [01,02,03,04,09,10,11,12], new MoonGuid("458381796 1082263303 581967003 -1486563515")),
             new("BigCutscene", "The cutscene that shows about the friendship and parents intervening",[33, 38, 42, 48, 49], new MoonGuid("563632359 1185974542 1520397737 -258754801")),
             new("GrenadeSkillTree", "Shows when nearing the grenade skill tree", [14,15], new MoonGuid("-622973999 1263458193 41168301 -95283387")),
             new("GrendaeGate","Opening gate at grenade skill tree", [01,02,03,04,10,11,12,14,15,16,17], new MoonGuid("-978772582 1143642823 -1177073764 -284972556")),
+            new("PressureGrenadePlateDoor","Opening of gate that requires a pressure plate to be held and throwing a grenade",[01,02,03,04,10,11,12,13], new MoonGuid("34615599 1179073922 33697180 451012224")),
+            new("FirstLever", "Lever to open door to dash out sequence", [05,06,07,08], new MoonGuid("-1262154005 1161379472 408777355 1091836632")),
+            new("SecondLever", "Lever before the dash out sequence", [01, 06, 07, 08, 09], new MoonGuid("-751033906 1080928688 -645894784 2092556967")),
+            new("LosingDad", "Cutscene where Naru's dad dies", [43,45], new MoonGuid("-147850866 1235485514 2127604624 619107832")),
 
+
+
+            //Ginso Tree
+            new("GinsoTreeEntrance", "First entry of Ginso Tree", [01,05,21,22,23], new MoonGuid("1797081604 1288163207 -1681566832 -1939855093")),
+            new("FightMiniBoss","Closing door behind you on start of miniboss fight", [03,04,05,06,08,12,13], new MoonGuid("1183926712 1201180019 -328380759 -2018562755")),
+
+            //Forlorn Cavern
+            new("GumoSeal", "Insert gumo seal", [02,05,06,09,10,11,14,16], new MoonGuid("1987292132 1080256411 1972704413 111953066")),
+            new("ForlornIntroduction", "First entry to forlorn cavern", [04,05,25,26], new MoonGuid("-849820852 1250504405 886572168 -1183457540")),
+            new("GettingNightBerry", "Collection of the freezing orb", [10, 11,12,13,15], new MoonGuid("-468484755 1271818938 1374739346 -2106151641")),
+            
+            //Mount Horu
+            new("HoruIntroduction", "First entry of Mount Horu", [01, 05, 07, 22, 23], new MoonGuid("-182315221 1105231312 1943840650 1813785295")),
         };
 
         private static Dictionary<MoonGuid, ActionSequenceExtension> actionSequenceExtensions;
@@ -175,12 +198,12 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             if (IgnoredActionSequenceTypes.Contains(__instance.name))
                 return true;
 
-            var actionSequenceExt = ActionSequenceExtensions.ContainsKey(__instance.MoonGuid) ? ActionSequenceExtensions[__instance.MoonGuid] : null;
-            if (actionSequenceExt == null)
+            if (!ActionSequenceExtensions.ContainsKey(__instance.MoonGuid))
             {
                 LogUnknownActionSequence(__instance);
                 return true;
             }
+            var actionSequenceExt = ActionSequenceExtensions[__instance.MoonGuid];
 
             if (eableHandlingLogging)
             {

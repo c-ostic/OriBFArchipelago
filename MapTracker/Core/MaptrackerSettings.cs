@@ -9,6 +9,8 @@ namespace OriBFArchipelago.MapTracker.Core
 {
     internal class MaptrackerSettings
     {
+
+        public static List<MoonGuid> CheckedTriggers { get; set; } = [];
         private static string OldSaveSlotFilePath { get { return Paths.ConfigPath + $"/MapTrackerSlot{SaveSlotsUI.Instance.CurrentSaveSlot.SaveSlotIndex}.cfg"; } }
         public static bool EnableIconInfocUI { get { return MapTrackerOptionsScreen.EnableIconInfocUI; } }
         public static MapVisibilityEnum MapVisibility { get { return MapTrackerOptionsScreen.MapVisibility; } }
