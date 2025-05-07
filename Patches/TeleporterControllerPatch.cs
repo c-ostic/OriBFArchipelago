@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace OriBFArchipelago.Patches
 {
@@ -147,6 +148,53 @@ namespace OriBFArchipelago.Patches
             if (selectedTeleporter.Area.Area.AreaNameString == "Forlorn Ruins")
             {
                 LocalGameState.TeleportNightberry = true;
+            }
+            
+            RuntimeSceneMetaData scene = Scenes.Manager.CurrentScene;
+            if (scene.Scene.Equals("moonGrottoEnemyPuzzle"))
+            {
+                OpenMoonGrottoMiniBossDoor();
+            }
+            else if (scene.Scene.Equals("ginsoTreePuzzles"))
+            {
+                OpenGinsoTreeLowerMiniBossDoor();
+            }
+        }
+
+        /**
+         * Open the door of the Moon Grotto miniBoss room and enable the door trigger to replay the animation
+         * if the player teleport out of the room and didn't defeat the boss
+         */
+        private static void OpenMoonGrottoMiniBossDoor()
+        {
+            var moonGrottoEnemyPuzzleSceneRoot = Scenes.Manager.GetSceneManagerScene("moonGrottoEnemyPuzzle").SceneRoot;
+            LegacyTranslateAnimator leftDoorAnimator = moonGrottoEnemyPuzzleSceneRoot.transform.FindChild("*gumoAnimationSummonEnemy/enemyPuzzles/enemyPuzzle/doorSetup/sidewaysDoor/puzzleDoorLeft").GetComponent<LegacyTranslateAnimator>();
+
+            if (leftDoorAnimator.AtStart)
+            {
+                Transform firstDoorTrigger = moonGrottoEnemyPuzzleSceneRoot.transform.FindChild("*gumoAnimationSummonEnemy/enemyPuzzles/doorASetup/triggerCollider");
+                LegacyTranslateAnimator firstDoorAnimator = moonGrottoEnemyPuzzleSceneRoot.transform.FindChild("*gumoAnimationSummonEnemy/enemyPuzzles/doorASetup/moonGrottoBlockingDoorB").GetComponent<LegacyTranslateAnimator>();
+                firstDoorAnimator.Reverse();
+                firstDoorTrigger.gameObject.SetActive(true);
+            }
+        }
+
+        /**
+         * Open the door of the Ginso Tree lower miniBoss room and enable the door trigger to replay the animation
+         * if the player teleport out of the room and didn't defeat the boss
+         */
+        private static void OpenGinsoTreeLowerMiniBossDoor()
+        {
+            var ginsoTreePuzzlesSceneRoot = Scenes.Manager.GetSceneManagerScene("ginsoTreePuzzles").SceneRoot;
+            LegacyTranslateAnimator rightDoorAnimator = ginsoTreePuzzlesSceneRoot.transform.FindChild("ginsoTreeMultiMortar/mortarEnemySetup/doorSetup/sidewaysDoor/puzzleDoorRightGinso").GetComponent<LegacyTranslateAnimator>();
+
+            if (rightDoorAnimator.AtStart)
+            {
+                LegacyTranslateAnimator firstDoorAnimator = ginsoTreePuzzlesSceneRoot.transform.FindChild("ginsoTreeMultiMortar/doorASetup/ginsoTreeBlockingWallA").GetComponent<LegacyTranslateAnimator>();
+                Transform firstDoorTrigger = ginsoTreePuzzlesSceneRoot.transform.FindChild("ginsoTreeMultiMortar/doorASetup/triggerCollider");
+                            
+                firstDoorAnimator.Reverse();
+                firstDoorTrigger.gameObject.SetActive(true);
             }
         }
     }
