@@ -34,7 +34,6 @@ namespace OriBFArchipelago.MapTracker.UI
             }
         }
 
-        private int time = 0;
         private void OnGUI()
         {
             // Check control scheme directly in OnGUI

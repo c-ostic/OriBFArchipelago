@@ -32,7 +32,6 @@ namespace OriBFArchipelago.MapTracker.UI
             }
         }
 
-        private int time = 0;
         private void OnGUI()
         {
             if (!RandomizerSettings.ShowSettings || Game.UI.Menu.CurrentScreen != MenuScreenManager.Screens.WorldMap)
