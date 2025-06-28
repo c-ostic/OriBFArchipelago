@@ -3,7 +3,6 @@ using HarmonyLib;
 using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
 using OriBFArchipelago.MapTracker.UI;
-using OriBFArchipelago.Patches;
 using OriModding.BF.Core;
 using System;
 using System.Reflection;

@@ -27,6 +27,7 @@ namespace OriBFArchipelago.Core
         public const string MAP_LOCATION_DATA_KEY = "MapLocations";
         public const string FOUND_RELICS_DATA_KEY = "FoundRelics";
         public const string POSITION_DATA_KEY = "Position";
+        public const string SEIN = "SeinCollected";
 
         // The archipelago session
         private ArchipelagoSession session;
@@ -138,6 +139,7 @@ namespace OriBFArchipelago.Core
                 session.DataStorage[Scope.Slot, MAP_LOCATION_DATA_KEY].Initialize(new string[0]);
                 session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].Initialize(new string[0]);
                 session.DataStorage[Scope.Slot, POSITION_DATA_KEY].Initialize(new float[0]);
+                session.DataStorage[Scope.Slot, SEIN].Initialize(false);
 
                 RecheckLocations();
                 UpdateMapLocations();
@@ -606,6 +608,18 @@ namespace OriBFArchipelago.Core
                     RandomizerMessager.instance.AddMessage(relicMessage.ToString());
                 }));
             }
+        }
+
+        internal void StoreSeinInArchipelagoSession()
+        {
+            Task.Factory.StartNew(() => session.DataStorage[Scope.Slot, SEIN] = true);
+        }
+
+        internal bool IsSeinCollected()
+        {
+            var rValue = false;
+            session.DataStorage[Scope.Slot, SEIN].GetAsync<bool>(x => rValue = x);
+            return rValue;
         }
     }
 }

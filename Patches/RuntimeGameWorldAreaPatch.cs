@@ -15,8 +15,6 @@ namespace OriBFArchipelago.Patches
     {
         public static Condition StoredMistyWoodsCondition { get; set; }
         public static bool AddedCustomIcons = false;
-        public static Condition StoredMistyWoodsCondition { get; set; }
-        
         [HarmonyPatch("Initialize")]
         [HarmonyPostfix]
         internal static void Initialize_Postfix(RuntimeGameWorldArea __instance)
