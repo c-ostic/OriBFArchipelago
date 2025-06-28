@@ -18,7 +18,7 @@ namespace OriBFArchipelago.MapTracker.UI
         [HarmonyPostfix]
         private static void AddLocationText(GameController __instance)
         {
-            GameObject guiObject = new GameObject("LocationTextGUI");
+            GameObject guiObject = new GameObject("ChecksInLogicUI");
             guiObject.AddComponent<ChecksInLogicUI>();
             Object.DontDestroyOnLoad(guiObject);
         }
