@@ -98,9 +98,11 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("FirstEnergyOrb", "Animation for collecting first energy orb", [05], new MoonGuid("-19356878 1117716508 -1253827710 -315997777")),
             new("FirstXPOrb", "Animation for collecting first xp orb", [05], new MoonGuid("-147680714 1089154972 67598721 862472043")),
             //new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("1990366120 1332263646 -2040573797 -1880444431")),
-            new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("-1966853268 1195618287 -590473547 -1494253540")), //Sunken Glades pedestal
-            new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("-751058081 1271097205 1101442470 238108912")), //Moon glades pedestal
-            new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("863615873 1243313958 -1075371851 739952073")), //Forlorn cavern pedestal
+            //SavePedestals
+            new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("-1966853268 1195618287 -590473547 -1494253540")), //Sunken Glades 
+            new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("-751058081 1271097205 1101442470 238108912")), //Moon Grotto
+            new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("863615873 1243313958 -1075371851 739952073")), //Forlorn Ruins
+            new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("-1154652467 1286431676 -1128360514 1797572823")), //Thornfelt Swamp
 
             //SunkenGlades
             new("InitialSpawn","Cutscene that explains what sunwells do", [1, 4, 5, 10, 11, 14, 15, 16, 17], new MoonGuid("-847281790 1241793475 1080917670 -1990575197")),

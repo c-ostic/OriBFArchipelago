@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace OriBFArchipelago.Patches
+namespace OriBFArchipelago.Patches.RemoveAnimations
 {
     [HarmonyPatch]
     internal class SeinMovementPatches
@@ -40,6 +40,7 @@ namespace OriBFArchipelago.Patches
             var positions = new Vector3[] {
                     new Vector3(-164.6f, -261.7f, -3.1f), //Near sein collection
                     new Vector3(131.2f, -247.5f, 0.0f),  //Above sunken glades pedestal
+                    new Vector3(-95.4f, -121.7f, 0.0f), //Tree
                 };
             var target = __instance.Target.position;
             float tolerance = 0.5f; // Adjust this value as needed
