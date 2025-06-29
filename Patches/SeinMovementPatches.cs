@@ -2,13 +2,16 @@
 using HarmonyLib;
 using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 namespace OriBFArchipelago.Patches
 {
+    [HarmonyPatch]
     internal class SeinMovementPatches
     {
+        private static List<Vector3> LoggedLocations { get; set; }
         [HarmonyPatch(typeof(SeinMaxSpeedBasedOnDistance), "OnHorizontalInputCalculate")]
         [HarmonyPrefix]
         public static bool Prefix(SeinMaxSpeedBasedOnDistance __instance)
@@ -19,7 +22,7 @@ namespace OriBFArchipelago.Patches
                     return RunOriginalMethod();
 
                 if (IsSkipableLocation(__instance))
-                    return false;
+                    return SkipOriginalMethod();
 
                 LogPosition(__instance);
                 return true;
@@ -35,7 +38,8 @@ namespace OriBFArchipelago.Patches
         private static bool IsSkipableLocation(SeinMaxSpeedBasedOnDistance __instance)
         {
             var positions = new Vector3[] {
-                    new Vector3(-164.6f, -261.7f, -3.1f) //Slow down near sein
+                    new Vector3(-164.6f, -261.7f, -3.1f), //Near sein collection
+                    new Vector3(131.2f, -247.5f, 0.0f),  //Above sunken glades pedestal
                 };
             var target = __instance.Target.position;
             float tolerance = 0.5f; // Adjust this value as needed
@@ -50,6 +54,16 @@ namespace OriBFArchipelago.Patches
 
         private static void LogPosition(SeinMaxSpeedBasedOnDistance __instance)
         {
+            float tolerance = 0.5f; // Adjust this value as needed
+            if (LoggedLocations == null)
+                LoggedLocations = new List<Vector3>();
+
+            if (LoggedLocations.Any(pos => Vector3.Distance(pos, __instance.Target.position) < tolerance))
+            {
+                return;
+            }
+
+            LoggedLocations.Add(__instance.Target.position);
             // Get the original horizontal input before modification
             float originalHorizontalInput = Characters.Sein.PlatformBehaviour.LeftRightMovement.HorizontalInput;
 
@@ -65,7 +79,7 @@ namespace OriBFArchipelago.Patches
             // Calculate what the new horizontal input will be
             float newHorizontalInput = originalHorizontalInput * speedMultiplier;
 
-            ModLogger.Info($"HorizontalInput Debug - " +
+            ModLogger.Info($"HorizontalInput Debug - " +                
                           $"Original Input: {originalHorizontalInput:F3}, " +
                           $"Distance: {distance:F2}, " +
                           $"Max Distance: {__instance.Distance:F2}, " +

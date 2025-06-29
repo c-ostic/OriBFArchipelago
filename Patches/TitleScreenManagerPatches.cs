@@ -6,7 +6,7 @@ namespace OriBFArchipelago.Patches
     internal class TitleScreenManagerPatches
     {
         [HarmonyPatch(typeof(TitleScreenManager), nameof(EntityDamageReciever.Awake))]
-        internal class PetrifiedPlantPatch
+        internal class TitleScreenManagerPatch
         {
             private static void Postfix(EntityDamageReciever __instance)
             {

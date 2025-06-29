@@ -1,8 +1,6 @@
-﻿using JetBrains.Annotations;
-using OriBFArchipelago.Core;
+﻿using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
 using System;
-using System.Collections.Generic;
 
 namespace OriBFArchipelago.MapTracker.Logic
 {
@@ -26,9 +24,9 @@ namespace OriBFArchipelago.MapTracker.Logic
                 if (trackerItem == null)
                     return false;
                 
-                if (MaptrackerSettings.IconVisibilityLogic == IconVisibilityLogicEnum.Archipelago && RandomizerManager.Receiver.IsLocationChecked(trackerItem.Name, trackerItem.IsGoalRequiredItem()))
+                if (RandomizerManager.Receiver.IsLocationChecked(trackerItem.Name, MaptrackerSettings.IconVisibilityLogic == IconVisibilityLogicEnum.Game, trackerItem.IsGoalRequiredItem()))
                     return false;
-
+                
                 MaptrackerSettings.AddCheck(icon.Guid);
 
                 var checkIsInLogic = LogicChecker.IsPickupAccessible(trackerItem.Name, RandomizerManager.Options.LogicDifficulty, RandomizerManager.Receiver.GetAllItems(), RandomizerManager.Options);

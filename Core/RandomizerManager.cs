@@ -124,7 +124,7 @@ namespace OriBFArchipelago.Core
                 GUI.SetNextControlName("password");
                 password = GUILayout.TextField(password, 50, GUILayout.Width(200));
                 GUILayout.EndHorizontal();
-                
+
                 GUILayout.EndVertical();
                 GUILayout.EndArea();
 
@@ -267,7 +267,9 @@ namespace OriBFArchipelago.Core
 
         internal static bool IsSeinCollected()
         {
-            return Connection.IsSeinCollected();
+            if (Connection != null)
+                return Connection.IsSeinCollected();
+            return false;
         }
     }
 

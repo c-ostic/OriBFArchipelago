@@ -226,9 +226,13 @@ namespace OriBFArchipelago.Core
         /**
          * Checks if a location has been locally reached
          */
-        public bool IsLocationChecked(string location, bool isGoalRequiredItem = false)
+        public bool IsLocationChecked(string location, bool checkLocal = false, bool isGoalRequiredItem = false)
         {
-            var checkStatus = isGoalRequiredItem ? LocationStatus.CheckedNotSaved : LocationStatus.LostOnDeath;
+            var checkStatus = LocationStatus.Checked;
+            if (checkLocal || isGoalRequiredItem)
+                checkStatus = LocationStatus.CheckedNotSaved;
+            else
+                checkStatus = LocationStatus.LostOnDeath;
             return checkedLocations.ContainsKey(location) ? checkedLocations[location] >= checkStatus : false;
         }
 
