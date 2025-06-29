@@ -1,13 +1,11 @@
-﻿using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Configuration;
-using Game;
 using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
 using System;
 using System.IO;
 
-namespace OriBFArchipelago.MapTracker.UI
+namespace OriBFArchipelago.ArchipelagoUI
 {
     internal class MapTrackerOptionsScreen : BaseModOptionsScreen
     {
@@ -40,7 +38,7 @@ namespace OriBFArchipelago.MapTracker.UI
                 InitializeSettings(_config);
                 SetComponents();
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 ModLogger.Error($"Error in InitScreen: {ex.ToString()}");
             }

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace OriBFArchipelago.MapTracker.UI
+namespace OriBFArchipelago.ArchipelagoUI
 {
     internal class IconHoverEffectUI : MonoBehaviour
     {

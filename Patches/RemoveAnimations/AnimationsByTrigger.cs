@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
 using OriBFArchipelago.MapTracker.Model;
 using System.Collections.Generic;
@@ -166,7 +167,6 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("LosingDad", "Cutscene where Naru's dad dies", [43,45], new MoonGuid("-147850866 1235485514 2127604624 619107832")),
 
 
-
             //Ginso Tree
             new("GinsoTreeEntrance", "First entry of Ginso Tree", [01,05,21,22,23], new MoonGuid("1797081604 1288163207 -1681566832 -1939855093")),
             new("FightMiniBoss","Closing door behind you on start of miniboss fight", [03,04,05,06,08,12,13], new MoonGuid("1183926712 1201180019 -328380759 -2018562755")),
@@ -191,6 +191,8 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
 
         internal static bool Prefix(ActionSequence __instance)
         {
+            if (!RandomizerSettings.SkipCutscenes)
+                return true;
 
             if (IgnoredActionSequences.Contains(__instance.MoonGuid))
                 return true;

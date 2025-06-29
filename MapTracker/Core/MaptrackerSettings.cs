@@ -1,6 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-using OriBFArchipelago.MapTracker.UI;
+using OriBFArchipelago.ArchipelagoUI;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;

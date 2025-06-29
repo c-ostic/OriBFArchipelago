@@ -3,7 +3,7 @@ using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
 using UnityEngine;
 
-namespace OriBFArchipelago.MapTracker.UI
+namespace OriBFArchipelago.ArchipelagoUI
 {
 
     [HarmonyPatch]
@@ -19,7 +19,7 @@ namespace OriBFArchipelago.MapTracker.UI
         {
             GameObject guiObject = new GameObject("CenterPointerGUI");
             guiObject.AddComponent<IconPointerUI>();
-            Object.DontDestroyOnLoad(guiObject);
+            DontDestroyOnLoad(guiObject);
         }
 
         private void Start()

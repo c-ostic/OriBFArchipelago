@@ -1,10 +1,9 @@
-﻿
-using OriBFArchipelago.Core;
+﻿using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
 using OriBFArchipelago.MapTracker.Logic;
 using UnityEngine;
 
-namespace OriBFArchipelago.MapTracker.UI
+namespace OriBFArchipelago.ArchipelagoUI
 {
     internal class IconHoverUI : MonoBehaviour
     {

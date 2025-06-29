@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using OriBFArchipelago.MapTracker.Core;
-using OriBFArchipelago.MapTracker.UI;
 using System.Collections.Generic;
 using System.Linq;
 

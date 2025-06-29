@@ -5,7 +5,7 @@ using OriBFArchipelago.MapTracker.Core;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace OriBFArchipelago.MapTracker.UI
+namespace OriBFArchipelago.ArchipelagoUI
 {
     [HarmonyPatch]
     internal class ChecksInLogicUI : MonoBehaviour
@@ -20,7 +20,7 @@ namespace OriBFArchipelago.MapTracker.UI
         {
             GameObject guiObject = new GameObject("ChecksInLogicUI");
             guiObject.AddComponent<ChecksInLogicUI>();
-            Object.DontDestroyOnLoad(guiObject);
+            DontDestroyOnLoad(guiObject);
         }
 
         private void Start()
@@ -34,7 +34,7 @@ namespace OriBFArchipelago.MapTracker.UI
 
         private void OnGUI()
         {
-            if (!RandomizerSettings.ShowSettings || Game.UI.Menu.CurrentScreen != MenuScreenManager.Screens.WorldMap)
+            if (!RandomizerSettings.ShowSettings || UI.Menu.CurrentScreen != MenuScreenManager.Screens.WorldMap)
                 return;
 
             if (textStyle == null)
