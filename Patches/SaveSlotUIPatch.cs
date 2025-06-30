@@ -19,7 +19,7 @@ namespace OriBFArchipelago.Patches
             if (!RandomizerSettings.InGame)
             {
                 RandomizerSettings.InSaveSelect = visible;
-                RandomizerManager.instance.InspectSaveSlot(0);
+                RandomizerManager.instance.InspectSaveSlot(SaveSlotsUI.Instance.CurrentSlotIndex);
             }
             return true; // Allow the original method to run
         }
