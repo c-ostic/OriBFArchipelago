@@ -1,9 +1,13 @@
-﻿using HarmonyLib;
+﻿using Core;
+using Game;
+using HarmonyLib;
 using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
 using OriBFArchipelago.MapTracker.Model;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace OriBFArchipelago.Patches.RemoveAnimations
 {
@@ -14,6 +18,11 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
         private static bool eableHandlingLogging = true;
         public static List<MoonGuid> loggedGuids { get; set; } = [];
 
+
+        private static IEnumerable<MoonGuid> IgnoredCutscenes = new List<MoonGuid>()
+        {
+            new MoonGuid("35249383 1283924914 2133692343 -729656019") //Tree of whispers
+        };
         private static IEnumerable<string> IgnoredActionSequenceTypes = new List<string>()
         {
             "*damageSequence",
@@ -35,6 +44,8 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             "doorFailSequence",
             "shootProjectile",
         };
+
+
         private static IEnumerable<MoonGuid> IgnoredActionSequences = new List<MoonGuid>
         {
             new MoonGuid("-933034724 1235203200 1527549604 -1462972182"),
@@ -51,9 +62,9 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new MoonGuid("158170661 1197238018 -792257131 62749936"),
             //All above related to damaging and killing enemies
             new MoonGuid("1267809327 1276225883 -1283782994 1796795750"),
-            new MoonGuid("-1603862557 1089955631 -1481416054 -603316832"),
-            
+            new MoonGuid("-1603862557 1089955631 -1481416054 -603316832"),            
             //All above are unknown what they do
+
             new MoonGuid("1263386797 1221647652 1846010499 -578854057"), //Keystone fly to user
             new MoonGuid("-865516688 1270747745 1166912703 -1549797483"), //Inventory change sound
             new MoonGuid("-1414350952 1227565761 176465076 -136605616"), //Inventory change sound
@@ -103,7 +114,9 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("-751058081 1271097205 1101442470 238108912")), //Moon Grotto
             new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("863615873 1243313958 -1075371851 739952073")), //Forlorn Ruins
             new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("-1154652467 1286431676 -1128360514 1797572823")), //Thornfelt Swamp
-
+            new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("-1602522028 1238140958 153759634 -534094651")), //Horu Field
+            new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("695661863 1323206629 1326601601 -256484684")), //Mount Huro             
+            
             //SunkenGlades
             new("InitialSpawn","Cutscene that explains what sunwells do", [1, 4, 5, 10, 11, 14, 15, 16, 17], new MoonGuid("-847281790 1241793475 1080917670 -1990575197")),
             new("Sein","Collection of sein",[01, 02, 04, 05, 06, 18, 21, 22, 30, 39, 44, 46, 50, 51,52], new MoonGuid("-264884829 1192335403 997860227 440544885")),
@@ -133,20 +146,26 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             //Hollow Grove
             new("ChargeFlameSkillTree","Cutscne that explains about ano", [14,15], new MoonGuid("26462499 1079965410 1822047116 -798669916")),
             new("1. SpiritTree", "First cutscene at spirit tree", [04, 13, 16, 17, 18], new MoonGuid("-711136679 1126088874 -679292744 1071704955")),
-            new("2. SpiritTreeStartCutscene", "Starting the unskipable cutscene", [02, 03, 05,06,07,08,09], new MoonGuid("469605998 1261573223 -1353132142 -1554447430")), //Is this really unskipable?
+            new("2. SpiritTreeStartCutscene", "Starting the unskipable cutscene", [02, 03, 05, 06, 07, 08, 09], new MoonGuid("469605998 1261573223 -1353132142 -1554447430")), //Is this really unskipable?
             new("3. AfterSpiritTreeCutscene", "Cutscene after skipable cutscene", [03, 21,22], new MoonGuid("-2025079432 1110082339 -1920359013 -28269904")),
             new("4. ShowElements", "Shows all elements on the map", [27,28], new MoonGuid("-1364532790 1112407316 1844745097 1026494537")),
             new("5. EndOfSpiritTreeCutscene", "The finishing moments of the spirit tree cutscene", [01, 02, 04, 08, 10, 13, 16, 17, 19, 20], new MoonGuid("213370189 1226433519 -937546573 1776663918")),
             new("FronkeyAboveChargeFlame", "Cutscene that tells you about the broken bridge", [09], new MoonGuid("-1041337981 1188119947 -796771185 673416302")),
             new("SpiderEgg","Cutscene that explains what to do at the spider egg", [20], new MoonGuid("1585702376 1210128595 1687967394 1229935533")),
+            new("PedestalStomp","Cutscene that shows the opening of the gate to the save pedestal", [06,07,11], new MoonGuid("-770082635 1314070652 1932291261 -1598448927")),
 
+            //Horu fields
+            new("1. DroppingStone","Shows the dropping of the stone", [12], new MoonGuid("-2137911009 1339882321 529298075 336350830")),
+            new("2. DroppingStone","Shows the dropping of the stone", [01,02,03,05], new MoonGuid("185196820 1122042374 110970291 -5029481")),
+             
             //Swamp
             new("GumoAtTree", "First encounter with Gumo", [01, 02, 03, 05, 06, 09, 16, 18, 19 ], new MoonGuid("1950260161 1273538601 -1538437959 1280125770")),
             new("GumoAtSpitters", "Gumo enabling all the spitters",[06, 08, 11, 16, 17],new MoonGuid("792606551 1290633918 -1717577576 -2067970926")),
             new("GumoJumpingDown", "Gumo jumping down and activating lasers",[01, 03, 05, 12, 13, 15], new MoonGuid("-1958716129 1091670628 1187537581 -244205506")),
             new("FirstKuroAppearance","Kuro showing his face for the first time", [02, 03],new MoonGuid("1778853495 1203245955 -1472097121 977949109")),
             new("OpenGinsoTree", "Opening of Ginso Tree", [05,06,09,10],new MoonGuid("395817233 1340225072 267074435 558261298")),
-
+            new("StompWaterPole", "Opening of the gate in the water", [06,07,08,13],new MoonGuid("-756314413 1313504610 494822539 -1328747187")),
+            new("StompTreePole", "Opening of the gate underneath the small tree", [06, 08, 12], new MoonGuid("1432024516 1307203918 1808270737 2070758549")),
             //Moon
             new("GumoJumpingFurtherDown","Gumo jumping down after moon TP",[05, 06],new MoonGuid("-217466045 1309290050 -477348435 1521107282")),
             new("GumoGettingAttacked","Gumo getting attacked by the first miniboss",[01, 02, 05, 06, 07, 08, 22, 23], new MoonGuid("1644266034 1159348567 1319740331 -549778202")),
@@ -159,10 +178,13 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
 
             //Valley of the Wind
             new("WaterLever", "Lever at the hollow grove side", [03, 04, 05, 09, 11, 18],new MoonGuid("-535165738 1133285013 -695290185 -1054012665")),
-            new("OpenValleyGate", "Opens the gate to valley of the wind",[02,07,08,09,14,19], new MoonGuid("901903725 1185454079 -233910905 1236736341")),
+            new("OpenValleyGate", "Opens the gate to valley of the wind",[07, 08, 09, 13], new MoonGuid("901903725 1185454079 -233910905 1236736341")),
             new("ShowKuroLurking", "Shows Kuro lurking to kill Ori when going into the open", [13,14, 22, 23], new MoonGuid("554625759 1196984167 -1411865209 368717326")),
             new("KuroAtCliff", "Kuro overlooking the cliff, showing how to remove him",[05,06,16,17], new MoonGuid("-457224259 1076850475 402546573 -1836316074")),
-
+            //new("KuroDropping", "Stomping kuro and making him leave", [01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,32,33,34,35,36], new MoonGuid("1424557570 1329884842 -385751934 1745320476")), //Haven't figured out how to properly skip this. Skipping results in not being able to pick up feather
+            new("KuroFeather", "Collecting kuro's feather", [06,07,08,10,12,16,17], new MoonGuid("-756839669 1238273858 363643021 -1763422804")),
+            new("TreeOfWhispersDoor", "Opens the door for lower left valley to the tree of whispers", [05,06,07], new MoonGuid("1519946723 1246680883 939576731 1472509622")),
+            new("BottomDoor","Openst the door to forlorn area", [05,06,07], new MoonGuid("1505975971 1099708282 -762174588 -1455573852")),
 
             //Lost Grove
             new("DashGate", "Opening gate at dash area", [01,02,03,04,09,10,11,12], new MoonGuid("458381796 1082263303 581967003 -1486563515")),
@@ -185,6 +207,8 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             
             //Mount Horu
             new("HoruIntroduction", "First entry of Mount Horu", [01, 05, 07, 22, 23], new MoonGuid("-182315221 1105231312 1943840650 1813785295")),
+            new("1. door4LavaDrain", "asd",[02, 04, 05, 06, 07, 14],new MoonGuid("-920418859 1183339757 90418109 -930667380")),
+            new("2. door4LavaDrain", "Drains the lava in the lower left door", [02,03,04,08,13,14,15,16], new MoonGuid("1621954031 1114090025 1789235899 -1461548696"))
         };
 
         private static Dictionary<MoonGuid, ActionSequenceExtension> actionSequenceExtensions;
@@ -195,6 +219,7 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
                 return actionSequenceExtensions ?? (actionSequenceExtensions = _actionSequenceExtensions.ToDictionary(d => d.Guid, d => d));
             }
         }
+
 
         internal static bool Prefix(ActionSequence __instance)
         {
@@ -227,8 +252,13 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
                  {
                      if (action is BaseAnimatorAction)
                      {
+                         if (__instance.MoonGuid == new MoonGuid("1621954031 1114090025 1789235899 -1461548696"))
+                             return action;
+
                          var baseAnimatorAction = (action as BaseAnimatorAction);
                          baseAnimatorAction.Command = BaseAnimatorAction.PlayMode.StopAtEnd;
+                         ModLogger.Debug($"{action.name}: Skipping to end");
+
                          //Todo: For some reason animatoractions will rerun after a save by the actionsequence, this can cause softlocks like at sein when you walk off the platform and it will attempt to walk you to a specific location.
                          //Figure out why some animations are rerun after a save and stop it from happening.
                          //Possible solution: Look for triggers that deactivate things and keep them enabled
@@ -243,6 +273,21 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
                 ModLogger.Debug("==========================================================================================================================================");
             }
             return true;
+        }
+
+        internal static void Postfix(ActionSequence __instance)
+        {
+            if (IgnoredCutscenes.Contains(__instance.MoonGuid))
+            {
+                __instance.StartCoroutine(PostfixCoroutine(__instance));
+            }
+        }
+
+        internal static IEnumerator PostfixCoroutine(ActionSequence __instance)
+        {
+            ModLogger.Debug("Attempting to skip cutscene");
+            yield return new WaitForSeconds(0.3f);
+            SkipCutsceneController.Instance.SkipCutscene();
         }
 
         private static void LogUnknownActionSequence(ActionSequence actionSequence)

@@ -41,6 +41,10 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
                     new Vector3(-164.6f, -261.7f, -3.1f), //Near sein collection
                     new Vector3(131.2f, -247.5f, 0.0f),  //Above sunken glades pedestal
                     new Vector3(-95.4f, -121.7f, 0.0f), //Tree
+                    new Vector3(-315.8f, -302.6f, 0.0f), //Walljump skilltree
+                    new Vector3(-454.3f, -17.6f, 0.0f), //Feather
+                    new Vector3(147.8f, -337.1f, 0.0f), //Near Father
+                    //514.6, -247.6, 0.0 unknown
                 };
             var target = __instance.Target.position;
             float tolerance = 0.5f; // Adjust this value as needed
