@@ -28,6 +28,7 @@ namespace OriBFArchipelago.Core
         public const string FOUND_RELICS_DATA_KEY = "FoundRelics";
         public const string POSITION_DATA_KEY = "Position";
         public const string SEIN = "SeinCollected";
+        public const string GOAL_LOCATION_DATA_KEY = "GoalLocations";
 
         // The archipelago session
         private ArchipelagoSession session;
@@ -140,6 +141,8 @@ namespace OriBFArchipelago.Core
                 session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].Initialize(new string[0]);
                 session.DataStorage[Scope.Slot, POSITION_DATA_KEY].Initialize(new float[0]);
                 session.DataStorage[Scope.Slot, SEIN].Initialize(false);
+                session.DataStorage[Scope.Slot, GOAL_LOCATION_DATA_KEY].Initialize(new string[0]);
+
 
                 RecheckLocations();
                 UpdateMapLocations();
@@ -620,6 +623,42 @@ namespace OriBFArchipelago.Core
             var rValue = false;
             session.DataStorage[Scope.Slot, SEIN].GetAsync<bool>(x => rValue = x);
             return rValue;
+        }
+
+        /// <summary>
+        /// This function sets all important goal locations into the RandomizerOptions class
+        /// </summary>
+        internal void SetGoalLocationsInOptions()
+        {
+            session.DataStorage[Scope.Slot, GOAL_LOCATION_DATA_KEY].GetAsync<string[]>(x =>
+            {
+                if (x != null && x.Any())
+                {
+                    ModLogger.Debug("Collected goal locations from session");
+                    ModLogger.Debug(string.Join(", ", x));
+                    RandomizerManager.Options.GoalLocations = x;
+                }
+                else
+                {
+                    session.Locations.ScoutLocationsAsync((results) =>
+                    {
+                        var locations = new string[0];
+                        foreach (var result in results)
+                        {
+                            if (result.Value.ItemName.Equals(InventoryItem.WarmthFragment.ToString(), StringComparison.CurrentCultureIgnoreCase) || result.Value.ItemName.Equals(InventoryItem.Relic.ToString(), StringComparison.CurrentCultureIgnoreCase) && !locations.Any(d => d == result.Value.LocationName))
+                                locations = [.. locations, result.Value.LocationName];
+                        }
+
+                        ModLogger.Debug("Collected locations from archipelago");
+                        Task.Factory.StartNew(() => session.DataStorage[Scope.Slot, GOAL_LOCATION_DATA_KEY] = locations);
+                        RandomizerManager.Options.GoalLocations = locations;
+
+
+                    }, HintCreationPolicy.None, session.Locations.AllLocations.ToArray());
+
+
+                }
+            });
         }
     }
 }

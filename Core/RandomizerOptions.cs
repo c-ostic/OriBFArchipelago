@@ -63,6 +63,7 @@ namespace OriBFArchipelago.Core
         public bool EnableAirDash { get; internal set; }
         public bool EnableTripleJump { get; internal set; }
         public bool EnableRekindle { get; internal set; }
+        public string[] GoalLocations { get; set; }
 
         public RandomizerOptions(Dictionary<string, object> apSlotData)
         {

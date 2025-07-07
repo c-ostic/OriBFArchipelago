@@ -116,6 +116,7 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("-1154652467 1286431676 -1128360514 1797572823")), //Thornfelt Swamp
             new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("-1602522028 1238140958 153759634 -534094651")), //Horu Field
             new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("695661863 1323206629 1326601601 -256484684")), //Mount Huro             
+            new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("1852895079 1212385171 -1161000781 2140306541")), //Sorrow Pass
             
             //SunkenGlades
             new("InitialSpawn","Cutscene that explains what sunwells do", [1, 4, 5, 10, 11, 14, 15, 16, 17], new MoonGuid("-847281790 1241793475 1080917670 -1990575197")),
@@ -207,8 +208,35 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             
             //Mount Horu
             new("HoruIntroduction", "First entry of Mount Horu", [01, 05, 07, 22, 23], new MoonGuid("-182315221 1105231312 1943840650 1813785295")),
-            new("1. door4LavaDrain", "asd",[02, 04, 05, 06, 07, 14],new MoonGuid("-920418859 1183339757 90418109 -930667380")),
+
+            //Doors from top to bottom            
+            //Door left 3: 
+            //new("1. door3LavaDrain", "ASD",[02, 03, 04, 05, 06, 08, 09, 10],new MoonGuid("-182458660 1303160168 1079892404 1715488948")),
+            //new("2. door3LavaDrain", "ASD",[02, 03, 08, 09, 10, 11],new MoonGuid("-2124952831 1181382434 35333286 829377599")),             
+            //new("3. door3LavaDrain", "ASD",[06, 07, 08],new MoonGuid("889927369 1310717430 -1483327331 -122332287")),
+            //new("4. door3LavaDrain", "ASD",[02, 03, 05, 06, 10, 11, 12 ,13 ,15 ,17, 20],new MoonGuid("406127258 1339914959 423600281 -1062944213")),
+             
+            //Door left 4: Issue - There might be a small freeze when stomping for the third time due to the "if get world event condition" in this animation.
+            new("1. door4LavaDrain", "ASD",[02, 04, 05, 06, 07, 14],new MoonGuid("-920418859 1183339757 90418109 -930667380")),
             new("2. door4LavaDrain", "Drains the lava in the lower left door", [02,03,04,08,13,14,15,16], new MoonGuid("1621954031 1114090025 1789235899 -1461548696"))
+
+
+            /*todo: 
+             * Horu L3
+             * Horu L2
+             * Horu L1
+             * Horu R4
+             * Horu R3
+             * Horu R2
+             * Horu R1
+             * Switch in sorrow pass
+             * Top sorrow pass
+             * Misty woods above lantern
+             * Misty woods pre pedestal
+             */
+            
+
+
         };
 
         private static Dictionary<MoonGuid, ActionSequenceExtension> actionSequenceExtensions;
