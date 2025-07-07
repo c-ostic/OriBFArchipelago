@@ -366,7 +366,8 @@ namespace OriBFArchipelago.Core
             if (savedInventory.Get(InventoryItem.SpiritFlame) == 0 && RandomizerManager.IsSeinCollected())
             {   //Failsafe untill sein is properly included in randomizer
                 savedInventory.Add(InventoryItem.SpiritFlame, 1);
-                ModLogger.Debug("Collecting sein based on archipelago data");
+                RandomizerManager.CollectSein();
+                ModLogger.Debug("Collecting sein based on session data");
             }
 
             foreach (InventoryItem skillName in RandomizerInventory.skills)

@@ -619,10 +619,9 @@ namespace OriBFArchipelago.Core
         }
 
         internal bool IsSeinCollected()
-        {
-            var rValue = false;
-            session.DataStorage[Scope.Slot, SEIN].GetAsync<bool>(x => rValue = x);
-            return rValue;
+        {            
+            var sein = session.DataStorage[Scope.Slot, SEIN].To<bool>();
+            return sein;
         }
 
         /// <summary>
@@ -635,7 +634,6 @@ namespace OriBFArchipelago.Core
                 if (x != null && x.Any())
                 {
                     ModLogger.Debug("Collected goal locations from session");
-                    ModLogger.Debug(string.Join(", ", x));
                     RandomizerManager.Options.GoalLocations = x;
                 }
                 else

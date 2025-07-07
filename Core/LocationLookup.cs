@@ -125,11 +125,8 @@ namespace OriBFArchipelago.Core
             else if (goal == GoalOptions.AllMaps && Type == LocationType.Map)
                 return true;
             else if (goal == GoalOptions.WarmthFragments && RandomizerManager.Options.GoalLocations.Contains(Name))
-            {
-                ModLogger.Debug($"{Name} is a goal location");
                 return true;
-            }
-            
+
             return false;
         }
     }
@@ -158,12 +155,6 @@ namespace OriBFArchipelago.Core
 
             if (loggedInvalidLocations == null)
                 loggedInvalidLocations = new List<MoonGuid>();
-
-            //if (target == null && !loggedInvalidLocations.Any(d => d == moonGuid))
-            //{
-            //    loggedInvalidLocations.Add(moonGuid);
-            //    //ModLogger.Debug($"Invalid location: {moonGuid} - Player position: {Characters.Sein.Position}");
-            //}
 
             return target;
         }
