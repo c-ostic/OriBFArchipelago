@@ -118,7 +118,7 @@ namespace OriBFArchipelago.Patches
         }
         private static void SetMistyWoodsVisibility(bool isMistyWoodsVisible)
         {
-            Transform mapPivot = AreaMapUI.Instance.transform.Find("mapPivot");
+            Transform mapPivot = AreaMapUI.Instance?.transform?.Find("mapPivot");
             if (mapPivot == null)
                 return;
             mapPivot.FindChild("mistyWoodsFog").gameObject.SetActive(!isMistyWoodsVisible);

@@ -267,6 +267,9 @@ namespace OriBFArchipelago.Core
 
         internal static bool IsSeinCollected()
         {
+            if (Connection == null)
+                return false;
+
             return Connection.IsSeinCollected();
         }
     }
