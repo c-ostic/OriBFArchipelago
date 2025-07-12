@@ -11,9 +11,13 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PostBuildEvent Condition="'$(ComputerName)' == 'DESKTOP-4FG0L6M'">
-      xcopy "$(TargetDir)OriBFArchipelago.dll" "G:\SteamLibrary\steamapps\common\Ori DE\BepInEx\plugins\OriBFArchipelago\" /Y
-    </PostBuildEvent>
+      <PreBuildEvent Condition="'$(ComputerName)' == 'DESKTOP-4FG0L6M'">
+        taskkill /F /IM "oriDE.exe" /T 2>nul || exit /b 0
+      </PreBuildEvent>
+      <PostBuildEvent Condition="'$(ComputerName)' == 'DESKTOP-4FG0L6M'">
+        xcopy "$(TargetDir)OriBFArchipelago.dll" "D:\SteamLibrary\steamapps\common\Ori DE\BepInEx\plugins\OriBFArchipelago\" /Y
+        start "" "D:\SteamLibrary\steamapps\common\Ori DE\oriDE.exe"
+      </PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Archipelago.MultiClient.Net" Version="6.6.0" />
