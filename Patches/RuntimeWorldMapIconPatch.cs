@@ -34,7 +34,7 @@ namespace OriBFArchipelago.Patches
                         __result = true;
                         return false;
                     case IconVisibilityEnum.In_Logic:
-                        __result = LogicManager.IsInLogic(__instance);
+                        __result = LogicManager.IsInLogic(__instance) || LogicManager.IsIgnoredIconType(__instance.Icon);
                         return false;
                     case IconVisibilityEnum.Original:
                         return true;

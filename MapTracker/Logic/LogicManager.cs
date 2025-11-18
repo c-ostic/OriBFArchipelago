@@ -44,7 +44,7 @@ namespace OriBFArchipelago.MapTracker.Logic
             }
         }
 
-        private static bool IsIgnoredIconType(WorldMapIconType iconType)
+        internal static bool IsIgnoredIconType(WorldMapIconType iconType)
         {
 
             switch (iconType)
