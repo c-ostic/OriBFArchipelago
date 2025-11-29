@@ -57,6 +57,7 @@ namespace OriBFArchipelago.MapTracker.Logic
                 case WorldMapIconType.KeystoneDoorFour:
                 case WorldMapIconType.KeystoneDoorOpen:
                 case WorldMapIconType.EnergyGateFour:
+                case WorldMapIconType.SavePedestal:
                     return true;
                 default:
                     return false;

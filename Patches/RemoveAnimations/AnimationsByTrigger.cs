@@ -153,6 +153,7 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("FronkeyAboveChargeFlame", "Cutscene that tells you about the broken bridge", [09], new MoonGuid("-1041337981 1188119947 -796771185 673416302")),
             new("SpiderEgg","Cutscene that explains what to do at the spider egg", [20], new MoonGuid("1585702376 1210128595 1687967394 1229935533")),
             new("PedestalStomp","Cutscene that shows the opening of the gate to the save pedestal", [06,07,11], new MoonGuid("-770082635 1314070652 1932291261 -1598448927")),
+            new("LeverForPlatform", "Pulling the lever to lower the platform to the right of the tree", [05, 06], new MoonGuid("-878651643 1210790854 -1588004431 -1015433105")),
 
             //Horu fields
             new("1. DroppingStone","Shows the dropping of the stone", [12], new MoonGuid("-2137911009 1339882321 529298075 336350830")),
@@ -205,9 +206,17 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("ForlornIntroduction", "First entry to forlorn cavern", [04,05,25,26], new MoonGuid("-849820852 1250504405 886572168 -1183457540")),
             new("GettingNightBerry", "Collection of the freezing orb", [10, 11,12,13,15], new MoonGuid("-468484755 1271818938 1374739346 -2106151641")),
             
+            //Sorrow Pass
+
+            new("SomeLever", "The lever that opens the door on the far left", [04,06], new MoonGuid("-1388084155 1237989621 -1066325088 -867368922")),
             //Mount Horu
             new("HoruIntroduction", "First entry of Mount Horu", [01, 05, 07, 22, 23], new MoonGuid("-182315221 1105231312 1943840650 1813785295")),
-
+            new("HoruR2RockFall", "Stomp on the switch to drop the block at the end",[02, 03, 08, 09], new MoonGuid("2031988133 1253051438 -1048575855 -1243562809")),
+            new("HoruR2LavaDrain", "Lowering of the lava due to actions at the 2nd (from the top) entrance of the right",[02,04,08,09,10,11,13,15,18], new MoonGuid("-1664229988 1269302847 -122889574 398995567")),
+            new("HoruR3LavaDrain", "Shine light on the rock at the 3rd (from the top) entrance of the right to lower the lava",[01, 02, 03, 04, 07, 09, 10, 12, 1, 17], new MoonGuid("-496260207 1303555699 578011313 -1827639718")),
+            new("HoruR4LavaDrain", "Shine light on the rock at the 4rd (from the top) entrance of the right to lower the lava",[02, 03, 04, 05, 06, 07, 08], new MoonGuid("-237534521 1117446743 1449463690 -1967567174")),
+            new("HoruL3LavaDrain", "Shine light on the rock at the 3rd (from the top) entrance of the left to lower the lava",[02, 03, 04, 05, 06, 07, 08], new MoonGuid("-182458660 1303160168 1079892404 1715488948")),
+            
             //Doors from top to bottom            
             //Door left 3: 
             //new("1. door3LavaDrain", "ASD",[02, 03, 04, 05, 06, 08, 09, 10],new MoonGuid("-182458660 1303160168 1079892404 1715488948")),
