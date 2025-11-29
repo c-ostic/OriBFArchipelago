@@ -1,6 +1,4 @@
-﻿using Core;
-using Game;
-using HarmonyLib;
+﻿using HarmonyLib;
 using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
 using OriBFArchipelago.MapTracker.Model;

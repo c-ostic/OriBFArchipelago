@@ -6848,9 +6848,9 @@ namespace OriBFArchipelago.MapTracker.Logic
 			""HoruEscapeOuterDoor"": {
 		},
 			""HoruEscapeInnerDoor"": {
-				#""HoruEscape"": {
-				#    ""casual"": [ [ ""Bash"", ""Stomp"", ""ChargeJump"", ""Wind"", ""Glide"", ""DoubleJump"" ] ]
-			#}
+				""HoruEscape"": {
+				    ""casual"": [ [ ""Bash"", ""Stomp"", ""ChargeJump"", ""Wind"", ""Glide"", ""DoubleJump"" ] ]
+			}
 		},
 			""ValleyEntry"": {
 				""ValleyEntryAbilityCell"": {

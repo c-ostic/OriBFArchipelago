@@ -67,7 +67,6 @@ namespace OriBFArchipelago.ArchipelagoUI
         private void SetComponents()
         {
             ModLogger.Debug("Setting up UI components");
-            AddButton("Teleport to start", "Teleports Ori to the starting area.", TeleporterManager.TeleportToStart);
             AddMultiToggle(_mapVisibility, "Map visiblity", "Not Visibile: Normal game logic for showing maps\nVisible: Shows all maps always", EnumParser.GetEnumNames<MapVisibilityEnum>());
             AddMultiToggle(_iconVisibility, "Icon visibility", "None: Never show icons\nOriginal: Show icons based on normal game logic.\nIn Logic: Shows icons in logic and icon logic (Setting below)\nAll: Show all uncollected icons in game", EnumParser.GetEnumNames<IconVisibilityEnum>());
             AddMultiToggle(_iconVisibilityLogic, "Icon logic", "Game: Shows items collected in game, dying without saving will reshow the icon.\nArchipelago: Shows icons based on archipelago. Dying will keep icons hidden except for goal required items.", EnumParser.GetEnumNames<IconVisibilityLogicEnum>());

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using OriBFArchipelago.MapTracker.Core;
 
 namespace OriBFArchipelago.Patches
 {
@@ -116,7 +117,8 @@ namespace OriBFArchipelago.Patches
                             setupTransform.Find("explosion").gameObject.SetActive(true);
                             setupTransform.gameObject.SetActive(false);
                         }
-                    };
+                    }
+                    ;
                     Scenes.Manager.UnloadScene(ginsoTreeWaterRisingEndSceneManagerScene, false, true);
                 }
 
@@ -152,7 +154,7 @@ namespace OriBFArchipelago.Patches
             {
                 LocalGameState.TeleportNightberry = true;
             }
-            
+
             RuntimeSceneMetaData scene = Scenes.Manager.CurrentScene;
             if (scene.Scene.Equals("moonGrottoEnemyPuzzle"))
             {
@@ -162,6 +164,10 @@ namespace OriBFArchipelago.Patches
             {
                 OpenGinsoTreeLowerMiniBossDoor();
             }
+
+
+            if (selectedTeleporter.WorldPosition != TeleporterManager.StartingLocationCoordinates)
+                TeleporterManager.SetLastTeleporter(selectedTeleporter);
         }
 
         /**
@@ -195,7 +201,7 @@ namespace OriBFArchipelago.Patches
             {
                 LegacyTranslateAnimator firstDoorAnimator = ginsoTreePuzzlesSceneRoot.transform.FindChild("ginsoTreeMultiMortar/doorASetup/ginsoTreeBlockingWallA").GetComponent<LegacyTranslateAnimator>();
                 Transform firstDoorTrigger = ginsoTreePuzzlesSceneRoot.transform.FindChild("ginsoTreeMultiMortar/doorASetup/triggerCollider");
-                            
+
                 firstDoorAnimator.Reverse();
                 firstDoorTrigger.gameObject.SetActive(true);
             }
