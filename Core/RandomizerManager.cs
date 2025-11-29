@@ -267,16 +267,17 @@ namespace OriBFArchipelago.Core
         }
 
         internal static void CollectSein()
-        {
+        {            
             Connection.StoreSeinInArchipelagoSession();
             Receiver.ReceiveItem(InventoryItem.SpiritFlame);
         }
 
         internal static bool IsSeinCollected()
         {
-            if (Connection != null)
-                return Connection.IsSeinCollected();
-            return false;
+            if (Connection == null)
+                return false;
+
+            return Connection.IsSeinCollected();
         }
     }
 
