@@ -1,7 +1,5 @@
 ﻿using HarmonyLib;
 using OriBFArchipelago.MapTracker.Core;
-using OriBFArchipelago.MapTracker.Model;
-using System;
 using UnityEngine;
 
 namespace OriBFArchipelago.Patches
@@ -26,6 +24,8 @@ namespace OriBFArchipelago.Patches
             private GameObject rbButtonHint;
             private bool hintsCreated = false;
             private bool wasVisible = false;
+            private bool wasKeyboardUsedLast = false;
+
 
             void Awake()
             {
@@ -36,6 +36,7 @@ namespace OriBFArchipelago.Patches
             {
                 CreateButtonHints();
             }
+
             void CreateButtonHints()
             {
                 ModLogger.Debug("Creating custom button hints");
@@ -57,7 +58,7 @@ namespace OriBFArchipelago.Patches
                     return;
                 }
 
-                // Calculate spacing
+                // Calculate spacing between existing buttons
                 float spacing = 0f;
                 if (navigateButton != null && selectButton != null)
                 {
@@ -75,8 +76,6 @@ namespace OriBFArchipelago.Patches
                 lbButtonHint.transform.localRotation = backButton.localRotation;
                 lbButtonHint.transform.localScale = backButton.localScale;
 
-                SetButtonHintText(lbButtonHint, "<icon>R</>  Teleport to Start", "LB");
-
                 // Create RB button hint
                 rbButtonHint = UnityEngine.Object.Instantiate(backButton.gameObject);
                 rbButtonHint.transform.SetParent(legendTransform);
@@ -88,18 +87,63 @@ namespace OriBFArchipelago.Patches
                 rbButtonHint.transform.localRotation = backButton.localRotation;
                 rbButtonHint.transform.localScale = backButton.localScale;
 
-                UpdateRBButtonText();
-
                 hintsCreated = true;
                 ModLogger.Debug("Button hints created successfully");
             }
 
-            private void SetButtonHintText(GameObject buttonHint, string newText, string debugName)
+            private void UpdateLBButtonText()
+            {
+                if (lbButtonHint == null) return;
+
+                string buttonIcon = GetLBButtonIcon();
+                SetButtonHintText(lbButtonHint, $"{buttonIcon}  Teleport to start");
+            }
+
+            private void UpdateRBButtonText()
+            {
+                if (rbButtonHint == null) return;
+
+                if (TeleporterManager.GetLastTeleporter() != null)
+                {
+                    string buttonIcon = GetRBButtonIcon();
+                    SetButtonHintText(rbButtonHint, $"{buttonIcon}  Teleport to {TeleporterManager.GetLastTeleporter().FriendlyName}");
+                    rbButtonHint.SetActive(true);
+                }
+                else
+                {
+                    rbButtonHint.SetActive(false);
+                }
+            }
+
+            private string GetLBButtonIcon()
+            {
+                if (PlayerInput.Instance.WasKeyboardUsedLast)
+                {
+                    return "F3";
+                }
+                else
+                {
+                    return "<icon>R</>"; // Left Shoulder
+                }
+            }
+
+            private string GetRBButtonIcon()
+            {
+                if (PlayerInput.Instance.WasKeyboardUsedLast)
+                {
+                    return "F4";
+                }
+                else
+                {
+                    return "<icon>S</>"; // Right Shoulder
+                }
+            }
+
+            private void SetButtonHintText(GameObject buttonHint, string newText)
             {
                 Component messageBoxComponent = buttonHint.GetComponent("MessageBox");
                 if (messageBoxComponent == null)
                 {
-                    ModLogger.Debug($"MessageBox not found on {debugName}!");
                     return;
                 }
 
@@ -114,36 +158,18 @@ namespace OriBFArchipelago.Patches
                     messageProviderField.SetValue(messageBoxComponent, null);
                 }
 
-                // Set OverrideText
-                var overrideTextField = messageBoxType.GetField("OverrideText",
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                var overrideTextField = messageBoxType.GetField("OverrideText", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
 
                 if (overrideTextField != null)
                 {
                     overrideTextField.SetValue(messageBoxComponent, newText);
 
-                    // Trigger refresh
-                    var refreshMethod = messageBoxType.GetMethod("RefreshText",
-                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                    var refreshMethod = messageBoxType.GetMethod("RefreshText", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
 
                     if (refreshMethod != null)
                     {
                         refreshMethod.Invoke(messageBoxComponent, null);
                     }
-                }
-            }
-            private void UpdateRBButtonText()
-            {
-                if (rbButtonHint == null) return;
-
-                if (TeleporterManager.GetLastTeleporter() != null)
-                {
-                    SetButtonHintText(rbButtonHint, $"<icon>S</>  Teleport to {TeleporterManager.GetLastTeleporter().FriendlyName}", "RB");
-                    rbButtonHint.SetActive(true);
-                }
-                else
-                {
-                    rbButtonHint.SetActive(false);
                 }
             }
 
@@ -152,10 +178,14 @@ namespace OriBFArchipelago.Patches
                 if (!hintsCreated) return;
 
                 bool isVisible = inventoryManager.NavigationManager.IsVisible;
+                bool currentKeyboardState = PlayerInput.Instance.WasKeyboardUsedLast;
 
-                if (isVisible && !wasVisible)
+                // Update when menu opens OR when input method changes
+                if ((isVisible && !wasVisible) || (isVisible && currentKeyboardState != wasKeyboardUsedLast))
                 {
+                    UpdateLBButtonText();
                     UpdateRBButtonText();
+                    wasKeyboardUsedLast = currentKeyboardState;
                 }
 
                 wasVisible = isVisible;
@@ -165,6 +195,7 @@ namespace OriBFArchipelago.Patches
                     lbButtonHint.SetActive(isVisible);
                 }
 
+                // Hide RB when inventory is closed
                 if (!isVisible && rbButtonHint != null)
                 {
                     rbButtonHint.SetActive(false);

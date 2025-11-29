@@ -32,7 +32,7 @@ namespace OriBFArchipelago.MapTracker.Core
                     //new Teleporter( new MoonGuid("535515012 1334527363 694602174 1078580914"),"horuFields",""), //Excluded due to enclosed area.
                     new Teleporter( new MoonGuid("-116578275 1111087997 412427670 -1249908721"), "forlorn", "TPForlorn", "Forlorn Ruins"),
                     new Teleporter( new MoonGuid("1192718876 1302593798 1929767334 1228332312"),"ginsoTree","TPGinso", "Ginso Tree"),
-                    new Teleporter( new MoonGuid("1392867786 1221127759 -1187823465 2065923254"),"mangroveFalls","TPBlackroot", "Blackroot Cavern"),
+                    new Teleporter( new MoonGuid("1392867786 1221127759 -1187823465 2065923254"),"mangroveFalls","TPBlackroot", "Black Root Burrows"),
                     new Teleporter( new MoonGuid("1752643371 1284208868 -838119773 -772240063"),"moonGrotto","TPGrotto", "Moon Grotto"),
                     new Teleporter( new MoonGuid("-222749108 1226712869 1550796190 1752513159"),"mountHoru","TPHoru", "Horu"),
                     new Teleporter( new MoonGuid("-526679870 1154615959 -822258040 -1157635306"),"sorrowPass","TPValley", "Valley of the Wind"),
