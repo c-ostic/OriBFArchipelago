@@ -14,6 +14,7 @@ namespace OriBFArchipelago.MapTracker.Core
 
 
 
+        public static bool HideNonCollectableIcons { get { return MapTrackerOptionsScreen.HideNonCollectableIcons; } }
         public static bool EnableIconInfocUI { get { return MapTrackerOptionsScreen.EnableIconInfocUI; } }
         public static MapVisibilityEnum MapVisibility { get { return MapTrackerOptionsScreen.MapVisibility; } }
         public static IconVisibilityEnum IconVisibility { get { return MapTrackerOptionsScreen.IconVisibility; } }

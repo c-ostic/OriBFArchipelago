@@ -12,6 +12,7 @@ namespace OriBFArchipelago.ArchipelagoUI
         private const string CONFIGSECTION = "MapTracker";
         private static ConfigFile _config;
 
+        private static ConfigEntry<bool> _hideNonCollectableIcons { get; set; }
         private static ConfigEntry<string> _mapVisibility { get; set; }
         private static ConfigEntry<string> _iconVisibility { get; set; }
         private static ConfigEntry<string> _iconVisibilityLogic { get; set; }
@@ -59,8 +60,9 @@ namespace OriBFArchipelago.ArchipelagoUI
             _mapVisibility = config.Bind(CONFIGSECTION, "MapVisibility", $"{MapVisibilityEnum.Visible}", "Sets map visibility");
             _iconVisibility = config.Bind(CONFIGSECTION, "IconVisibility", $"{IconVisibilityEnum.In_Logic}", "Sets icon visibility");
             _iconVisibilityLogic = config.Bind(CONFIGSECTION, "IconVisiblityLogic", $"{IconVisibilityLogicEnum.Game}", "Sets icon visibility logic");
-            _enableIconInfocUI = config.Bind(CONFIGSECTION, "EnableItemUI", false, "Sets enableitemui");
-            _disableMapSway = config.Bind(CONFIGSECTION, "DisableMapSway", false, "Sets disablemapsway");
+            _hideNonCollectableIcons = config.Bind(CONFIGSECTION, "HideNonCollectableIcons", true, "Sets HideNonCollectableIcons");
+            _enableIconInfocUI = config.Bind(CONFIGSECTION, "EnableItemUI", false, "Sets EnableItemUI");
+            _disableMapSway = config.Bind(CONFIGSECTION, "DisableMapSway", false, "Sets DisableMapSway");
             ModLogger.Debug("Settings initialized successfully");
         }
 
@@ -70,6 +72,7 @@ namespace OriBFArchipelago.ArchipelagoUI
             AddMultiToggle(_mapVisibility, "Map visiblity", "Not Visibile: Normal game logic for showing maps\nVisible: Shows all maps always", EnumParser.GetEnumNames<MapVisibilityEnum>());
             AddMultiToggle(_iconVisibility, "Icon visibility", "None: Never show icons\nOriginal: Show icons based on normal game logic.\nIn Logic: Shows icons in logic and icon logic (Setting below)\nAll: Show all uncollected icons in game", EnumParser.GetEnumNames<IconVisibilityEnum>());
             AddMultiToggle(_iconVisibilityLogic, "Icon logic", "Game: Shows items collected in game, dying without saving will reshow the icon.\nArchipelago: Shows icons based on archipelago. Dying will keep icons hidden except for goal required items.", EnumParser.GetEnumNames<IconVisibilityLogicEnum>());
+            AddToggle(_hideNonCollectableIcons, "Hide non collectable map icons", "Hides icons like energy doors, breakable walls and floors.");
             AddToggle(_enableIconInfocUI, "Icon info", "Enables a small window on the top right that information about the item location. This can be triggered with the mouse, or the dot that appears in the middle of the map when using controller");
             AddToggle(_disableMapSway, "Disable map sway", "Disables the swap in the map. Usefull when enabling Item UI for better pointing at icons.");
             ModLogger.Debug("UI components set up successfully");
@@ -80,6 +83,7 @@ namespace OriBFArchipelago.ArchipelagoUI
         internal static IconVisibilityLogicEnum IconVisibilityLogic => EnumParser.GetEnumValue<IconVisibilityLogicEnum>(_iconVisibilityLogic.Value);
         internal static bool EnableIconInfocUI => _enableIconInfocUI?.Value ?? false;
         internal static bool DisableMapSway => _disableMapSway?.Value ?? false;
+        internal static bool HideNonCollectableIcons => _hideNonCollectableIcons?.Value ?? false;
     }
 }
 

@@ -18,15 +18,15 @@ namespace OriBFArchipelago.MapTracker.Logic
             try
             {
                 if (IsIgnoredIconType(icon.Icon))
-                    return false;
+                    return !MaptrackerSettings.HideNonCollectableIcons;
 
                 var trackerItem = LocationLookup.Get(icon.Guid);
                 if (trackerItem == null)
                     return false;
-                
+
                 if (RandomizerManager.Receiver.IsLocationChecked(trackerItem.Name, MaptrackerSettings.IconVisibilityLogic == IconVisibilityLogicEnum.Game, trackerItem.IsGoalRequiredItem()))
                     return false;
-                
+
                 MaptrackerSettings.AddCheck(icon.Guid);
 
                 var checkIsInLogic = LogicChecker.IsPickupAccessible(trackerItem.Name, RandomizerManager.Options.LogicDifficulty, RandomizerManager.Receiver.GetAllItems(), RandomizerManager.Options);
