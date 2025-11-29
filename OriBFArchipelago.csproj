@@ -4,23 +4,23 @@
     <TargetFramework>net35</TargetFramework>
     <AssemblyName>OriBFArchipelago</AssemblyName>
     <Description>Archipelago client for Ori and the Blind Forest</Description>
-    <Version>0.3.2</Version>
+    <Version>0.3.4</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <PropertyGroup>
-    <PreBuildEvent Condition="'$(ComputerName)' == 'DESKTOP-4FG0L6M'">
+    <PreBuildEvent Condition="'$(ComputerName)' == 'DESKTOP-BBR42JK'">
       cmd /c "taskkill /F /IM oriDE.exe /T 2&gt;nul || exit /b 0"
     </PreBuildEvent>
-    <PostBuildEvent Condition="'$(ComputerName)' == 'DESKTOP-4FG0L6M'">
+    <PostBuildEvent Condition="'$(ComputerName)' == 'DESKTOP-BBR42JK'">
       xcopy "$(TargetDir)OriBFArchipelago.dll" "D:\SteamLibrary\steamapps\common\Ori DE\BepInEx\plugins\OriBFArchipelago\" /Y
       start "" "D:\SteamLibrary\steamapps\common\Ori DE\oriDE.exe"
     </PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Archipelago.MultiClient.Net" Version="6.2.0" />
+    <PackageReference Include="Archipelago.MultiClient.Net" Version="6.6.0" />
     <PackageReference Include="AsyncBridge" Version="0.3.1" />
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />

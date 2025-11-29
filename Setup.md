@@ -37,9 +37,9 @@
 # Step 3: Run the game!
 1. Start Ori and the Blind Forest
 
-2. Upon startup, you should see a set of text boxes in the upper left corner
+2. When on the save slot selection screen, you should see a set of text boxes in the upper left corner
 
-3. If you enabled the console, you should also get a message there
+3. If you enabled the console, you should also get a message that the mod was loaded correctly
 
 4. Highlight the save profile you want to use
 

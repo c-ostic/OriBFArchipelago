@@ -138,7 +138,6 @@ namespace OriBFArchipelago.Core
          */
         public void InspectSaveSlot(int index)
         {
-            Console.WriteLine($"Inspecting save slot {index}");
             if (SaveSlotsUI.Instance is not null && index >= 0 && index < saveSlots.Count)
             {
                 SlotData data = saveSlots[index];
@@ -169,6 +168,7 @@ namespace OriBFArchipelago.Core
             if (!string.IsNullOrEmpty(missingFields))
             {
                 RandomizerMessager.instance.AddMessage($"Required fields are empty: {missingFields}");
+                failedToStart = true;
                 return false;
             }
             RandomizerMessager.instance.AddMessage($"Attempting to connect to {server}:{port} {slotName}");
@@ -182,6 +182,7 @@ namespace OriBFArchipelago.Core
             if (!receiver.Init(isNew, saveSlot, slotName))
             {
                 Console.WriteLine("Slot name provided does not match save file");
+                failedToStart = true;
                 return false;
             }
 
@@ -241,9 +242,9 @@ namespace OriBFArchipelago.Core
         {
             Console.WriteLine($"Quitting save slot {SaveSlotsManager.CurrentSlotIndex}");
             RandomizerSettings.InGame = false;
+            receiver.OnSave(true);
             connection.Disconnect();
             connection = null;
-            receiver.OnSave(true);
             receiver = null;
             LocalGameState.Reset();
         }
