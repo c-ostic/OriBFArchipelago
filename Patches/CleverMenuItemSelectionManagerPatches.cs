@@ -77,15 +77,19 @@ namespace OriBFArchipelago.Patches
                 ShowTeleportConfirmation(TeleportAction.ToStart, manager);
             }
 
-            if (CoreInput.RightShoulder.OnPressed && !CoreInput.RightShoulder.Used)
-            {
-                CoreInput.RightShoulder.Used = true;
-                ShowTeleportConfirmation(TeleportAction.ToLastTeleporter, manager);
-            }
 
-            if (UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.F4))
+            if (TeleporterManager.GetLastTeleporter() != null)
             {
-                ShowTeleportConfirmation(TeleportAction.ToLastTeleporter, manager);
+                if (CoreInput.RightShoulder.OnPressed && !CoreInput.RightShoulder.Used)
+                {
+                    CoreInput.RightShoulder.Used = true;
+                    ShowTeleportConfirmation(TeleportAction.ToLastTeleporter, manager);
+                }
+
+                if (UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.F4))
+                {
+                    ShowTeleportConfirmation(TeleportAction.ToLastTeleporter, manager);
+                }
             }
         }
 
