@@ -1,7 +1,6 @@
 ﻿using Game;
 using HarmonyLib;
 using OriBFArchipelago.Core;
-using OriBFArchipelago.MapTracker.Core;
 using System.Collections.Generic;
 using UnityEngine;
 

@@ -19,6 +19,7 @@ namespace OriBFArchipelago.Helper
             if (string.IsNullOrEmpty(message))
                 message = $"{obj} can not be null";
 
+            ModLogger.Info(message);
             RandomizerMessager.instance.AddMessage(message);
             return true;
         }
