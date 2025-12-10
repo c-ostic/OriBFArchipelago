@@ -1,5 +1,6 @@
 ﻿using Game;
 using HarmonyLib;
+using OriBFArchipelago.Helper;
 using OriBFArchipelago.MapTracker.Core;
 using UnityEngine;
 using CoreInput = Core.Input;
@@ -9,15 +10,12 @@ namespace OriBFArchipelago.Patches
     [HarmonyPatch(typeof(CleverMenuItemSelectionManager), nameof(CleverMenuItemSelectionManager.FixedUpdate))]
     public static class CleverMenuItemSelectionManagerPatches
     {
-        private static ConfirmOrCancel _confirmComponent = null;
-        private const string keyboardConfirmButton = "<icon>D</>";
-        private const string xboxConfirmButton = "<icon>e</>";
-        private const string keyboardCancelButton = "<icon>y</>";
-        private const string xboxCancelButton = "<icon>f</>";
+        private static ConfirmationBox _confirmationBox = null;
+
         [HarmonyPostfix]
         static void FixedUpdate_Postfix(CleverMenuItemSelectionManager __instance)
         {
-            if (_confirmComponent != null && _confirmComponent.enabled && !__instance.IsVisible)
+            if (_confirmationBox != null && _confirmationBox.IsActive && !__instance.IsVisible)
             {
                 CancelTeleport(__instance);
                 return;
@@ -28,7 +26,7 @@ namespace OriBFArchipelago.Patches
                 return;
             }
 
-            if (_confirmComponent != null && _confirmComponent.enabled)
+            if (_confirmationBox != null && _confirmationBox.IsActive)
             {
                 if (CoreInput.Start.OnPressed)
                 {
@@ -77,7 +75,6 @@ namespace OriBFArchipelago.Patches
                 ShowTeleportConfirmation(TeleportAction.ToStart, manager);
             }
 
-
             if (TeleporterManager.GetLastTeleporter() != null)
             {
                 if (CoreInput.RightShoulder.OnPressed && !CoreInput.RightShoulder.Used)
@@ -95,74 +92,27 @@ namespace OriBFArchipelago.Patches
 
         private static void ShowTeleportConfirmation(TeleportAction action, CleverMenuItemSelectionManager manager)
         {
-
-            if (_confirmComponent != null)
-            {
-                Object.Destroy(_confirmComponent.gameObject);
-                _confirmComponent = null;
-            }
-
-            ConfirmOrCancel prefab = FindConfirmationPrefab();
-
-            if (prefab == null)
-            {
-                ExecuteTeleport(action, manager);
-                return;
-            }
-
-            _confirmComponent = Object.Instantiate(prefab);
+            string message = action == TeleportAction.ToStart
+                ? "{confirm}Teleport to start?\n{cancel}Cancel?"
+                : $"{{confirm}}Teleport to {TeleporterManager.GetLastTeleporter().FriendlyName}?\n{{cancel}}Cancel?";
 
             Vector3 position = manager.transform.position;
             position.y += 2.0f;
-            _confirmComponent.transform.position = position;
 
-            string message = action == TeleportAction.ToStart
-                ? $@"{GetConfirmIcon()}Teleport to start?
-{GetCancelIcon()}Cancel?"
-                : $@"{GetConfirmIcon()}Teleport to {TeleporterManager.GetLastTeleporter().FriendlyName}?
-{GetCancelIcon()}Cancel? ";
-            UpdatePromptText(_confirmComponent.gameObject, message);
+            _confirmationBox = new ConfirmationBox(
+                message,
+                onConfirm: () => ExecuteTeleport(action, manager),
+                onCancel: () => CancelTeleport(manager),
+                position: position
+            );
 
-            _confirmComponent.OnConfirm += () => ExecuteTeleport(action, manager);
-            _confirmComponent.OnCancel = () => CancelTeleport(manager);
-            _confirmComponent.enabled = true;
             manager.IsSuspended = true;
-        }
-
-        private static string GetConfirmIcon()
-        {
-            return PlayerInput.Instance.WasKeyboardUsedLast ? keyboardConfirmButton : xboxConfirmButton;
-        }
-        private static string GetCancelIcon()
-        {
-            return PlayerInput.Instance.WasKeyboardUsedLast ? keyboardCancelButton : xboxCancelButton;
-        }
-
-        private static void UpdatePromptText(GameObject promptObject, string newText)
-        {
-            MessageBox[] messageBoxes = promptObject.GetComponentsInChildren<MessageBox>();
-
-            foreach (MessageBox messageBox in messageBoxes)
-            {
-                messageBox.OverrideText = newText;
-                messageBox.SetMessage(new MessageDescriptor(newText));
-            }
-        }
-
-        private static ConfirmOrCancel FindConfirmationPrefab()
-        {
-            SaveSlotsUI saveSlotsUI = SaveSlotsUI.Instance;
-            if (saveSlotsUI != null && saveSlotsUI.DeleteQuestion != null)
-            {
-                return saveSlotsUI.DeleteQuestion;
-            }
-
-            return null;
         }
 
         private static void ExecuteTeleport(TeleportAction action, CleverMenuItemSelectionManager manager)
         {
             manager.IsSuspended = false;
+
             switch (action)
             {
                 case TeleportAction.ToStart:
@@ -172,23 +122,13 @@ namespace OriBFArchipelago.Patches
                     TeleporterManager.TeleportToLastTeleporter();
                     break;
             }
-
-            if (_confirmComponent != null)
-            {
-                Object.Destroy(_confirmComponent.gameObject);
-                _confirmComponent = null;
-            }
         }
 
         private static void CancelTeleport(CleverMenuItemSelectionManager manager)
         {
             manager.IsSuspended = false;
-            if (_confirmComponent != null)
-            {
-                Object.Destroy(_confirmComponent.gameObject);
-                _confirmComponent = null;
-
-            }
+            _confirmationBox?.Destroy();
+            _confirmationBox = null;
         }
 
         private enum TeleportAction
