@@ -1,5 +1,4 @@
-﻿using BepInEx;
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace OriBFArchipelago.Helper
@@ -11,7 +10,7 @@ namespace OriBFArchipelago.Helper
         private const string XboxConfirmButton = "<icon>e</>";
         private const string KeyboardCancelButton = "<icon>y</>";
         private const string XboxCancelButton = "<icon>f</>";
-
+        private const int MaximumTextLength = 400;
         public bool IsActive => _popupComponent != null && _popupComponent.enabled;
 
         private string _message;
@@ -20,16 +19,8 @@ namespace OriBFArchipelago.Helper
         private Vector3? _position;
         private string _confirmText;
         private string _cancelText;
-        private float _scale;
 
-        public RandomizerMessageBox(
-            string message,
-            Action onConfirm = null,
-            string confirmText = null,
-            Action onCancel = null,
-            string cancelText = null,
-            Vector3? position = null,                       
-            float scale = 1.0f)
+        public RandomizerMessageBox(string message, Action onConfirm = null, string confirmText = null, Action onCancel = null, string cancelText = null, Vector3? position = null)
         {
             _message = message;
             _onConfirm = onConfirm;
@@ -37,58 +28,32 @@ namespace OriBFArchipelago.Helper
             _position = position;
             _confirmText = confirmText;
             _cancelText = cancelText;
-            _scale = scale;
         }
 
         public void Show()
         {
-            Show(_message, _onConfirm, _onCancel, _position, _confirmText, _cancelText, _scale);
+            Show(_message, _onConfirm, _onCancel, _position, _confirmText, _cancelText);
         }
 
-        private void Show(
-            string message,
-            Action onConfirm = null,
-            Action onCancel = null,
-            Vector3? position = null,
-            string confirmText = null,
-            string cancelText = null,
-            float scale = 1.5f)
+        private void Show(string message, Action onConfirm = null, Action onCancel = null, Vector3? position = null, string confirmText = null, string cancelText = null)
         {
-            // Clean up existing popup if any
             Destroy();
 
             ConfirmOrCancel prefab = FindPopupPrefab();
             if (prefab == null)
             {
-                // No prefab available, execute confirm action if provided, otherwise just return
                 onConfirm?.Invoke();
                 return;
             }
 
             _popupComponent = UnityEngine.Object.Instantiate(prefab);
 
-            // Set position
             if (position.HasValue)
-            {
                 _popupComponent.transform.position = position.Value;
-            }
 
-            // Apply scale to the popup - scale box but keep text same size
-            if (scale != 1.0f)
-            {
-                ScalePopupKeepTextSize(_popupComponent.gameObject, scale);
-            }
-
-            // Format message with appropriate button icons and texts
-            string formattedMessage = FormatMessage(
-                message,
-                onConfirm != null,
-                onCancel != null,
-                confirmText,
-                cancelText);
+            string formattedMessage = FormatMessage(message, onConfirm != null, onCancel != null, confirmText, cancelText);
             UpdatePromptText(_popupComponent.gameObject, formattedMessage);
 
-            // If both actions are null, any button press closes the popup
             if (onConfirm == null && onCancel == null)
             {
                 _popupComponent.OnConfirm += Destroy;
@@ -96,7 +61,6 @@ namespace OriBFArchipelago.Helper
             }
             else
             {
-                // Setup callbacks
                 if (onConfirm != null)
                 {
                     _popupComponent.OnConfirm += () =>
@@ -106,10 +70,7 @@ namespace OriBFArchipelago.Helper
                     };
                 }
                 else
-                {
-                    // If no confirm action, just close on confirm press
                     _popupComponent.OnConfirm += Destroy;
-                }
 
                 if (onCancel != null)
                 {
@@ -120,10 +81,7 @@ namespace OriBFArchipelago.Helper
                     };
                 }
                 else
-                {
-                    // If no cancel action, just close on cancel press
                     _popupComponent.OnCancel = Destroy;
-                }
             }
 
             _popupComponent.enabled = true;
@@ -138,79 +96,35 @@ namespace OriBFArchipelago.Helper
             }
         }
 
-        private string FormatMessage(
-            string message,
-            bool hasConfirm,
-            bool hasCancel,
-            string confirmText,
-            string cancelText)
+        private string FormatMessage(string message, bool hasConfirm, bool hasCancel, string confirmText, string cancelText)
         {
-            // Set default texts if not provided
             if (string.IsNullOrEmpty(confirmText))
-            {
-                confirmText = "Confirm";
-            }
+                confirmText = "Ok";
 
             if (string.IsNullOrEmpty(cancelText))
-            {
                 cancelText = "Cancel";
-            }
 
-            // If message contains placeholders, use them
-            if (message.Contains("{confirm}") || message.Contains("{cancel}"))
-            {
-                string result = message;
-
-                if (hasConfirm)
-                {
-                    result = result.Replace("{confirm}", $"{GetConfirmIcon()}{confirmText}");
-                }
-                else
-                {
-                    // Remove confirm placeholder and its line if no confirm action
-                    result = result.Replace("{confirm}", "");
-                }
-
-                if (hasCancel)
-                {
-                    result = result.Replace("{cancel}", $"{GetCancelIcon()}{cancelText}");
-                }
-                else
-                {
-                    // Remove cancel placeholder and its line if no cancel action
-                    result = result.Replace("{cancel}", "");
-                }
-
-                return CleanupEmptyLines(result);
-            }
-
-            // If no placeholders, add buttons based on what's available
             string formattedMessage = message;
 
             if (hasConfirm && hasCancel)
-            {
                 formattedMessage = $"{message}\n{GetConfirmIcon()}{confirmText}\n{GetCancelIcon()}{cancelText}";
-            }
             else if (hasConfirm)
-            {
                 formattedMessage = $"{message}\n{GetConfirmIcon()}{confirmText}";
-            }
             else if (hasCancel)
-            {
                 formattedMessage = $"{message}\n{GetCancelIcon()}{cancelText}";
-            }
             else
-            {
-                // Information only - show any button to close
                 formattedMessage = $"{message}\n{GetConfirmIcon()}Close";
-            }
 
-            return formattedMessage;
+            var cleanedMessage = CleanupEmptyLines(formattedMessage);
+
+            if (cleanedMessage.Length > MaximumTextLength)
+                return $"This text is to long - {cleanedMessage}";
+
+            return cleanedMessage;
         }
 
         private string CleanupEmptyLines(string text)
         {
-            // Remove lines that are empty or only contain whitespace
             string[] lines = text.Split('\n');
             var nonEmptyLines = new System.Collections.Generic.List<string>();
 
@@ -223,60 +137,6 @@ namespace OriBFArchipelago.Helper
             }
 
             return string.Join("\n", nonEmptyLines.ToArray());
-        }
-
-        private static void ScalePopupKeepTextSize(GameObject promptObject, float scale)
-        {
-            // First, collect all MessageBox components before scaling
-            global::MessageBox[] messageBoxes = promptObject.GetComponentsInChildren<global::MessageBox>();
-
-            // Store original scales of text-related components
-            var textScales = new System.Collections.Generic.Dictionary<Transform, Vector3>();
-
-            foreach (global::MessageBox messageBox in messageBoxes)
-            {
-                if (messageBox.transform != null)
-                {
-                    textScales[messageBox.transform] = messageBox.transform.localScale;
-                }
-            }
-
-            // Also check for TextMesh components (common for text rendering in Unity)
-            TextMesh[] textMeshes = promptObject.GetComponentsInChildren<TextMesh>();
-            foreach (TextMesh textMesh in textMeshes)
-            {
-                if (textMesh.transform != null)
-                {
-                    textScales[textMesh.transform] = textMesh.transform.localScale;
-                }
-            }
-
-            // Check for any component with "Text" in the name
-            Transform[] allTransforms = promptObject.GetComponentsInChildren<Transform>();
-            foreach (Transform t in allTransforms)
-            {
-                if (t.name.ToLower().Contains("text") && !textScales.ContainsKey(t))
-                {
-                    textScales[t] = t.localScale;
-                }
-            }
-
-            // Now scale the root object
-            promptObject.transform.localScale = new Vector3(scale, scale, scale);
-
-            // Counter-scale all text elements to keep them at original size
-            float inverseScale = 1.0f / scale;
-            foreach (var kvp in textScales)
-            {
-                kvp.Key.localScale = new Vector3(
-                    kvp.Value.x * inverseScale,
-                    kvp.Value.y * inverseScale,
-                    kvp.Value.z * inverseScale
-                );
-            }
-
-            // Log what we found for debugging
-            UnityEngine.Debug.Log($"[RandomizerMessageBox] Scaled popup to {scale}x. Found {messageBoxes.Length} MessageBox, {textMeshes.Length} TextMesh, and {textScales.Count} total text components to counter-scale");
         }
 
         private static string GetConfirmIcon()
