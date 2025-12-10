@@ -131,6 +131,7 @@ namespace OriBFArchipelago.Core
         public static bool InSaveSelect { get; set; }
         public static bool InGame { get; set; }
         public static int ActiveSaveSlot { get; set; }
+        public static bool SeenInfoMessage => MapTrackerOptionsScreen.SeenTrackerInfoPopup;
 
         public static int Get(RandomizerSetting setting)
         {

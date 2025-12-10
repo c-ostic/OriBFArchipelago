@@ -12,6 +12,7 @@ namespace OriBFArchipelago.ArchipelagoUI
         private const string CONFIGSECTION = "MapTracker";
         private static ConfigFile _config;
 
+        private static ConfigEntry<bool> _seenTrackerInfoPopup { get; set; }
         private static ConfigEntry<bool> _hideNonCollectableIcons { get; set; }
         private static ConfigEntry<string> _mapVisibility { get; set; }
         private static ConfigEntry<string> _iconVisibility { get; set; }
@@ -45,6 +46,11 @@ namespace OriBFArchipelago.ArchipelagoUI
             }
         }
 
+        public static void SetSeenTrackerInfoPopup(bool value)
+        {
+            _seenTrackerInfoPopup.Value = value;
+        }
+
         private void CopyOldConfigToNew()
         {
             if (File.Exists(OldConfigSavePath))
@@ -63,6 +69,7 @@ namespace OriBFArchipelago.ArchipelagoUI
             _hideNonCollectableIcons = config.Bind(CONFIGSECTION, "HideNonCollectableIcons", true, "Sets HideNonCollectableIcons");
             _enableIconInfocUI = config.Bind(CONFIGSECTION, "EnableItemUI", false, "Sets EnableItemUI");
             _disableMapSway = config.Bind(CONFIGSECTION, "DisableMapSway", false, "Sets DisableMapSway");
+            _seenTrackerInfoPopup = config.Bind(CONFIGSECTION, "SeenTrackerInfoPopup", false, "Sets SeenTrackerInfoPopup");
             ModLogger.Debug("Settings initialized successfully");
         }
 
@@ -84,6 +91,7 @@ namespace OriBFArchipelago.ArchipelagoUI
         internal static bool EnableIconInfocUI => _enableIconInfocUI?.Value ?? false;
         internal static bool DisableMapSway => _disableMapSway?.Value ?? false;
         internal static bool HideNonCollectableIcons => _hideNonCollectableIcons?.Value ?? false;
+        internal static bool SeenTrackerInfoPopup => _seenTrackerInfoPopup?.Value ?? false;
     }
 }
 

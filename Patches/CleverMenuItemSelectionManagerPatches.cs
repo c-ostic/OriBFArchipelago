@@ -1,5 +1,4 @@
-﻿using Game;
-using HarmonyLib;
+﻿using HarmonyLib;
 using OriBFArchipelago.Helper;
 using OriBFArchipelago.MapTracker.Core;
 using UnityEngine;
@@ -10,7 +9,7 @@ namespace OriBFArchipelago.Patches
     [HarmonyPatch(typeof(CleverMenuItemSelectionManager), nameof(CleverMenuItemSelectionManager.FixedUpdate))]
     public static class CleverMenuItemSelectionManagerPatches
     {
-        private static ConfirmationBox _confirmationBox = null;
+        private static RandomizerMessageBox _confirmationBox = null;
 
         [HarmonyPostfix]
         static void FixedUpdate_Postfix(CleverMenuItemSelectionManager __instance)
@@ -99,12 +98,13 @@ namespace OriBFArchipelago.Patches
             Vector3 position = manager.transform.position;
             position.y += 2.0f;
 
-            _confirmationBox = new ConfirmationBox(
+            _confirmationBox = new RandomizerMessageBox(
                 message,
                 onConfirm: () => ExecuteTeleport(action, manager),
                 onCancel: () => CancelTeleport(manager),
                 position: position
             );
+            _confirmationBox.Show();
 
             manager.IsSuspended = true;
         }
