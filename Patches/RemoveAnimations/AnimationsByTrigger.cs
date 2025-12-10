@@ -158,6 +158,7 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             //Horu fields
             new("1. DroppingStone","Shows the dropping of the stone", [12], new MoonGuid("-2137911009 1339882321 529298075 336350830")),
             new("2. DroppingStone","Shows the dropping of the stone", [01,02,03,05], new MoonGuid("185196820 1122042374 110970291 -5029481")),
+            new("MountHoruDoorOpen", "Opening of mount horu's door", [03, 04, 05, 06, 07, 08, 13, 14],new MoonGuid("-1832697925 1245659008 1759198354 -126852414")),
              
             //Swamp
             new("GumoAtTree", "First encounter with Gumo", [01, 02, 03, 05, 06, 09, 16, 18, 19 ], new MoonGuid("1950260161 1273538601 -1538437959 1280125770")),
@@ -167,6 +168,9 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("OpenGinsoTree", "Opening of Ginso Tree", [05,06,09,10],new MoonGuid("395817233 1340225072 267074435 558261298")),
             new("StompWaterPole", "Opening of the gate in the water", [06,07,08,13],new MoonGuid("-756314413 1313504610 494822539 -1328747187")),
             new("StompTreePole", "Opening of the gate underneath the small tree", [06, 08, 12], new MoonGuid("1432024516 1307203918 1808270737 2070758549")),
+            new("RightSideLightBulb", "Opening of the water door by grenading the lightbulb", [02,03,04,05,06,09,10,11,12,14,17,18], new MoonGuid("1098451239 1219833295 -1808300371 -866556387")),
+            new("StompTree","Exposition on the stomp skilltree",[12,14], new MoonGuid("337967039 1290330560 -102101579 -35473256")),
+
             //Moon
             new("GumoJumpingFurtherDown","Gumo jumping down after moon TP",[05, 06],new MoonGuid("-217466045 1309290050 -477348435 1521107282")),
             new("GumoGettingAttacked","Gumo getting attacked by the first miniboss",[01, 02, 05, 06, 07, 08, 22, 23], new MoonGuid("1644266034 1159348567 1319740331 -549778202")),
@@ -176,6 +180,7 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("RescueGump","Rescue gumo from the stone on top of him",[02, 05, 06, 07, 08, 10, 12, 14, 15, 16],new MoonGuid("53584786 1168928934 -777751624 1508091491")),
             new("GumoGiveWaterThing", "Gumo giving the Ginso Key to Ori", [01,02, 03,04,05, 07, 08, 10, 11, 17, 18, 19, 20, 21, 25], new MoonGuid("1376551603 1121813286 -104614488 1790121249")),
             new("GumoRunOverGap", "Activates when running to the left of the gap at bottom grotto",[04, 08, 09],new MoonGuid("636825529 1114295791 195746239 1758731857")),
+            new("DoubleJumpSkillTree", "Skips the exposition before collecting double jump", [12], new MoonGuid("261338335 1184241805 1860098225 -2077367194")),
 
             //Valley of the Wind
             new("WaterLever", "Lever at the hollow grove side", [03, 04, 05, 09, 11, 18],new MoonGuid("-535165738 1133285013 -695290185 -1054012665")),
@@ -183,9 +188,10 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("ShowKuroLurking", "Shows Kuro lurking to kill Ori when going into the open", [13,14, 22, 23], new MoonGuid("554625759 1196984167 -1411865209 368717326")),
             new("KuroAtCliff", "Kuro overlooking the cliff, showing how to remove him",[05,06,16,17], new MoonGuid("-457224259 1076850475 402546573 -1836316074")),
             //new("KuroDropping", "Stomping kuro and making him leave", [01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,32,33,34,35,36], new MoonGuid("1424557570 1329884842 -385751934 1745320476")), //Haven't figured out how to properly skip this. Skipping results in not being able to pick up feather
-            new("KuroFeather", "Collecting kuro's feather", [06,07,08,10,12,16,17], new MoonGuid("-756839669 1238273858 363643021 -1763422804")),
+            //new("KuroFeather", "Collecting kuro's feather", [05,06,07,08,09,10,12,16,17], new MoonGuid("-756839669 1238273858 363643021 -1763422804")), //Needs to stay on to actually collect the feather properly
             new("TreeOfWhispersDoor", "Opens the door for lower left valley to the tree of whispers", [05,06,07], new MoonGuid("1519946723 1246680883 939576731 1472509622")),
-            new("BottomDoor","Openst the door to forlorn area", [05,06,07], new MoonGuid("1505975971 1099708282 -762174588 -1455573852")),
+            new("LightTreeDoor","Use grendae to light the bulb to open door to item", [01,03,04,05,06,07,10,11,12,13,15,18,19], new MoonGuid("712475150 1153485569 -222104651 386379640")),
+            new("BottomDoor","Open the door to forlorn area", [05,06,07], new MoonGuid("1505975971 1099708282 -762174588 -1455573852")),
 
             //Lost Grove
             new("DashGate", "Opening gate at dash area", [01,02,03,04,09,10,11,12], new MoonGuid("458381796 1082263303 581967003 -1486563515")),
@@ -200,23 +206,40 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             //Ginso Tree
             new("GinsoTreeEntrance", "First entry of Ginso Tree", [01,05,21,22,23], new MoonGuid("1797081604 1288163207 -1681566832 -1939855093")),
             new("FightMiniBoss","Closing door behind you on start of miniboss fight", [03,04,05,06,08,12,13], new MoonGuid("1183926712 1201180019 -328380759 -2018562755")),
-
+            new("GinsoAfterMiniBoss","Exposition on what to do after killing the miniboss",[20,21,22,23], new MoonGuid("-2129976299 1224686485 -470376798 304795154")),
+            new("GinsoEscapeLeftSide","Explosions on the left side before ginso escape", [03,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,10,20,21,22,23,24,25,26,27,28,29,30,31,33,35,36], new MoonGuid("-1236483305 1284618203 -1974049373 -575868861")),
+            new("GinsoEscapeRightSide","Explosions on the right side before ginso escape", [04,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,37,40], new MoonGuid("1191654416 1302123663 151424932 840401249")),
+            new("GinsoWaterSequence", "Sequence to start the water escape of ginso tree", [02,03,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32], new MoonGuid("-1679049206 1134072076 -1860355956 -1662641344")),
+            new("EndOfGinsoEscape", "Exposition at the end of ginso escape and getting saved by gumon", [01, 02, 03, 10, 11, 12, 13, 14, 20, 29, 33, 37, 38, 40, 43, 44, 45, 46], new MoonGuid("-847281791 1241793475 1080917670 -1990575197")),
+            new("SkipSkillTree", "Skips the exposition for the skilltree", [12], new MoonGuid("-314577372 1103920600 1985791414 -2110544796")),
             //Forlorn Cavern
-            new("GumoSeal", "Insert gumo seal", [02,05,06,09,10,11,14,16], new MoonGuid("1987292132 1080256411 1972704413 111953066")),
+            new("GumoSeal", "Insert gumo seal", [02,03,05,06,07,08,09,10,11,12,14,16], new MoonGuid("1987292132 1080256411 1972704413 111953066")),
             new("ForlornIntroduction", "First entry to forlorn cavern", [04,05,25,26], new MoonGuid("-849820852 1250504405 886572168 -1183457540")),
             new("GettingNightBerry", "Collection of the freezing orb", [10, 11,12,13,15], new MoonGuid("-468484755 1271818938 1374739346 -2106151641")),
             
             //Sorrow Pass
-
             new("SomeLever", "The lever that opens the door on the far left", [04,06], new MoonGuid("-1388084155 1237989621 -1066325088 -867368922")),
+            new("ChargedJumpSkillTree", "Exposition at the skill tree for ChargedJump", [11,12,14], new MoonGuid("-1410197724 1128707013 -1950746477 1812865810")),
+            new("SunStoneExposition", "Exposition at the top of sorrow pass before collecting sunstone", [15], new MoonGuid("-696092440 1113700240 -171193210 -1201469275")),            
             //Mount Horu
             new("HoruIntroduction", "First entry of Mount Horu", [01, 05, 07, 22, 23], new MoonGuid("-182315221 1105231312 1943840650 1813785295")),
+            new("HuroL1Stomp", "Stomp on the platform at door 1", [02,03,4,055,06,07,08,09,10,11,12,13,17,18], new MoonGuid("-1589734316 1113886190 -437311593 899774608")),
+            new("HoruL2RockDrop", "Drop the rock into the lava to stop the flow",[01, 02, 04, 05, 06, 07, 08, 11, 12, 13, 14], new MoonGuid("-885091187 1141805217 1126505132 -234469124")),
             new("HoruR2RockFall", "Stomp on the switch to drop the block at the end",[02, 03, 08, 09], new MoonGuid("2031988133 1253051438 -1048575855 -1243562809")),
+            new("HoruR1DoorEntrance", "Exposition on story when entering door",[04,08,09], new MoonGuid("-1038430429 1234410252 2139859126 -490676512")),
+            new("HoruR1DoorEntrance2", "More exposition on story when entering door",[25], new MoonGuid("-91325239 1253403492 1476455557 764231789")),
+            new("HoruR1LightRockExposition", "Exposition on the light rocks",[14, 15], new MoonGuid("-303476169 1101394032 20567448 -553215510")),
+            new("HoruR1LavaDrain", "Shine light on the rock at the 1rd (from the top) entrance of the left to lower the lava",[02,03,04,05,06,07,08], new MoonGuid("-944003312 1224624697 -191465038 -1871897436")),
+            new("HoruR1LavaDrainFinish", "Exposition after dropping the first rock",[02, 04, 07, 08, 09, 10], new MoonGuid("199020531 1138092816 193035928 1030074132")),
             new("HoruR2LavaDrain", "Lowering of the lava due to actions at the 2nd (from the top) entrance of the right",[02,04,08,09,10,11,13,15,18], new MoonGuid("-1664229988 1269302847 -122889574 398995567")),
             new("HoruR3LavaDrain", "Shine light on the rock at the 3rd (from the top) entrance of the right to lower the lava",[01, 02, 03, 04, 07, 09, 10, 12, 1, 17], new MoonGuid("-496260207 1303555699 578011313 -1827639718")),
             new("HoruR4LavaDrain", "Shine light on the rock at the 4rd (from the top) entrance of the right to lower the lava",[02, 03, 04, 05, 06, 07, 08], new MoonGuid("-237534521 1117446743 1449463690 -1967567174")),
+            new("HoruL2LavaDrain", "Lowering of the lava due to actions at the 2nd (from the top) entrance of the left",[02,03,04,08,09,10,11,13,15,18], new MoonGuid("-229872336 1122348114 -600436304 657168478")),
             new("HoruL3LavaDrain", "Shine light on the rock at the 3rd (from the top) entrance of the left to lower the lava",[02, 03, 04, 05, 06, 07, 08], new MoonGuid("-182458660 1303160168 1079892404 1715488948")),
-            
+
+            new("door2lavadrain", "Drains the lava?", [02,03,7,08,09,10,11,12,13,14,15,20], new MoonGuid("-1235656039 1086313701 1258576023 -104497747")),
+            new("door8lavadrain", "Drains the lava?", [02,03,07,08,09,10,11,12,17], new MoonGuid("1446986356 1324984179 1323541149 1364584793")),
+
             //Doors from top to bottom            
             //Door left 3: 
             //new("1. door3LavaDrain", "ASD",[02, 03, 04, 05, 06, 08, 09, 10],new MoonGuid("-182458660 1303160168 1079892404 1715488948")),
@@ -226,9 +249,14 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
              
             //Door left 4: Issue - There might be a small freeze when stomping for the third time due to the "if get world event condition" in this animation.
             new("1. door4LavaDrain", "ASD",[02, 04, 05, 06, 07, 14],new MoonGuid("-920418859 1183339757 90418109 -930667380")),
-            new("2. door4LavaDrain", "Drains the lava in the lower left door", [02,03,04,08,13,14,15,16], new MoonGuid("1621954031 1114090025 1789235899 -1461548696"))
+            new("2. door4LavaDrain", "Drains the lava in the lower left door", [02,03,04,08,13,14,15,16], new MoonGuid("1621954031 1114090025 1789235899 -1461548696")),
 
-
+            //Misty Woods
+            new("AboveLantern","Skips the exposition above the lantern", [03,05,08,15,17], new MoonGuid("-145071351 1205762473 -1338429310 33294940")),
+            new("MistyWoodsSkillTree","Skips exposition on the skilltree in misty woods", [06,08], new MoonGuid("1565883492 1308263384 -1752567420 -1888351303")),
+            new("LanternToOpenDoor","Latern hit with grenade to open stump for item", [03,04,05,06,07,09,10,11,12,13,15,18], new MoonGuid("716813929 1280992173 724076716 2101543441")),
+            new("OrbInPlatform", "Puts the orb into the smokey platform", [07, 08, 09, 11, 12, 13, 14, 15,16 ,17, 18, 19, 21, 22, 23, 26, 27, 28, 29, 30, 31, 32, 33, 34], new MoonGuid("134252146 1207943286 -699389268 -654615683")),
+            new("CollectGumonSeal", "Exposition on collection of gumon's seal", [03, 04, 05, 09, 11, 14, 22, 23, 24, 25], new MoonGuid("774264447 1144716649 -1525033835 -306857486"))
             /*todo: 
              * Horu L3
              * Horu L2
