@@ -13,12 +13,12 @@ namespace OriBFArchipelago.Patches
             if (door.name == "mountHoruExitDoor")
             {
                 var isGoalCompleted = RandomizerManager.Connection.IsGoalComplete();
-                if (isGoalCompleted && RandomizerSettings.SkipFinalEscape)
-                {
-                    RandomizerMessager.instance.AddMessage("Goal completed");
-                    RandomizerManager.Connection.SendCompletion();
-                    return false;
-                }
+                //if (isGoalCompleted && RandomizerSettings.SkipFinalEscape) //Not yet implemented. Collect from RandomizerOptions instead
+                //{
+                //    RandomizerMessager.instance.AddMessage("Goal completed");
+                //    RandomizerManager.Connection.SendCompletion();
+                //    return false;
+                //}
                 return isGoalCompleted;
             }
             return true;

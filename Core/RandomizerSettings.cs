@@ -125,7 +125,6 @@ namespace OriBFArchipelago.Core
             }
         }
 
-        public static bool SkipFinalEscape => ArchipelagoOptionsScreen.SkipFinalEscape;
         public static bool SkipCutscenes => ArchipelagoOptionsScreen.SkipCutscenes;
         public static bool ShowSettings { get; set; }
         public static bool InSaveSelect { get; set; }
