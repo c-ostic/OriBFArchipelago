@@ -226,9 +226,13 @@ namespace OriBFArchipelago.Core
         /**
          * Checks if a location has been locally reached
          */
-        public bool IsLocationChecked(string location, bool isGoalRequiredItem = false)
+        public bool IsLocationChecked(string location, bool checkLocal = false, bool isGoalRequiredItem = false)
         {
-            var checkStatus = isGoalRequiredItem ? LocationStatus.CheckedNotSaved : LocationStatus.LostOnDeath;
+            var checkStatus = LocationStatus.Checked;
+            if (checkLocal || isGoalRequiredItem)
+                checkStatus = LocationStatus.CheckedNotSaved;
+            else
+                checkStatus = LocationStatus.LostOnDeath;
             return checkedLocations.ContainsKey(location) ? checkedLocations[location] >= checkStatus : false;
         }
 
@@ -362,7 +366,8 @@ namespace OriBFArchipelago.Core
             if (savedInventory.Get(InventoryItem.SpiritFlame) == 0 && RandomizerManager.IsSeinCollected())
             {   //Failsafe untill sein is properly included in randomizer
                 savedInventory.Add(InventoryItem.SpiritFlame, 1);
-                ModLogger.Debug("Collecting sein based on archipelago data");
+                RandomizerManager.CollectSein();
+                ModLogger.Debug("Collecting sein based on session data");
             }
 
             foreach (InventoryItem skillName in RandomizerInventory.skills)

@@ -1,17 +1,20 @@
 ﻿using HarmonyLib;
+using OriBFArchipelago.ArchipelagoUI;
 using OriBFArchipelago.Core;
+using OriBFArchipelago.Helper;
 
 namespace OriBFArchipelago.Patches
 {
     internal class TitleScreenManagerPatches
     {
         [HarmonyPatch(typeof(TitleScreenManager), nameof(EntityDamageReciever.Awake))]
-        internal class PetrifiedPlantPatch
+        internal class TitleScreenManagerPatch
         {
             private static void Postfix(EntityDamageReciever __instance)
             {
-                RandomizerMessager.instance.AddMessage($"Tip: To use the ingame tracker, go to 'Help & Options' > 'Tracker Options' and turn on map visibility and icon visibility.");
-            }
+                if (!RandomizerSettings.SeenInfoMessage)
+                    RandomizerInformationManager.ShowWelcomeMessage();
+            }           
         }
     }
 }

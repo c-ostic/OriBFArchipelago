@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
+using OriBFArchipelago.ArchipelagoUI;
 using OriBFArchipelago.MapTracker.Core;
-using OriBFArchipelago.MapTracker.UI;
 using OriModding.BF.UiLib.Menu;
 
 namespace OriBFArchipelago.Patches
@@ -15,6 +15,8 @@ namespace OriBFArchipelago.Patches
         static void Postfix(OptionsScreen __instance)
         {
             CustomMenuManager.RegisterOptionsScreen<MapTrackerOptionsScreen>("Tracker options", 100);
+            CustomMenuManager.RegisterOptionsScreen<ArchipelagoOptionsScreen>("Archipelago options", 150);
+            
         }
     }
 }

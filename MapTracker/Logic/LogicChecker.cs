@@ -12,7 +12,7 @@ namespace OriBFArchipelago.MapTracker.Logic
 
         public LogicChecker()
         {
-            _logic = new RulesData().GetFullLogic();
+            _logic = new RulesDataReader().GetFullLogic();
 
         }
 

@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using UnityEngine;
 
-namespace OriBFArchipelago.MapTracker.UI
+namespace OriBFArchipelago.ArchipelagoUI
 {
     internal class BaseModOptionsScreen : CustomOptionsScreen
     {
@@ -61,7 +61,7 @@ namespace OriBFArchipelago.MapTracker.UI
             {
                 OnSound = componentInChildren.OnSound;
                 OffSound = componentInChildren.OffSound;
-                UnityEngine.Object.Destroy(componentInChildren);
+                Destroy(componentInChildren);
             }
         }
 

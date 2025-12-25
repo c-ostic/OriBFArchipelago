@@ -1,8 +1,6 @@
-﻿using JetBrains.Annotations;
-using OriBFArchipelago.Core;
+﻿using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
 using System;
-using System.Collections.Generic;
 
 namespace OriBFArchipelago.MapTracker.Logic
 {
@@ -20,13 +18,13 @@ namespace OriBFArchipelago.MapTracker.Logic
             try
             {
                 if (IsIgnoredIconType(icon.Icon))
-                    return false;
+                    return !MaptrackerSettings.HideNonCollectableIcons;
 
                 var trackerItem = LocationLookup.Get(icon.Guid);
                 if (trackerItem == null)
                     return false;
-                
-                if (MaptrackerSettings.IconVisibilityLogic == IconVisibilityLogicEnum.Archipelago && RandomizerManager.Receiver.IsLocationChecked(trackerItem.Name, trackerItem.IsGoalRequiredItem()))
+
+                if (RandomizerManager.Receiver.IsLocationChecked(trackerItem.Name, MaptrackerSettings.IconVisibilityLogic == IconVisibilityLogicEnum.Game, trackerItem.IsGoalRequiredItem()))
                     return false;
 
                 MaptrackerSettings.AddCheck(icon.Guid);
@@ -59,6 +57,7 @@ namespace OriBFArchipelago.MapTracker.Logic
                 case WorldMapIconType.KeystoneDoorFour:
                 case WorldMapIconType.KeystoneDoorOpen:
                 case WorldMapIconType.EnergyGateFour:
+                case WorldMapIconType.SavePedestal:
                     return true;
                 default:
                     return false;

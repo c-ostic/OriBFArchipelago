@@ -1,14 +1,13 @@
 ﻿using Game;
 using HarmonyLib;
 using OriBFArchipelago.Core;
-using OriBFArchipelago.MapTracker.Core;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace OriBFArchipelago.MapTracker.UI
+namespace OriBFArchipelago.ArchipelagoUI
 {
     [HarmonyPatch]
-    internal class ChecksInLogicUI : MonoBehaviour
+    internal class VersionUI : MonoBehaviour
     {
         private static GUIStyle textStyle;
         private static readonly float textPadding = 10f; // Padding from the top in pixels
@@ -18,9 +17,9 @@ namespace OriBFArchipelago.MapTracker.UI
         [HarmonyPostfix]
         private static void AddLocationText(GameController __instance)
         {
-            GameObject guiObject = new GameObject("LocationTextGUI");
-            guiObject.AddComponent<ChecksInLogicUI>();
-            Object.DontDestroyOnLoad(guiObject);
+            GameObject guiObject = new GameObject("Version");
+            guiObject.AddComponent<VersionUI>();
+            DontDestroyOnLoad(guiObject);
         }
 
         private void Start()
@@ -34,20 +33,16 @@ namespace OriBFArchipelago.MapTracker.UI
 
         private void OnGUI()
         {
-            if (!RandomizerSettings.ShowSettings || Game.UI.Menu.CurrentScreen != MenuScreenManager.Screens.WorldMap)
+            if (!RandomizerSettings.ShowSettings || UI.Menu.CurrentScreen != MenuScreenManager.Screens.WorldMap)
                 return;
 
             if (textStyle == null)
                 return;
 
-            float centerX = Screen.width / 2f;
-
-            int checksInLogic = MaptrackerSettings.ChecksInLogic;
-            int checksLeft = MaptrackerSettings.ChecksLeft;
-            string checksText = $"{checksInLogic} out of {checksLeft} are reachable";
+            string checksText = $"v{PluginInfo.PLUGIN_VERSION}";
 
             Vector2 textSize = textStyle.CalcSize(new GUIContent(checksText));
-            Rect textRect = new Rect(centerX - textSize.x / 2f, textPadding, textSize.x, textSize.y);
+            Rect textRect = new Rect(Screen.width - textSize.x - textPadding, Screen.height - textSize.y - textPadding, textSize.x, textSize.y);
             Color prevColor = GUI.color;
             GUI.color = textColor;
             GUI.Label(textRect, checksText, textStyle);
@@ -57,7 +52,7 @@ namespace OriBFArchipelago.MapTracker.UI
         private void CreateTextStyle()
         {
             textStyle = new GUIStyle();
-            textStyle.fontSize = 18;
+            textStyle.fontSize = 10;
             textStyle.fontStyle = FontStyle.Bold;
             textStyle.normal.textColor = Color.white;
             textStyle.richText = true;

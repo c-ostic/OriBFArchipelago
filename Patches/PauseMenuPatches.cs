@@ -1,5 +1,4 @@
-﻿using Game;
-using HarmonyLib;
+﻿using HarmonyLib;
 using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
 
@@ -10,9 +9,16 @@ namespace OriBFArchipelago.Patches
     {
         static bool Prefix()
         {
-            RandomizerSettings.ShowSettings = true;
-            RuntimeGameWorldAreaPatch.ToggleDiscoveredAreas(MaptrackerSettings.MapVisibility);
-            MaptrackerSettings.ResetCheckCount();
+            try
+            {
+                RandomizerSettings.ShowSettings = true;
+                RuntimeGameWorldAreaPatch.ToggleDiscoveredAreas(MaptrackerSettings.MapVisibility);
+                MaptrackerSettings.ResetCheckCount();
+            }
+            catch
+            {
+
+            }
             return true;
         }
     }

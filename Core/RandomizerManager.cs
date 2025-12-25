@@ -7,6 +7,7 @@ using CatlikeCoding.TextBox;
 using HarmonyLib;
 using OriBFArchipelago.MapTracker.Core;
 using System.Collections;
+using UnityEngine.Networking.Match;
 
 namespace OriBFArchipelago.Core
 {
@@ -124,7 +125,7 @@ namespace OriBFArchipelago.Core
                 GUI.SetNextControlName("password");
                 password = GUILayout.TextField(password, 50, GUILayout.Width(200));
                 GUILayout.EndHorizontal();
-                
+
                 GUILayout.EndVertical();
                 GUILayout.EndArea();
 
@@ -213,7 +214,13 @@ namespace OriBFArchipelago.Core
                 RandomizerIO.WriteSlotData(saveSlots);
 
                 options = new RandomizerOptions(connection.SlotData);
+                if (options.Goal == GoalOptions.WarmthFragments || options.Goal == GoalOptions.WorldTour)
+                {
+                    ModLogger.Debug("Checking goal locations");
 
+                    if (options.GoalLocations == null)
+                        connection.SetGoalLocationsInOptions();
+                }
                 if (options.DeathLinkLogic != DeathLinkOptions.Disabled)
                 {
                     connection.EnableDeathLink(true);
@@ -261,7 +268,7 @@ namespace OriBFArchipelago.Core
         }
 
         internal static void CollectSein()
-        {
+        {            
             Connection.StoreSeinInArchipelagoSession();
             Receiver.ReceiveItem(InventoryItem.SpiritFlame);
         }

@@ -4,7 +4,7 @@ using OriBFArchipelago.Core;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace OriBFArchipelago.MapTracker.UI
+namespace OriBFArchipelago.ArchipelagoUI
 {
     [HarmonyPatch]
     internal class PlayerPositionUI : MonoBehaviour
@@ -21,7 +21,7 @@ namespace OriBFArchipelago.MapTracker.UI
             {
                 GameObject guiObject = new GameObject("LocationTextGUI");
                 guiObject.AddComponent<PlayerPositionUI>();
-                Object.DontDestroyOnLoad(guiObject);
+                DontDestroyOnLoad(guiObject);
             }
         }
 

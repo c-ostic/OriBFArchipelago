@@ -1,8 +1,8 @@
 ﻿using BepInEx;
 using HarmonyLib;
+using OriBFArchipelago.ArchipelagoUI;
 using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
-using OriBFArchipelago.MapTracker.UI;
 using OriModding.BF.Core;
 using System;
 using System.Reflection;
@@ -14,7 +14,6 @@ namespace OriBFArchipelago
     {
         private void Awake()
         {
-
             // Plugin startup logic
             ModLogger.Initialize(PluginInfo.PLUGIN_NAME, Logger);
             ModLogger.Info($"Plugin {PluginInfo.PLUGIN_GUID} v{GetAssemblyVersion()} is starting...");

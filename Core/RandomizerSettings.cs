@@ -1,4 +1,5 @@
 ﻿using MonoMod.Utils;
+using OriBFArchipelago.ArchipelagoUI;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -124,10 +125,12 @@ namespace OriBFArchipelago.Core
             }
         }
 
+        public static bool SkipCutscenes => ArchipelagoOptionsScreen.SkipCutscenes;
         public static bool ShowSettings { get; set; }
         public static bool InSaveSelect { get; set; }
         public static bool InGame { get; set; }
         public static int ActiveSaveSlot { get; set; }
+        public static bool SeenInfoMessage => MapTrackerOptionsScreen.SeenTrackerInfoPopup;
 
         public static int Get(RandomizerSetting setting)
         {

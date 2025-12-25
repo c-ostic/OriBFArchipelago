@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
+using OriBFArchipelago.ArchipelagoUI;
 using OriBFArchipelago.MapTracker.Core;
 using OriBFArchipelago.MapTracker.Logic;
-using OriBFArchipelago.MapTracker.UI;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;

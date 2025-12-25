@@ -124,7 +124,9 @@ namespace OriBFArchipelago.Core
                 return true;
             else if (goal == GoalOptions.AllMaps && Type == LocationType.Map)
                 return true;
-            //todo: Check for warth fragments and world tour
+            else if (goal == GoalOptions.WarmthFragments && RandomizerManager.Options.GoalLocations.Contains(Name))
+                return true;
+
             return false;
         }
     }
@@ -153,12 +155,6 @@ namespace OriBFArchipelago.Core
 
             if (loggedInvalidLocations == null)
                 loggedInvalidLocations = new List<MoonGuid>();
-
-            //if (target == null && !loggedInvalidLocations.Any(d => d == moonGuid))
-            //{
-            //    loggedInvalidLocations.Add(moonGuid);
-            //    //ModLogger.Debug($"Invalid location: {moonGuid} - Player position: {Characters.Sein.Position}");
-            //}
 
             return target;
         }
@@ -463,7 +459,7 @@ namespace OriBFArchipelago.Core
             new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000007")), "ProgressiveMap7", WorldArea.Void, LocationType.ProgressiveMap, new Vector2(0.0f, 48.0f)),
             new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000008")), "ProgressiveMap8", WorldArea.Void, LocationType.ProgressiveMap, new Vector2(0.0f, 52.0f)),
             new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000009")), "ProgressiveMap9", WorldArea.Void, LocationType.ProgressiveMap, new Vector2(0.0f, 56.0f)),
-            new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000010")), "Goal", WorldArea.Horu, LocationType.Goal, new Vector2(19,104))           
+            new Location(new MoonGuid(new Guid("00000000-0000-0000-0000-100000000010")), "Goal", WorldArea.Horu, LocationType.Goal, new Vector2(19,104))
         };
     }
 }

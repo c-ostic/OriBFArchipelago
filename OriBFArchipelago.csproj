@@ -11,13 +11,13 @@
   </PropertyGroup>
 
   <PropertyGroup>
-      <PreBuildEvent Condition="'$(ComputerName)' == 'DESKTOP-4FG0L6M'">
-        taskkill /F /IM "oriDE.exe" /T 2>nul || exit /b 0
-      </PreBuildEvent>
-      <PostBuildEvent Condition="'$(ComputerName)' == 'DESKTOP-4FG0L6M'">
-        xcopy "$(TargetDir)OriBFArchipelago.dll" "D:\SteamLibrary\steamapps\common\Ori DE\BepInEx\plugins\OriBFArchipelago\" /Y
-        start "" "D:\SteamLibrary\steamapps\common\Ori DE\oriDE.exe"
-      </PostBuildEvent>
+    <PreBuildEvent Condition="'$(ComputerName)' == 'DESKTOP-BBR42JK'">
+      cmd /c "taskkill /F /IM oriDE.exe /T 2&gt;nul || exit /b 0"
+    </PreBuildEvent>
+    <PostBuildEvent Condition="'$(ComputerName)' == 'DESKTOP-BBR42JK'">
+      xcopy "$(TargetDir)OriBFArchipelago.dll" "E:\SteamLibrary\steamapps\common\Ori DE\BepInEx\plugins\OriBFArchipelago\" /Y
+      start "" "E:\SteamLibrary\steamapps\common\Ori DE\oriDE.exe"
+    </PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Archipelago.MultiClient.Net" Version="6.6.0" />
@@ -27,11 +27,11 @@
     <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
     <PackageReference Include="UnityEngine.Modules" Version="5.3.2" IncludeAssets="compile" />
   </ItemGroup>
-  
+
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>lib\Assembly-CSharp.dll</HintPath>
