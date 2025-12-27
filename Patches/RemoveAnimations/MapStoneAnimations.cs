@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
         [HarmonyPostfix]
         public static void Postfix(MapStone __instance)
         {
-            if (MaptrackerSettings.MapVisibility == MapVisibilityEnum.Visible)
+            if (MaptrackerSettings.MapVisibility == MapVisibilityEnum.Visible && RandomizerSettings.SkipCutscenes)
             {
                 if (__instance.OnOpenedAction == null)
                     return;
