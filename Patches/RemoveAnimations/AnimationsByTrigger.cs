@@ -225,21 +225,25 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("SunStoneExposition", "Exposition at the top of sorrow pass before collecting sunstone", [15], new MoonGuid("-696092440 1113700240 -171193210 -1201469275")),            
             //Mount Horu
             new("HoruIntroduction", "First entry of Mount Horu", [01, 05, 07, 22, 23], new MoonGuid("-182315221 1105231312 1943840650 1813785295")),
-            new("HuroL1Stomp", "Stomp on the platform at door 1", [02,03,4,055,06,07,08,09,10,11,12,13,17,18], new MoonGuid("-1589734316 1113886190 -437311593 899774608")),
-            new("HoruL2RockDrop", "Drop the rock into the lava to stop the flow",[01, 02, 04, 05, 06, 07, 08, 11, 12, 13, 14], new MoonGuid("-885091187 1141805217 1126505132 -234469124")),
-            new("HoruR2RockFall", "Stomp on the switch to drop the block at the end",[02, 03, 08, 09], new MoonGuid("2031988133 1253051438 -1048575855 -1243562809")),
+            
+            
+            
             new("HoruR1DoorEntrance", "Exposition on story when entering door",[04,08,09], new MoonGuid("-1038430429 1234410252 2139859126 -490676512")),
             new("HoruR1DoorEntrance2", "More exposition on story when entering door",[25], new MoonGuid("-91325239 1253403492 1476455557 764231789")),
             new("HoruR1LightRockExposition", "Exposition on the light rocks",[14, 15], new MoonGuid("-303476169 1101394032 20567448 -553215510")),
             new("HoruR1LavaDrain", "Shine light on the rock at the 1rd (from the top) entrance of the left to lower the lava",[02,03,04,05,06,07,08], new MoonGuid("-944003312 1224624697 -191465038 -1871897436")),
             new("HoruR1LavaDrainFinish", "Exposition after dropping the first rock",[02, 04, 07, 08, 09, 10], new MoonGuid("199020531 1138092816 193035928 1030074132")),
+            new("HoruR2RockFall", "Stomp on the switch to drop the block at the end",[02, 03, 08, 09], new MoonGuid("2031988133 1253051438 -1048575855 -1243562809")),
             new("HoruR2LavaDrain", "Lowering of the lava due to actions at the 2nd (from the top) entrance of the right",[02,04,08,09,10,11,13,15,18], new MoonGuid("-1664229988 1269302847 -122889574 398995567")),
             new("HoruR3LavaDrain", "Shine light on the rock at the 3rd (from the top) entrance of the right to lower the lava",[01, 02, 03, 04, 07, 09, 10, 12, 1, 17], new MoonGuid("-496260207 1303555699 578011313 -1827639718")),
             new("HoruR4LavaDrain", "Shine light on the rock at the 4rd (from the top) entrance of the right to lower the lava",[02, 03, 04, 05, 06, 07, 08], new MoonGuid("-237534521 1117446743 1449463690 -1967567174")),
+            new("HuroL1Stomp", "Stomp on the platform at door 1", [02,03,4,055,06,07,08,09,10,11,12,13,17,18], new MoonGuid("-1589734316 1113886190 -437311593 899774608")),
             new("HoruL2LavaDrain", "Lowering of the lava due to actions at the 2nd (from the top) entrance of the left",[02,03,04,08,09,10,11,13,15,18], new MoonGuid("-229872336 1122348114 -600436304 657168478")),
+            new("HoruL2RockDrop", "Drop the rock into the lava to stop the flow",[01, 02, 04, 05, 06, 07, 08, 11, 12, 13, 14], new MoonGuid("-885091187 1141805217 1126505132 -234469124")),
             new("HoruL3LavaDrain", "Shine light on the rock at the 3rd (from the top) entrance of the left to lower the lava",[02, 03, 04, 05, 06, 07, 08], new MoonGuid("-182458660 1303160168 1079892404 1715488948")),
-
-            new("door2lavadrain", "Drains the lava?", [02,03,7,08,09,10,11,12,13,14,15,20], new MoonGuid("-1235656039 1086313701 1258576023 -104497747")),
+            
+            new("door3LavaDrain", "Drains the lava?", [02,03,07,08,09,10,11,12,13,14,15,20], new MoonGuid("-1664229988 1269302847 -1228895074 398995567")),
+            new("door2lavadrain", "Drains the lava?", [02,03,07,08,09,10,11,12,13,14,15,20], new MoonGuid("-1235656039 1086313701 1258576023 -104497747")),
             new("door8lavadrain", "Drains the lava?", [02,03,07,08,09,10,11,12,17], new MoonGuid("1446986356 1324984179 1323541149 1364584793")),
 
             //Doors from top to bottom            
@@ -305,13 +309,22 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             }
             var actionSequenceExt = ActionSequenceExtensions[__instance.MoonGuid];
 
+            //Skipping cutscenes like this skips the trigger for collecting the items for horu escapes.
+            //This works around that to trigger them based on their initially triggered and skipped/altered actionsequence.
+            if (CheckableLocations.ContainsKey(actionSequenceExt.Name)) 
+                RandomizerManager.Connection.CheckLocation(CheckableLocations[actionSequenceExt.Name]);
+
             if (eableHandlingLogging)
             {
                 ModLogger.Debug("==========================================================================================================================================");
-                ModLogger.Debug($"Handeling action removal for trigger: {actionSequenceExt.Name} ({actionSequenceExt.Guid})");
+                ModLogger.Debug($"Handeling action removal for trigger: {actionSequenceExt.Name} ({actionSequenceExt.Guid} - {__instance.name}) ");
                 ModLogger.Debug("==== Before ====");
                 LogActionSequenceActions(__instance);
             }
+
+
+
+
             __instance.Actions = __instance.Actions
                 .Where(d => actionSequenceExt.ActionsToKeep.Any(c => d.name.StartsWith($"{c:00}."))) //First remove all actions we do not wish to take
                  .Select(action =>
@@ -321,9 +334,7 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
                          if (__instance.MoonGuid == new MoonGuid("1621954031 1114090025 1789235899 -1461548696"))
                              return action;
 
-                         if (action.name.Contains("rocksFallingSequence"))
-                             return action;
-                         
+
                          var baseAnimatorAction = (action as BaseAnimatorAction);
                          baseAnimatorAction.Command = BaseAnimatorAction.PlayMode.StopAtEnd;
                          ModLogger.Debug($"{action.name}: Skipping to end");
@@ -344,7 +355,26 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             return true;
         }
 
-     
+
+        internal static Dictionary<string, string> CheckableLocations = new Dictionary<string, string>()
+        {
+            {"HuroL1Stomp", "HoruL1" },            
+            {"HoruL2RockDrop", "HoruL2" },
+            {"HoruL3LavaDrain", "HoruL3" },
+            {"HoruR1LavaDrain", "HoruR1" },
+            {"HoruR2RockFall", "HoruR2" },
+            {"HoruR3LavaDrain", "HoruR3" },            
+            {"HoruR4LavaDrain","HoruR4" }
+        };
+
+        internal static bool IsCheckableLocation(string name)
+        {
+            var checkableLocations = new List<string>()
+            {
+                "HoruR4LavaDrain"
+            };
+            return checkableLocations.Contains(name);
+        }
         internal static void Postfix(ActionSequence __instance)
         {
             if (IgnoredCutscenes.Contains(__instance.MoonGuid))
@@ -369,7 +399,7 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
                 return;
 
             loggedGuids.Add(actionSequence.MoonGuid);
-
+            
             ModLogger.Debug("==========================================================================================================================================");
             if (actionSequence == null)
             {
