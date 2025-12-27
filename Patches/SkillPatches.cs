@@ -62,7 +62,7 @@ namespace OriBFArchipelago.Patches
             var activatePedestalSequenceField = AccessTools.Field(typeof(GetAbilityPedestal), "ActivatePedestalSequence");
 
             var sequence = activatePedestalSequenceField.GetValue(__instance);
-            __instance.StartCoroutine(QuicklyFinishSequence(sequence));
+            __instance.StartCoroutine(QuicklyFinishSequence(sequence, __instance.MoonGuid));
 
             //Show atleast some visuals that the tree is collected
             RunActivateTreeAnimation(__instance);
@@ -79,15 +79,19 @@ namespace OriBFArchipelago.Patches
             component.Target.position = new Vector3(component.Target.position.x, component.Target.position.y + 9, component.Target.position.z);
         }
 
-        private static IEnumerator QuicklyFinishSequence(object sequence)
+        private static IEnumerator QuicklyFinishSequence(object sequence, MoonGuid moonGuid)
         {
             yield return new WaitForSeconds(0.1f);
 
             var actionsField = AccessTools.Field(sequence.GetType(), "Actions");
             var actions = actionsField.GetValue(sequence) as System.Collections.IList;
 
-            // Filter in place - keep only actions containing specified descriptions
-            var filteredActions = actions.Cast<object>().Where(a => a.ToString().Contains("Create Checkpoint Action")).ToList();
+            List<object> filteredActions;
+            // Filter in place - keep only actions containing specified descriptions            
+            if (moonGuid == new MoonGuid("-1569470439 1154065095 1369872519 224313871"))
+                filteredActions = actions.Cast<object>().Where(a => a.ToString().Contains("Create Checkpoint Action") || a.ToString().Contains("Activate trigger") || a.ToString().Contains("Set World Event Action")).ToList();
+            else
+                filteredActions = actions.Cast<object>().Where(a => a.ToString().Contains("Create Checkpoint Action")).ToList();
 
             // Replace original actions with filtered ones
             actions.Clear();
