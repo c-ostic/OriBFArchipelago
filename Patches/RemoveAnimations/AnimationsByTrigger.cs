@@ -116,6 +116,7 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("695661863 1323206629 1326601601 -256484684")), //Mount Huro             
             new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("1852895079 1212385171 -1161000781 2140306541")), //Sorrow Pass
             new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 04, 06, 08, 10, 11,12], new MoonGuid("1990366120 1332263646 -2040573797 -1880444431")), //Blackroot Burrows
+            new("SavePedestalAction","Animation for when saving at a save pedestal", [01, 03, 05, 06, 07, 09, 10], new MoonGuid("663052004 1334758427 1778586036 -1101482814")), //Tree something
             
             //SunkenGlades
             new("InitialSpawn","Cutscene that explains what sunwells do", [1, 4, 5, 10, 11, 14, 15, 16, 17], new MoonGuid("-847281790 1241793475 1080917670 -1990575197")),
@@ -128,7 +129,8 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("SunkenGladesMapStone", "Cutscene that triggers when approaching the mapstone in sunken glades", [15], new MoonGuid("2113839868 1240904231 -2113682503 -2123470106")),
             new("WallJumpSkillTree", "Cutscene that explains what the trees are", [12, 14], new MoonGuid("-1930755400 1341760787 -1205985134 742195902")),
             new("EnergyGate","Cutscene that explains energy gates",[14], new MoonGuid("-1546192206 1296366634 -822821188 -2033193275")),
-
+            new("LeverOn", "Cutscene that lowers the jumpable wall on the far left", [04, 05, 13], new MoonGuid("-1494250536 1294507390 -1910947653 -548245366")),
+            new("LeverOff", "Cutscene that raises the jumpable wall on the far left", [04, 05, 13], new MoonGuid("953145224 1270277616 -1197640557 -1518840670")),
             //Blackroot
             new("BeforeBlackrootStatue", "Cutscene before the statue from sunken glades to blackroot", [11], new MoonGuid("969124513 1142725948 -1552980856 552605659")),
             new("BlackrootStatue", "Cutscene at statue from sunken glades to blackroot", [44], new MoonGuid("746320762 1081963650 1132673183 -2101072877")),
@@ -319,6 +321,9 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
                          if (__instance.MoonGuid == new MoonGuid("1621954031 1114090025 1789235899 -1461548696"))
                              return action;
 
+                         if (action.name.Contains("rocksFallingSequence"))
+                             return action;
+                         
                          var baseAnimatorAction = (action as BaseAnimatorAction);
                          baseAnimatorAction.Command = BaseAnimatorAction.PlayMode.StopAtEnd;
                          ModLogger.Debug($"{action.name}: Skipping to end");
@@ -339,6 +344,7 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             return true;
         }
 
+     
         internal static void Postfix(ActionSequence __instance)
         {
             if (IgnoredCutscenes.Contains(__instance.MoonGuid))
