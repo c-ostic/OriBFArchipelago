@@ -1,5 +1,7 @@
 ﻿using Game;
 using HarmonyLib;
+using JetBrains.Annotations;
+using OriBFArchipelago.ArchipelagoUI;
 using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
 using System;
@@ -17,6 +19,8 @@ namespace OriBFArchipelago.Patches
         {
             try
             {
+                if (!RandomizerSettings.SkipCutscenes)
+                    return true;
                 //SKIP: StartCoroutine(MoveSeinToCenterSmoothly());
                 DropCarryingItem();
                 RestoreHealthAndEnergy();
