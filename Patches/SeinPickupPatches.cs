@@ -125,6 +125,7 @@ namespace OriBFArchipelago.Patches
                 WorldArea currentWorldArea = Characters.Sein.CurrentWorldArea();
                 switch (currentWorldArea)
                 {
+                    case WorldArea.Grove:
                     case WorldArea.Glades:
                         keystoneUsed = InventoryItem.GladesKeyStoneUsed;
                         break;
