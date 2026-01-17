@@ -140,7 +140,6 @@ namespace OriBFArchipelago.Core
                 session.DataStorage[Scope.Slot, MAP_LOCATION_DATA_KEY].Initialize(new string[0]);
                 session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].Initialize(new string[0]);
                 session.DataStorage[Scope.Slot, POSITION_DATA_KEY].Initialize(new float[0]);
-                session.DataStorage[Scope.Slot, SEIN].Initialize(false);
                 session.DataStorage[Scope.Slot, GOAL_LOCATION_DATA_KEY].Initialize(new string[0]);
 
 
@@ -611,17 +610,6 @@ namespace OriBFArchipelago.Core
                     RandomizerMessager.instance.AddMessage(relicMessage.ToString());
                 }));
             }
-        }
-
-        internal void StoreSeinInArchipelagoSession()
-        {
-            Task.Factory.StartNew(() => session.DataStorage[Scope.Slot, SEIN] = true);
-        }
-
-        internal bool IsSeinCollected()
-        {            
-            var sein = session.DataStorage[Scope.Slot, SEIN].To<bool>();
-            return sein;
         }
 
         /// <summary>

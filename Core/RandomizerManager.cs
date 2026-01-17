@@ -266,20 +266,6 @@ namespace OriBFArchipelago.Core
             // Delete slot data
             RandomizerIO.DeleteSaveFile(index);
         }
-
-        internal static void CollectSein()
-        {            
-            Connection.StoreSeinInArchipelagoSession();
-            Receiver.ReceiveItem(InventoryItem.SpiritFlame);
-        }
-
-        internal static bool IsSeinCollected()
-        {
-            if (Connection == null)
-                return false;
-
-            return Connection.IsSeinCollected();
-        }
     }
 
     /**

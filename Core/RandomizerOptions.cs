@@ -1,17 +1,19 @@
 ﻿using Newtonsoft.Json;
 using OriBFArchipelago.MapTracker.Core;
+using OriBFArchipelago.Patches;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OriBFArchipelago.Core
 {
     internal enum GoalOptions
     {
-        AllSkillTrees = 0,
-        AllMaps = 1,
-        WarmthFragments = 2,
-        WorldTour = 3,
-        None = 4
+        None = 0,
+        AllSkillTrees = 1,
+        AllMaps = 2,
+        WarmthFragments = 4,
+        WorldTour = 8
     }
 
     internal enum DifficultyOptions
@@ -46,6 +48,7 @@ namespace OriBFArchipelago.Core
     internal class RandomizerOptions
     {
         public GoalOptions Goal { get; }
+        public bool RequireFinalEscape { get; }
         public int WarmthFragmentsAvailable { get; }
         public int WarmthFragmentsRequired { get; }
         public int RelicCount { get; }
@@ -54,6 +57,7 @@ namespace OriBFArchipelago.Core
         public KeyStoneOptions KeyStoneLogic { get; }
         public MapStoneOptions MapStoneLogic { get; }
         public DeathLinkOptions DeathLinkLogic { get; }
+        public int DeathLinkCount { get; }
         public bool EnableDamageBoost { get; internal set; }
         public bool EnableLure { get; internal set; }
         public bool EnableDoubleBash { get; internal set; }
@@ -63,6 +67,7 @@ namespace OriBFArchipelago.Core
         public bool EnableAirDash { get; internal set; }
         public bool EnableTripleJump { get; internal set; }
         public bool EnableRekindle { get; internal set; }
+        public bool EnableGlitches { get; internal set; }
         public string[] GoalLocations { get; set; }
 
         public RandomizerOptions(Dictionary<string, object> apSlotData)
@@ -71,7 +76,14 @@ namespace OriBFArchipelago.Core
             {
                 if (apSlotData != null)
                 {
-                    Goal = apSlotData.TryGetValue("goal", out object goalOption) ? (GoalOptions)Enum.ToObject(typeof(GoalOptions), goalOption) : GoalOptions.AllSkillTrees;
+                    string[] allGoals = apSlotData.TryGetValue("goal", out object goalOption) ? JsonConvert.DeserializeObject<string[]>(goalOption.ToString()) : [];
+                    Goal = GoalOptions.None;
+                    if (allGoals.Contains("AllSkillTrees")) Goal |= GoalOptions.AllSkillTrees;
+                    if (allGoals.Contains("AllMaps")) Goal |= GoalOptions.AllMaps;
+                    if (allGoals.Contains("WarmthFragments")) Goal |= GoalOptions.WarmthFragments;
+                    if (allGoals.Contains("WorldTour")) Goal |= GoalOptions.WorldTour;
+
+                    RequireFinalEscape = apSlotData.TryGetValue("require_final_escape", out object requireFinalEscape) ? Convert.ToBoolean(requireFinalEscape) : true;
                     WarmthFragmentsAvailable = apSlotData.TryGetValue("warmth_fragments_available", out object warmthFragmentsAvailable) ? Convert.ToInt32(warmthFragmentsAvailable) : 0;
                     WarmthFragmentsRequired = apSlotData.TryGetValue("warmth_fragments_required", out object warmthFragmentsRequired) ? Convert.ToInt32(warmthFragmentsRequired) : 0;
                     RelicCount = apSlotData.TryGetValue("relic_count", out object relicCount) ? Convert.ToInt32(relicCount) : 0;
@@ -80,17 +92,19 @@ namespace OriBFArchipelago.Core
                     KeyStoneLogic = apSlotData.TryGetValue("keystone_logic", out object keystoneOption) ? (KeyStoneOptions)Enum.ToObject(typeof(KeyStoneOptions), keystoneOption) : KeyStoneOptions.Anywhere;
                     MapStoneLogic = apSlotData.TryGetValue("mapstone_logic", out object mapstoneOption) ? (MapStoneOptions)Enum.ToObject(typeof(MapStoneOptions), mapstoneOption) : MapStoneOptions.Anywhere;
                     DeathLinkLogic = apSlotData.TryGetValue("deathlink_logic", out object deathlinkOption) ? (DeathLinkOptions)Enum.ToObject(typeof(DeathLinkOptions), deathlinkOption) : DeathLinkOptions.Disabled;
+                    DeathLinkCount = apSlotData.TryGetValue("deathlink_count", out object deathlinkCount) ? Convert.ToInt32(deathlinkCount) : 1;
 
-                    EnableLure = apSlotData.TryGetValue("enable_lure", out object enable_lure) ? Convert.ToBoolean(enable_lure) : false;
-                    EnableDamageBoost = apSlotData.TryGetValue("enable_damage_boost", out object enable_damage_boost) ? Convert.ToBoolean(enable_damage_boost) : false;
-
-                    EnableDoubleBash = apSlotData.TryGetValue("enable_double_bash", out object enable_double_bash) ? Convert.ToBoolean(enable_double_bash) : false;
-                    EnableGrenadeJump = apSlotData.TryGetValue("enable_grenade_jump", out object enable_grenade_jump) ? Convert.ToBoolean(enable_grenade_jump) : false;
-                    EnableChargeFlame = apSlotData.TryGetValue("enable_charge_flame_burn", out object enable_charge_flame_burn) ? Convert.ToBoolean(enable_charge_flame_burn) : false;
-                    EnableChargeDash = apSlotData.TryGetValue("enable_charge_dash", out object enable_charge_dash) ? Convert.ToBoolean(enable_charge_dash) : false;
-                    EnableAirDash = apSlotData.TryGetValue("enable_air_dash", out object enable_air_dash) ? Convert.ToBoolean(enable_air_dash) : false;
-                    EnableTripleJump = apSlotData.TryGetValue("enable_triple_jump", out object enable_triple_jump) ? Convert.ToBoolean(enable_triple_jump) : false;
-                    EnableRekindle = apSlotData.TryGetValue("enable_rekindle", out object enable_rekindle) ? Convert.ToBoolean(enable_rekindle) : false;
+                    string[] logicModifiers = apSlotData.TryGetValue("logic_modifiers", out object logicModifiersJson) ? JsonConvert.DeserializeObject<string[]>(logicModifiersJson.ToString()) : [];
+                    EnableLure = logicModifiers.Contains("Lure");
+                    EnableDamageBoost = logicModifiers.Contains("DamageBoost");
+                    EnableDoubleBash = logicModifiers.Contains("DoubleBash");
+                    EnableGrenadeJump = logicModifiers.Contains("GrenadeJump");
+                    EnableAirDash = logicModifiers.Contains("AirDash");
+                    EnableChargeDash = logicModifiers.Contains("ChargeDash");
+                    EnableTripleJump = logicModifiers.Contains("TripleJump");
+                    EnableChargeFlame = logicModifiers.Contains("ChargeFlameBurn");
+                    EnableRekindle = logicModifiers.Contains("Rekindle");
+                    EnableGlitches = logicModifiers.Contains("Glitches");
                 }
                 else
                 {
@@ -107,6 +121,7 @@ namespace OriBFArchipelago.Core
             }
             catch(System.Exception ex)
             {
+                Console.WriteLine(ex.ToString());
                 ModLogger.Error($"{ex}");
             }
         }
