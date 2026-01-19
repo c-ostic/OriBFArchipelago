@@ -1,10 +1,37 @@
 ﻿using OriBFArchipelago.Core;
 using OriBFArchipelago.MapTracker.Core;
+using System;
 
 namespace OriBFArchipelago.Helper
 {
     internal static class RandoGuard
     {
+        internal static bool IsFalseWithMessage(bool obj, string message = null)
+        {
+            if (obj == true)
+                return false;
+
+            if (message == null)
+                message = $"{obj} should be set to true";
+
+
+            ModLogger.Info(message);
+            RandomizerMessager.instance.AddMessage(message);
+            return true;
+        }
+        internal static bool IsTrueWithMessage(bool obj, string message = null)
+        {
+            if (obj == false)
+                return false;
+
+            if (message == null)
+                message = $"{obj} should be set to true";
+
+            ModLogger.Info(message);
+            RandomizerMessager.instance.AddMessage(message);
+            return true;
+        }
+
         /// <summary>
         /// Checks whether property is null and if so will return a message that the player can see using RandomizerMessenger.
         /// </summary>

@@ -12,8 +12,8 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
     [HarmonyPatch(typeof(ActionSequence), nameof(ActionSequence.Perform))]
     internal static class ActionSequencePatch
     {
-        private static bool enableLogging = true;
-        private static bool eableHandlingLogging = true;
+        private static bool enableLogging = false;
+        private static bool eableHandlingLogging = false;
         public static List<MoonGuid> loggedGuids { get; set; } = [];
 
 
@@ -226,9 +226,9 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("SunStoneExposition", "Exposition at the top of sorrow pass before collecting sunstone", [15], new MoonGuid("-696092440 1113700240 -171193210 -1201469275")),            
             //Mount Horu
             new("HoruIntroduction", "First entry of Mount Horu", [01, 05, 07, 22, 23], new MoonGuid("-182315221 1105231312 1943840650 1813785295")),
-            
-            
-            
+
+
+
             new("HoruR1DoorEntrance", "Exposition on story when entering door",[04,08,09], new MoonGuid("-1038430429 1234410252 2139859126 -490676512")),
             new("HoruR1DoorEntrance2", "More exposition on story when entering door",[25], new MoonGuid("-91325239 1253403492 1476455557 764231789")),
             new("HoruR1LightRockExposition", "Exposition on the light rocks",[14, 15], new MoonGuid("-303476169 1101394032 20567448 -553215510")),
@@ -242,11 +242,11 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("HoruL2LavaDrain", "Lowering of the lava due to actions at the 2nd (from the top) entrance of the left",[02,03,04,08,09,10,11,13,15,18], new MoonGuid("-229872336 1122348114 -600436304 657168478")),
             new("HoruL2RockDrop", "Drop the rock into the lava to stop the flow",[01, 02, 04, 05, 06, 07, 08, 11, 12, 13, 14], new MoonGuid("-885091187 1141805217 1126505132 -234469124")),
             new("HoruL3LavaDrain", "Shine light on the rock at the 3rd (from the top) entrance of the left to lower the lava",[02, 03, 04, 05, 06, 07, 08], new MoonGuid("-182458660 1303160168 1079892404 1715488948")),
-            
+
             new("door3LavaDrain", "Drains the lava?", [02,03,07,08,09,10,11,12,13,14,15,20], new MoonGuid("-1664229988 1269302847 -1228895074 398995567")),
             new("door2lavadrain", "Drains the lava?", [02,03,07,08,09,10,11,12,13,14,15,20], new MoonGuid("-1235656039 1086313701 1258576023 -104497747")),
             new("door8lavadrain", "Drains the lava?", [02,03,07,08,09,10,11,12,17], new MoonGuid("1446986356 1324984179 1323541149 1364584793")),
-       
+
             new("1. door4LavaDrain", "ASD",[02, 04, 05, 06, 07, 14],new MoonGuid("-920418859 1183339757 90418109 -930667380")),
             new("2. door4LavaDrain", "Drains the lava in the lower left door", [02,03,04,08,13,14,15,16], new MoonGuid("1621954031 1114090025 1789235899 -1461548696")),
 
@@ -288,7 +288,7 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
 
             //Skipping cutscenes like this skips the trigger for collecting the items for horu escapes.
             //This works around that to trigger them based on their initially triggered and skipped/altered actionsequence.
-            if (CheckableLocations.ContainsKey(actionSequenceExt.Name)) 
+            if (CheckableLocations.ContainsKey(actionSequenceExt.Name))
                 RandomizerManager.Connection.CheckLocation(CheckableLocations[actionSequenceExt.Name]);
 
             if (eableHandlingLogging)
@@ -309,11 +309,12 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
                      if (action is BaseAnimatorAction)
                      {
                          if (__instance.MoonGuid == new MoonGuid("1621954031 1114090025 1789235899 -1461548696"))
-                             return action;                         
+                             return action;
 
                          var baseAnimatorAction = (action as BaseAnimatorAction);
                          baseAnimatorAction.Command = BaseAnimatorAction.PlayMode.StopAtEnd;
-                         ModLogger.Debug($"{action.name}: Skipping to end");
+                         if (enableLogging)
+                             ModLogger.Debug($"{action.name}: Skipping to end");
 
                          //Todo: For some reason animatoractions will rerun after a save by the actionsequence, this can cause softlocks like at sein when you walk off the platform and it will attempt to walk you to a specific location.
                          //Figure out why some animations are rerun after a save and stop it from happening.
@@ -335,12 +336,12 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
         internal static Dictionary<string, string> CheckableLocations = new Dictionary<string, string>()
         {
             { "KuroFeather", "GlideSkillFeather"},
-            {"HuroL1Stomp", "HoruL1" },            
+            {"HuroL1Stomp", "HoruL1" },
             {"HoruL2RockDrop", "HoruL2" },
             {"HoruL3LavaDrain", "HoruL3" },
             {"HoruR1LavaDrain", "HoruR1" },
             {"HoruR2RockFall", "HoruR2" },
-            {"HoruR3LavaDrain", "HoruR3" },            
+            {"HoruR3LavaDrain", "HoruR3" },
             {"HoruR4LavaDrain","HoruR4" }
         };
 
@@ -362,7 +363,8 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
 
         internal static IEnumerator PostfixCoroutine(ActionSequence __instance)
         {
-            ModLogger.Debug("Attempting to skip cutscene");
+            if (enableLogging)
+                ModLogger.Debug("Attempting to skip cutscene");
             yield return new WaitForSeconds(0.3f);
             SkipCutsceneController.Instance.SkipCutscene();
         }
@@ -376,7 +378,7 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
                 return;
 
             loggedGuids.Add(actionSequence.MoonGuid);
-            
+
             ModLogger.Debug("==========================================================================================================================================");
             if (actionSequence == null)
             {

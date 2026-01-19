@@ -23,7 +23,7 @@ namespace OriBFArchipelago.Core
         private const float MIN_MESSAGE_DURATION = 2f;
         private const float MAX_MESSAGE_DURATION = 10f;
 
-        public static bool EnableDebug => false; //Enables debug settings; use only for programmers
+        public static bool EnableDebug => false; //Enables debug settings; use only for developers.
 
         private static Dictionary<RandomizerSetting, int> defaultSettings = new Dictionary<RandomizerSetting, int>
         {

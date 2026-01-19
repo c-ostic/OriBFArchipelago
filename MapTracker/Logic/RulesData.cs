@@ -1,5 +1,5 @@
 ﻿// Auto-generated from Python rulesdata.py file
-// Generated on: 2025-07-12 22:17:09
+// Generated on: 2026-01-19 09:54:20
 namespace OriBFArchipelago.MapTracker.Logic
 {
     public class RulesData
@@ -1025,35 +1025,29 @@ namespace OriBFArchipelago.MapTracker.Logic
 				""OuterSwampLowerArea"": {
 				""casual"": [ [ ""Free"" ] ]
 			},
+				""OuterSwampSwarmLedge"": {
+				""standard"": [ [ ""Free"" ] ]
+			},
 				""SwampTeleporter"": {
 				""casual"": [ [ ""Free"" ] ]
 			}
 		},
 			""OuterSwampAbilityCellNook"": {
 				""InnerSwampSkyArea"": {
-				""casual"": [ [ ""None"" ] ],
 				""glitched"": [ [ ""Dash"" ] ]
 			}
 		},
 			""OuterSwampLowerArea"": {
-				""OuterSwampMortarAbilityCellLedge"": {
-				""casual"": [ [ ""Bash"" ] ],
-				""expert"": [ [ ""ChargeDash"" ] ],
-				""master"": [ [ ""WallJump"", ""TripleJump"" ] ]
-			},
-				""OuterSwampUpperArea"": {
+				""OuterSwampSwarmLedge"": {
 				""casual"": [
-				[ ""WallJump"", ""DoubleJump"" ],
-				[ ""Climb"", ""DoubleJump"" ],
-				[ ""ChargeJump"" ],
-				[ ""Bash"", ""Grenade"" ],
-				[ ""Glide"", ""Wind"" ]
-				],
-				""expert"": [
 				[ ""WallJump"" ],
 				[ ""Climb"" ],
-				[ ""ChargeDash"" ]
-				]
+				[ ""Bash"" ],
+				[ ""ChargeJump"" ],
+				[ ""DoubleJump"" ],
+				[ ""Glide"", ""Wind"" ]
+				],
+				""expert"": [ [ ""ChargeDash"", ""EnergyCell:1"" ] ]
 			},
 				""OuterSwampAbilityCellNook"": {
 				""casual"": [
@@ -1066,45 +1060,73 @@ namespace OriBFArchipelago.MapTracker.Logic
 				[ ""Climb"" ]
 				]
 			},
+				""OuterSwampUpperArea"": {
+				""casual"": [
+				[ ""WallJump"", ""DoubleJump"" ],
+				[ ""Climb"", ""DoubleJump"" ],
+				[ ""ChargeJump"" ],
+				[ ""Bash"", ""Grenade"" ],
+				[ ""Glide"", ""Wind"" ]
+				],
+				""expert"": [
+				[ ""WallJump"" ],
+				[ ""Climb"" ],
+				[ ""ChargeDash"", ""EnergyCell:1"" ]
+				]
+			}
+		},
+			""OuterSwampSwarmLedge"": {
 				""OuterSwampMortarPlantAccess"": {
 				""casual"": [
 				[ ""WallJump"", ""DoubleJump"" ],
 				[ ""Climb"", ""DoubleJump"" ],
+				[ ""WallJump"", ""Glide"" ],
+				[ ""Climb"", ""Glide"" ],
 				[ ""Bash"" ],
 				[ ""ChargeJump"" ]
-				]
+				],
+				""standard"": [
+				[ ""DoubleJump"" ],
+				[ ""Glide"" ],
+				[ ""AirDash"" ]
+				],
+				""expert"": [ [ ""Dash"" ] ]
 			},
-				""SwampEntryArea"": {
+				""OuterSwampMortarAbilityCellLedge"": {
 				""casual"": [
-				[ ""WallJump"" ],
-				[ ""Climb"" ],
-				[ ""Bash"" ],
+				[ ""ChargeJump"", ""DoubleJump"" ],
+				[ ""Bash"", ""DoubleJump"" ],
+				[ ""Bash"", ""Grenade"" ]
+				],
+				""standard"": [
 				[ ""ChargeJump"" ],
-				[ ""Glide"", ""Wind"" ],
-				[ ""DoubleJump"" ]
-				]
+				[ ""Bash"" ]
+				],
+				""expert"": [ [ ""ChargeDash"", ""EnergyCell:1"" ] ],
+				""master"": [ [ ""WallJump"", ""TripleJump"" ] ]
 			},
 				""UpperGrotto"": {
 				""casual"": [
 				[ ""WallJump"" ],
 				[ ""Climb"" ],
 				[ ""Bash"" ],
-				[ ""ChargeJump"" ],
-				[ ""Glide"", ""Wind"" ],
-				[ ""DoubleJump"" ]
-				]
+				[ ""ChargeJump"" ]
+				],
+				""expert"": [ [ ""Free"" ] ]
+			},
+				""OuterSwampLowerArea"": {
+				""casual"": [ [ ""Free"" ] ]
+			},
+				""SwampEntryArea"": {
+				""casual"": [ [ ""Free"" ] ]
 			}
 		},
 			""OuterSwampHealthCellWarp"": {
-				""OuterSwampLowerArea"": {
+				""OuterSwampSwarmLedge"": {
 				""casual"": [ [ ""Free"" ] ]
 			}
 		},
 			""OuterSwampMortarAbilityCellLedge"": {
-				""OuterSwampMortarPlantAccess"": {
-				""casual"": [ [ ""None"" ] ],
-				""expert"": [ [ ""ChargeFlame"" ] ]
-			},
 				""UpperGrotto"": {
 				""casual"": [ [ ""Free"" ] ]
 			}
@@ -1390,15 +1412,12 @@ namespace OriBFArchipelago.MapTracker.Logic
 			}
 		},
 			""UpperGrotto"": {
-				""OuterSwampMortarAbilityCellLedge"": {
-				""casual"": [ [ ""ChargeJump"" ] ]
-			},
 				""MoonGrottoStompPlantAccess"": {
 				""casual"": [ [ ""Stomp"" ] ],
 				""standard"": [ [ ""Climb"", ""ChargeJump"" ] ],
 				""master"": [ [ ""Bash"" ] ]
 			},
-				""OuterSwampLowerArea"": {
+				""OuterSwampSwarmLedge"": {
 				""casual"": [
 				[ ""WallJump"" ],
 				[ ""Climb"" ],
@@ -1454,7 +1473,6 @@ namespace OriBFArchipelago.MapTracker.Logic
 				]
 			},
 				""MoonGrottoStompPlantAccess"": {
-				""casual"": [ [ ""None"" ] ],
 				""expert"": [ [ ""ChargeFlame"" ] ]
 			},
 				""MoonGrottoSwampAccessArea"": {
@@ -1474,11 +1492,6 @@ namespace OriBFArchipelago.MapTracker.Logic
 				""casual"": [ [ ""Free"" ] ]
 			},
 				""DeathGauntletRoof"": {
-				""casual"": [ [ ""None"" ] ],
-				""master"": [ [ ""Lure"", ""Bash"" ] ]
-			},
-				""MoonGrottoBelowTeleporter"": {
-				""casual"": [ [ ""None"" ] ],
 				""master"": [ [ ""Lure"", ""Bash"" ] ]
 			}
 		},
@@ -1521,19 +1534,14 @@ namespace OriBFArchipelago.MapTracker.Logic
 				[ ""Climb"", ""ChargeJump"" ],
 				[ ""Bash"", ""Grenade"" ]
 				],
-				""standard"": [ [ ""Dash"" ] ],
-				""expert"": [ [ ""WallJump"" ] ],
-				""master"": [ [ ""Lure"", ""Bash"" ] ]
-			},
-				""MoonGrottoBelowTeleporter"": {
-				""casual"": [
-				[ ""DoubleJump"" ],
-				[ ""ChargeJump"", ""Glide"" ]
-				],
 				""standard"": [
-				[ ""Glide"", ""HealthCell:4"" ],
-				[ ""AirDash"" ]
-				]
+				[ ""WallJump"" ],
+				[ ""Climb"" ],
+				[ ""ChargeJump"" ],
+				[ ""Dash"" ]
+				],
+				""expert"": [ [ ""Free"" ] ],
+				""master"": [ [ ""Lure"", ""Bash"" ] ]
 			}
 		},
 			""Iceless"": {
@@ -1551,8 +1559,6 @@ namespace OriBFArchipelago.MapTracker.Logic
 				],
 				""master"": [ [ ""GrenadeJump"" ] ]
 			}
-		},
-			""MoonGrottoBelowTeleporter"": {
 		},
 			""MoonGrottoSwampAccessArea"": {
 				""InnerSwampAboveDrainArea"": {
@@ -3824,19 +3830,29 @@ namespace OriBFArchipelago.MapTracker.Logic
 		},
 			""LowerSorrow"": {
 				""WilhelmLedge"": {
-				""casual"": [ [ ""Glide"", ""DoubleJump"" ] ],
+				""casual"": [
+				[ ""Glide"", ""DoubleJump"" ],
+				[ ""Glide"", ""Wind"" ]
+				],
+				""standard"": [
+				[ ""Glide"", ""AirDash"" ],
+				[ ""BashGrenade"", ""DoubleJump"" ],
+				[ ""BashGrenade"", ""Glide"" ],
+				[ ""BashGrenade"", ""AirDash"" ]
+				],
 				""expert"": [
-				[ ""Glide"", ""Dash"" ],
-				[ ""Dash"", ""DoubleJump"" ],
 				[ ""Glide"", ""HealthCell:5"" ],
 				[ ""DoubleJump"", ""HealthCell:5"" ],
 				[ ""ChargeDash"", ""EnergyCell:2"" ],
 				[ ""ChargeDash"", ""Stomp"" ],
 				[ ""ChargeDash"", ""Bash"" ],
+				[ ""BashGrenade"", ""HealthCell:5"" ],
 				[ ""DoubleBash"" ]
 				],
 				""master"": [
+				[ ""AirDash"", ""DoubleJump"" ],
 				[ ""Glide"", ""HealthCell:4"", ""UltraDefense"" ],
+				[ ""DoubleJump"", ""HealthCell:4"", ""UltraDefense"" ],
 				[ ""TripleJump"" ]
 				]
 			},
@@ -4620,6 +4636,9 @@ namespace OriBFArchipelago.MapTracker.Logic
 				""casual"": [ [ ""Free"" ] ]
 			},
 				""FronkeyFight"": {
+				""casual"": [ [ ""Free"" ] ]
+			},
+				""Sein"":{
 				""casual"": [ [ ""Free"" ] ]
 			},
 				""GladesKeystone1"": {
@@ -5448,16 +5467,11 @@ namespace OriBFArchipelago.MapTracker.Logic
 			}
 		},
 			""OuterSwampLowerArea"": {
+		},
+			""OuterSwampSwarmLedge"": {
 				""OuterSwampStompExp"": {
-				""casual"": [
-				[ ""WallJump"" ],
-				[ ""Climb"" ],
-				[ ""Bash"" ],
-				[ ""ChargeJump"" ],
-				[ ""DoubleJump"" ],
-				[ ""Glide"", ""Wind"" ]
-				],
-				""expert"": [ [ ""ChargeDash"" ] ]
+				""casual"": [ [ ""CleanWater"" ] ],
+				""standard"": [ [ ""Free"" ] ]
 			},
 				""OuterSwampHealthCell"": {
 				""casual"": [
@@ -5465,8 +5479,11 @@ namespace OriBFArchipelago.MapTracker.Logic
 				[ ""ChargeJump"" ],
 				[ ""Bash"", ""Grenade"" ]
 				],
-				""standard"": [ [ ""Climb"", ""DoubleJump"" ] ],
-				""expert"": [ [ ""ChargeDash"" ] ],
+				""standard"": [ [ ""Climb"", ""DoubleJump"", ""Glide"" ] ],
+				""expert"": [
+				[ ""Climb"", ""DoubleJump"" ],
+				[ ""ChargeDash"", ""EnergyCell:1"" ]
+				],
 				""master"": [
 				[ ""Bash"" ],
 				[ ""DoubleJump"", ""Glide"" ],
@@ -5800,19 +5817,30 @@ namespace OriBFArchipelago.MapTracker.Logic
 				[ ""WallJump"", ""DoubleJump"" ],
 				[ ""Climb"", ""DoubleJump"", ""ChargeJump"" ]
 				],
+				""standard"": [
+				[ ""DoubleJump"", ""AirDash"" ],
+				[ ""Climb"", ""Glide"", ""HealthCell:4"" ],
+				[ ""Climb"", ""DoubleJump"", ""HealthCell:4"" ],
+				[ ""DoubleJump"", ""Glide"", ""HealthCell:4"" ],
+				[ ""Climb"", ""AirDash"", ""HealthCell:4"" ],
+				[ ""WallJump"", ""AirDash"", ""HealthCell:4"" ],
+				[ ""ChargeJump"", ""HealthCell:4"" ]
+				],
 				""expert"": [
 				[ ""Grenade"", ""Bash"" ],
 				[ ""Climb"", ""ChargeJump"" ],
+				[ ""DoubleJump"", ""Dash"" ],
 				[ ""ChargeJump"", ""HealthCell:4"" ],
 				[ ""WallJump"", ""Glide"", ""HealthCell:4"" ],
-				[ ""Climb"", ""Glide"", ""HealthCell:4"" ],
-				[ ""DoubleJump"", ""Glide"", ""HealthCell:4"" ],
+				[ ""DoubleJump"", ""HealthCell:4"" ],
 				[ ""WallJump"", ""HealthCell:7"" ],
-				[ ""Climb"", ""HealthCell:7"" ]
+				[ ""Climb"", ""HealthCell:7"" ],
+				[ ""ChargeDash"", ""HealthCell:4"" ]
 				],
 				""master"": [
 				[ ""Lure"", ""Bash"" ],
-				[ ""DoubleJump"", ""HealthCell:4"" ]
+				[ ""TripleJump"" ],
+				[ ""ChargeDash"" ]
 				]
 			}
 		},
@@ -5836,48 +5864,72 @@ namespace OriBFArchipelago.MapTracker.Logic
 				[ ""EnergyCell:2"", ""Climb"", ""DoubleJump"", ""HealthCell:3"" ],
 				[ ""EnergyCell:2"", ""ChargeDash"" ]
 				]
-			}
-		},
-			""Iceless"": {
-				""IcelessExp"": {
-				""casual"": [ [ ""Free"" ] ]
-			}
-		},
-			""MoonGrottoBelowTeleporter"": {
+			},
 				""BelowGrottoTeleporterHealthCell"": {
 				""casual"": [
 				[ ""DoubleJump"", ""Bash"", ""WallJump"" ],
 				[ ""DoubleJump"", ""Bash"", ""Climb"" ],
 				[ ""ChargeJump"", ""DoubleJump"" ],
-				[ ""ChargeJump"", ""Glide"" ]
+				[ ""ChargeJump"", ""Glide"", ""WallJump"" ],
+				[ ""ChargeJump"", ""Glide"", ""Climb"" ]
 				],
 				""standard"": [
+				[ ""ChargeJump"", ""Glide"" ],
+				[ ""Bash"", ""WallJump"", ""Glide"" ],
+				[ ""Bash"", ""Grenade"" ],
 				[ ""ChargeJump"", ""HealthCell:3"" ],
-				[ ""DoubleJump"", ""Bash"", ""HealthCell:3"" ],
-				[ ""WallJump"", ""Bash"", ""HealthCell:3"" ]
+				[ ""Bash"", ""DoubleJump"", ""HealthCell:3"" ],
+				[ ""Bash"", ""AirDash"", ""WallJump"" ],
+				[ ""Bash"", ""AirDash"", ""Climb"" ],
+				[ ""ChargeJump"", ""AirDash"" ]
 				],
 				""expert"": [
-				[ ""Bash"", ""HealthCell:5"" ],
-				[ ""WallJump"", ""ChargeDash"" ],
-				[ ""Climb"", ""ChargeDash"" ],
-				[ ""ChargeJump"", ""ChargeDash"" ]
+				[ ""DoubleJump"", ""Bash"" ],
+				[ ""WallJump"", ""Bash"", ""HealthCell:6"" ],
+				[ ""ChargeDash"", ""HealthCell:3"" ],
+				[ ""Lure"", ""Bash"", ""Glide"", ""HealthCell:6"" ],
+				[ ""ChargeDash"", ""WallJump"" ],
+				[ ""ChargeDash"", ""Climb"" ],
+				[ ""AirDash"", ""Bash"" ]
 				],
-				""master"": [ [ ""TripleJump"", ""WallJump"" ] ]
+				""master"": [
+				[ ""Bash"", ""ChargeJump"" ],
+				[ ""Bash"", ""Glide"" ],
+				[ ""WallJump"", ""TripleJump"" ]
+				]
 			},
 				""BelowGrottoTeleporterPlant"": {
 				""casual"": [
 				[ ""DoubleJump"", ""ChargeFlame"" ],
-				[ ""Glide"", ""ChargeFlame"" ],
 				[ ""DoubleJump"", ""Grenade"" ],
-				[ ""Glide"", ""Grenade"" ]
+				[ ""ChargeJump"", ""Glide"", ""ChargeFlame"" ],
+				[ ""ChargeJump"", ""Glide"", ""Grenade"" ]
 				],
 				""standard"": [
-				[ ""ChargeFlame"", ""HealthCell:4"" ],
-				[ ""Grenade"", ""HealthCell:4"" ],
+				[ ""WallJump"", ""Glide"", ""ChargeFlame"" ],
+				[ ""WallJump"", ""Glide"", ""Grenade"" ],
+				[ ""Bash"", ""Grenade"" ],
+				[ ""Glide"", ""ChargeFlame"", ""HealthCell:4"" ],
+				[ ""Glide"", ""Grenade"", ""HealthCell:4"" ],
+				[ ""ChargeJump"", ""ChargeFlame"", ""HealthCell:3"" ],
+				[ ""ChargeJump"", ""Grenade"", ""HealthCell:3"" ],
 				[ ""AirDash"", ""ChargeFlame"" ],
 				[ ""AirDash"", ""Grenade"" ]
 				],
-				""expert"": [ [ ""ChargeDash"" ] ]
+				""expert"": [
+				[ ""WallJump"", ""ChargeFlame"", ""HealthCell:6"" ],
+				[ ""WallJump"", ""Grenade"", ""HealthCell:6"" ],
+				[ ""ChargeDash"" ]
+				],
+				""master"": [
+				[ ""Glide"", ""ChargeFlame"" ],
+				[ ""Glide"", ""Grenade"" ]
+				]
+			}
+		},
+			""Iceless"": {
+				""IcelessExp"": {
+				""casual"": [ [ ""Free"" ] ]
 			}
 		},
 			""MoonGrottoSwampAccessArea"": {
@@ -7256,13 +7308,6 @@ namespace OriBFArchipelago.MapTracker.Logic
 				[ ""Dash"", ""DoubleJump"", ""WallJump"" ],
 				[ ""Dash"", ""DoubleJump"", ""Climb"" ]
 				],
-				""master"": [
-				[ ""GrenadeJump"" ],
-				[ ""WallJump"", ""ChargeJump"" ],
-				[ ""Climb"", ""ChargeJump"" ],
-				[ ""WallJump"", ""TripleJump"" ],
-				[ ""Climb"", ""TripleJump"" ]
-				],
 				""expert"": [
 				[ ""Climb"", ""ChargeJump"", ""HealthCell:5"" ],
 				[ ""Climb"", ""DoubleJump"", ""HealthCell:5"" ],
@@ -7270,6 +7315,13 @@ namespace OriBFArchipelago.MapTracker.Logic
 				[ ""WallJump"", ""ChargeJump"", ""HealthCell:5"" ],
 				[ ""ChargeDash"" ],
 				[ ""DoubleBash"" ]
+				],
+				""master"": [
+				[ ""WallJump"", ""ChargeJump"" ],
+				[ ""Climb"", ""ChargeJump"" ],
+				[ ""WallJump"", ""TripleJump"" ],
+				[ ""Climb"", ""TripleJump"" ],
+				[ ""GrenadeJump"" ]
 				]
 			},
 				""SorrowHiddenKeystone"": {

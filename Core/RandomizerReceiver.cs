@@ -153,6 +153,7 @@ namespace OriBFArchipelago.Core
                     case InventoryItem.ChargeJump:
                     case InventoryItem.Dash:
                     case InventoryItem.Grenade:
+                    case InventoryItem.SpiritFlame:
                         ReceiveSkill(itemName); break;
                     case InventoryItem.TPGlades:
                     case InventoryItem.TPGrove:
@@ -192,6 +193,8 @@ namespace OriBFArchipelago.Core
         {
             // first check if it is one of these items which are received internally
             // otherwise the item is from archipelago and should be checked against the onload inventory
+            ModLogger.Debug($"Found item: {item}");
+
             if (localInventoryItems.Contains(item))
             {
                 unsavedInventory.Add(item, count);
