@@ -46,6 +46,8 @@ namespace OriBFArchipelago.Core
         private bool ignoreNextDeath;
         // boolean used to queue a death from death link if player is in menu or cutscene
         private bool queueDeath;
+        // number of current deaths; used for sending death links every x deaths based on options
+        private int currentDeathCount;
 
         public bool Connected { get; private set; }
 
@@ -68,6 +70,10 @@ namespace OriBFArchipelago.Core
 
             deathLinkService = session.CreateDeathLinkService();
             deathLinkService.OnDeathLinkReceived += OnDeathLinkRecieved;
+
+            ignoreNextDeath = false;
+            queueDeath = false;
+            currentDeathCount = 0;
 
             return Connect();
         }
@@ -402,7 +408,13 @@ namespace OriBFArchipelago.Core
             if (RandomizerManager.Options.DeathLinkLogic == DeathLinkOptions.Full ||
                 RandomizerManager.Options.DeathLinkLogic == DeathLinkOptions.Partial && !instakill)
             {
+                currentDeathCount++;
+            }
+
+            if (currentDeathCount >= RandomizerManager.Options.DeathLinkCount)
+            {
                 SendDeathLink();
+                currentDeathCount = 0;
             }
         }
 
