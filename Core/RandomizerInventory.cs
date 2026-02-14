@@ -82,6 +82,9 @@ namespace OriBFArchipelago.Core
         WarmthFragment,
         Relic,
 
+        HealthRegen,
+        EnergyRegen,
+
         EX15,
         EX50,
         EX100,

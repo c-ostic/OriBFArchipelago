@@ -12,16 +12,26 @@ namespace OriBFArchipelago.Core
 {
     public class RandomizerController : MonoBehaviour, ISuspendable
     {
+        // Base rate for regen is once every 60 seconds
+        private const float HEALTH_REGEN_RATE = 1.0f / 60.0f * 4; // 4 health per one health cell
+        private const float ENERGY_REGEN_RATE = 1.0f / 60.0f;
+
         public bool IsSuspended { get; set; }
 
         public static RandomizerController Instance { get; private set; }
 
         private static List<string> tips;
 
+        private double healthRegenTimer;
+        private double energyRegenTimer;
+
         private void Awake()
         {
             SuspensionManager.Register(this);
             Instance = this;
+
+            healthRegenTimer = 0;
+            energyRegenTimer = 0;
         }
 
         private void Start()
@@ -165,6 +175,23 @@ namespace OriBFArchipelago.Core
                 Scenes.Manager.CurrentScene.Scene == "ginsoTreeWaterRisingEnd")
             {
                 Characters.Sein.Position = new Vector3(750f, -120f);
+            }
+
+            if (PlayerHasControl)
+            {
+                if (!Characters.Sein.Mortality.Health.IsFull)
+                {
+                    float healthRegenAmount = Time.deltaTime * HEALTH_REGEN_RATE * RandomizerManager.Receiver.GetItemCount(InventoryItem.HealthRegen);
+                    float newHealth = Math.Min(Characters.Sein.Mortality.Health.MaxHealth, Characters.Sein.Mortality.Health.Amount + healthRegenAmount);
+                    Characters.Sein.Mortality.Health.Amount = newHealth;
+                    Characters.Sein.Mortality.Health.VisualMinAmount = newHealth;
+                }
+
+                if (Characters.Sein.Energy.Current < Characters.Sein.Energy.Max)
+                {
+                    float energyRegenAmount = Time.deltaTime * ENERGY_REGEN_RATE * RandomizerManager.Receiver.GetItemCount(InventoryItem.EnergyRegen);
+                    Characters.Sein.Energy.Gain(energyRegenAmount);
+                }
             }
         }
 
