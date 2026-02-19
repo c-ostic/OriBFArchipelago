@@ -14,7 +14,7 @@ namespace OriBFArchipelago.Patches
                 var isGoalCompleted = RandomizerManager.Connection.IsGoalComplete();
                 if (isGoalCompleted && !RandomizerManager.Options.RequireFinalEscape)
                 {
-                    RandomizerMessager.instance.AddMessage("Goal completed");
+                    RandomizerMessager.instance.AddMessage("Goal completed! Final escape not required");
                     RandomizerManager.Connection.SendCompletion();
                     return false;
                 }

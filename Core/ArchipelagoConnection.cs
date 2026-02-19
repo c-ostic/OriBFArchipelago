@@ -469,32 +469,48 @@ namespace OriBFArchipelago.Core
             if (!Connected)
                 return false;
 
-            bool hasMetGoal = CheckGoalCompletion(out StringBuilder message);
-            if (showCompletionMessage)
-                RandomizerMessager.instance.AddMessage(message.ToString());
-            return hasMetGoal;
+            return CheckGoalCompletion(showCompletionMessage);
         }
 
-        private bool CheckGoalCompletion(out StringBuilder message)
+        private bool CheckGoalCompletion(bool showCompletionMessage)
         {
-            message = new StringBuilder();
+            // Tracks all goals being complete. one incomplete goal will set this false
+            bool goalComplete = true;
 
-            switch (RandomizerManager.Options.Goal)
+            // Tracks that there exists a goal at all
+            bool hasGoal = false;
+
+            if ((RandomizerManager.Options.Goal & GoalOptions.AllSkillTrees) == GoalOptions.AllSkillTrees)
             {
-                case GoalOptions.AllSkillTrees:
-                    return CheckAllSkillTreesGoal(message);
-                case GoalOptions.AllMaps:
-                    return CheckAllMapsGoal(message);
-                case GoalOptions.WarmthFragments:
-                    return CheckWarmthFragmentsGoal(message);
-                case GoalOptions.WorldTour:
-                    return CheckWorldTourGoal(message);
-                default:
-                    return true;
+                goalComplete &= CheckAllSkillTreesGoal(showCompletionMessage);
+                hasGoal = true;
             }
+            if ((RandomizerManager.Options.Goal & GoalOptions.AllMaps) == GoalOptions.AllMaps)
+            {
+                goalComplete &= CheckAllMapsGoal(showCompletionMessage);
+                hasGoal = true;
+            }
+            if ((RandomizerManager.Options.Goal & GoalOptions.WarmthFragments) == GoalOptions.WarmthFragments)
+            {
+                goalComplete &= CheckWarmthFragmentsGoal(showCompletionMessage);
+                hasGoal = true;
+            }
+            if ((RandomizerManager.Options.Goal & GoalOptions.WorldTour) == GoalOptions.WorldTour)
+            {
+                goalComplete &= CheckWorldTourGoal(showCompletionMessage);
+                hasGoal = true;
+            }
+
+            // If hasGoal is still false, then there are no goals to report on
+            if (!hasGoal && showCompletionMessage)
+            {
+                RandomizerMessager.instance.AddMessage("No goal is required. Make your way to the final escape.");
+            }
+
+            return goalComplete;
         }
 
-        private bool CheckAllSkillTreesGoal(StringBuilder message)
+        private bool CheckAllSkillTreesGoal(bool showCompletionMessage)
         {
             int countTrees = 0;
             List<string> uncheckedTrees = new List<string>();
@@ -511,12 +527,16 @@ namespace OriBFArchipelago.Core
                 }
             }
 
-            AppendSkillTreesMessage(message, countTrees, uncheckedTrees);
+            if (showCompletionMessage)
+            {
+                SendSkillTreesMessage(countTrees, uncheckedTrees);
+            }
             return uncheckedTrees.Count == 0;
         }
 
-        private void AppendSkillTreesMessage(StringBuilder message, int countTrees, List<string> uncheckedTrees)
+        private void SendSkillTreesMessage(int countTrees, List<string> uncheckedTrees)
         {
+            StringBuilder message = new StringBuilder();
             message.Append($"{countTrees} out of 10 trees checked. \n");
             if (uncheckedTrees.Count > 0)
             {
@@ -526,10 +546,12 @@ namespace OriBFArchipelago.Core
                     message.Append(tree).Append(", ");
                 }
                 message.Remove(message.Length - 2, 2); // remove last comma
+                message.Append(". \n");
             }
+            RandomizerMessager.instance.AddMessage(message.ToString());
         }
 
-        private bool CheckAllMapsGoal(StringBuilder message)
+        private bool CheckAllMapsGoal(bool showCompletionMessage)
         {
             int countMaps = 0;
             List<string> uncheckedMaps = new List<string>();
@@ -546,12 +568,16 @@ namespace OriBFArchipelago.Core
                 }
             }
 
-            AppendMapsMessage(message, countMaps, uncheckedMaps);
+            if (showCompletionMessage)
+            {
+                SendMapsMessage(countMaps, uncheckedMaps);
+            }
             return uncheckedMaps.Count == 0;
         }
 
-        private void AppendMapsMessage(StringBuilder message, int countMaps, List<string> uncheckedMaps)
+        private void SendMapsMessage(int countMaps, List<string> uncheckedMaps)
         {
+            StringBuilder message = new StringBuilder();
             message.Append($"{countMaps} out of 9 maps checked. \n");
             if (uncheckedMaps.Count > 0)
             {
@@ -561,10 +587,12 @@ namespace OriBFArchipelago.Core
                     message.Append(map).Append(", ");
                 }
                 message.Remove(message.Length - 2, 2); // remove last comma
+                message.Append(". \n");
             }
+            RandomizerMessager.instance.AddMessage(message.ToString());
         }
 
-        private bool CheckWarmthFragmentsGoal(StringBuilder message)
+        private bool CheckWarmthFragmentsGoal(bool showCompletionMessage)
         {
             int collectedWarmthFragments = RandomizerManager.Receiver.GetItemCount(InventoryItem.WarmthFragment);
             int requiredWarmthFragments = RandomizerManager.Options.WarmthFragmentsRequired;
@@ -572,20 +600,25 @@ namespace OriBFArchipelago.Core
 
             bool goalComplete = collectedWarmthFragments >= requiredWarmthFragments;
 
-            AppendWarmthFragmentsMessage(message, collectedWarmthFragments, requiredWarmthFragments, availableWarmthFragments, goalComplete);
+            if (showCompletionMessage)
+            {
+                SendWarmthFragmentsMessage(collectedWarmthFragments, requiredWarmthFragments, availableWarmthFragments, goalComplete);
+            }
             return goalComplete;
         }
 
-        private void AppendWarmthFragmentsMessage(StringBuilder message, int collected, int required, int available, bool goalComplete)
+        private void SendWarmthFragmentsMessage(int collected, int required, int available, bool goalComplete)
         {
+            StringBuilder message = new StringBuilder();
             message.Append($"Collected {collected} out of {required} warmth fragments needed. \n");
             if (!goalComplete)
             {
-                message.Append($"{available - collected} remain in multiworld");
+                message.Append($"{available - collected} remain in multiworld. \n");
             }
+            RandomizerMessager.instance.AddMessage(message.ToString());
         }
 
-        private bool CheckWorldTourGoal(StringBuilder message)
+        private bool CheckWorldTourGoal(bool showCompletionMessage)
         {
             int collectedRelics = RandomizerManager.Receiver.GetItemCount(InventoryItem.Relic);
             int requiredRelics = RandomizerManager.Options.RelicCount;
@@ -593,35 +626,39 @@ namespace OriBFArchipelago.Core
 
             bool goalComplete = collectedRelics >= requiredRelics;
 
-            AppendWorldTourMessage(message, collectedRelics, requiredRelics, relicAreas, goalComplete);
+            if (showCompletionMessage)
+            {
+                SendWorldTourMessage(collectedRelics, requiredRelics, relicAreas, goalComplete);
+            }
             return goalComplete;
         }
 
-        private void AppendWorldTourMessage(StringBuilder message, int collected, int required, WorldArea[] relicAreas, bool goalComplete)
+        private void SendWorldTourMessage(int collected, int required, WorldArea[] relicAreas, bool goalComplete)
         {
-            message.Append($"Collected {collected} out of {required} relics.");
-
-            if (!goalComplete)
+            Task.Factory.StartNew(() =>
+            session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].GetAsync<string[]>(x =>
             {
-                Task.Factory.StartNew(() =>
-                session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].GetAsync<string[]>(x =>
-                {
-                    StringBuilder relicMessage = new StringBuilder();
+                StringBuilder message = new StringBuilder();
 
-                    relicMessage.Append($"Remaining relics can be found in ");
+                message.Append($"Collected {collected} out of {required} relics. \n");
+
+                if (!goalComplete)
+                {
+                    message.Append($"Remaining relics can be found in ");
                     foreach (WorldArea area in relicAreas)
                     {
                         string[] areas = x;
                         if (!areas.Contains(area.ToString()))
                         {
-                            relicMessage.Append(area).Append(", ");
+                            message.Append(area).Append(", ");
                         }
                     }
-                    relicMessage.Remove(relicMessage.Length - 2, 2); // remove last comma
+                    message.Remove(message.Length - 2, 2); // remove last comma
+                    message.Append(". \n");
+                }
 
-                    RandomizerMessager.instance.AddMessage(relicMessage.ToString());
-                }));
-            }
+                RandomizerMessager.instance.AddMessage(message.ToString());
+            }));
         }
 
         /// <summary>

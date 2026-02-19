@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace OriBFArchipelago.Core
 {
+    [Flags]
     internal enum GoalOptions
     {
         None = 0,
