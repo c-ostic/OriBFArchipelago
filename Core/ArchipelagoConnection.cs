@@ -517,7 +517,7 @@ namespace OriBFArchipelago.Core
 
             foreach (string goalLocation in skillTreeLocations)
             {
-                if (!RandomizerManager.Receiver.IsLocationChecked(goalLocation))
+                if (!RandomizerManager.Receiver.IsLocationChecked(goalLocation, true, true))
                 {
                     uncheckedTrees.Add(goalLocation);
                 }
@@ -558,7 +558,7 @@ namespace OriBFArchipelago.Core
 
             foreach (string goalLocation in mapLocations)
             {
-                if (!RandomizerManager.Receiver.IsLocationChecked(goalLocation))
+                if (!RandomizerManager.Receiver.IsLocationChecked(goalLocation, true, true))
                 {
                     uncheckedMaps.Add(goalLocation);
                 }

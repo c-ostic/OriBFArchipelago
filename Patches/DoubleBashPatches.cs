@@ -99,7 +99,7 @@ namespace OriBFArchipelago.Patches
         private static void Postfix()
         {
             // Queue a double bash if the setting is enabled, the button is pressed, and a double bash wasn't previously queued
-            if (RandomizerSettings.Get(RandomizerSetting.DoubleBashAssist) == 1 && 
+            if (RandomizerSettings.DoubleBashAssist && 
                 Keybinder.IsPressed(KeybindAction.DoubleBash) && 
                 !LocalGameState.WasDoubleBashQueued)
             {
@@ -125,7 +125,7 @@ namespace OriBFArchipelago.Patches
         {
             // If Bash Tap is enabled and the button is pressed, end the bash game
             if (!Input.Bash.Released &&
-                (RandomizerSettings.Get(RandomizerSetting.BashTap) == 1 &&
+                (RandomizerSettings.DoubleBashTap &&
                 Keybinder.OnPressed(KeybindAction.DoubleBash)))
             {
                 AccessTools.TypeByName("BashAttackGame").GetMethod("GameFinished", AccessTools.allDeclared)

@@ -22,7 +22,7 @@ namespace OriBFArchipelago.Patches
             bool grenadeJumpPressed = false;
             bool grenadeJumpHeld = false;
             // only enable grenade jump if the assist is enabled
-            if (RandomizerSettings.Get(RandomizerSetting.GrenadeJumpAssist) == 1)
+            if (RandomizerSettings.GrenadeJumpAssist)
             {
                 grenadeJumpPressed = Keybinder.OnPressed(KeybindAction.GrenadeJump);
                 grenadeJumpHeld = Keybinder.IsPressed(KeybindAction.GrenadeJump);

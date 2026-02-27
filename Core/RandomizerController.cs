@@ -22,16 +22,10 @@ namespace OriBFArchipelago.Core
 
         private static List<string> tips;
 
-        private double healthRegenTimer;
-        private double energyRegenTimer;
-
         private void Awake()
         {
             SuspensionManager.Register(this);
             Instance = this;
-
-            healthRegenTimer = 0;
-            energyRegenTimer = 0;
         }
 
         private void Start()

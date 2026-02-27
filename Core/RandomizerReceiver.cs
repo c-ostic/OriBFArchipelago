@@ -305,6 +305,7 @@ namespace OriBFArchipelago.Core
                 }
             }
 
+            SyncArchipelagoCheckedLocations(RandomizerManager.Connection.GetArchipelagoCheckedLocations());
             RandomizerIO.WriteSaveFile(saveSlot, savedInventory, checkedLocations);
             Resync();
         }
