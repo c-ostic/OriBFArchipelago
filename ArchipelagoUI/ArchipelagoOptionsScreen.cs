@@ -50,7 +50,7 @@ namespace OriBFArchipelago.ArchipelagoUI
                 ModLogger.Debug("Setting up UI components");
                 AddToggle(_skipCutscenes, "Skip cutscenes", "Will skip nearly all cutscenes and remove the forced slow walk towards cutscenes.");
                 AddToggle(_doubleBashAssist, "Double Bash Assist", "Enables a keybind to help perform a double bash trick.");
-                AddToggle(_doubleBashTap, "Double Bash Tap", "When enabled, <need to review>");
+                AddToggle(_doubleBashTap, "Double Bash Tap", "When enabled, tapping the Double Bash keybind instantly transitions to the second bash.");
                 AddToggle(_grenadeJumpAssist, "Grenade Jump Assist", "Enables a keybind to help perform a grenade jump trick.");
                 AddMultiToggle(_messagerState, "Messager State", "All: Show all AP messages.\nLocal: Only show messages that relate to this game.\nNone: Show no messages.", Enum.GetNames(typeof(RandomizerMessager.MessagerState)));
                 AddSlider(_messageDuration, "Message Duration", 2f, 10f, 1f, "How long messages appear on screen.\nMin: 2 seconds\nMax: 10 seconds");
