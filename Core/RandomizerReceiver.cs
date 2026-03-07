@@ -153,6 +153,7 @@ namespace OriBFArchipelago.Core
                     case InventoryItem.ChargeJump:
                     case InventoryItem.Dash:
                     case InventoryItem.Grenade:
+                    case InventoryItem.SpiritFlame:
                         ReceiveSkill(itemName); break;
                     case InventoryItem.TPGlades:
                     case InventoryItem.TPGrove:
@@ -192,6 +193,8 @@ namespace OriBFArchipelago.Core
         {
             // first check if it is one of these items which are received internally
             // otherwise the item is from archipelago and should be checked against the onload inventory
+            ModLogger.Debug($"Found item: {item}");
+
             if (localInventoryItems.Contains(item))
             {
                 unsavedInventory.Add(item, count);
@@ -302,6 +305,7 @@ namespace OriBFArchipelago.Core
                 }
             }
 
+            SyncArchipelagoCheckedLocations(RandomizerManager.Connection.GetArchipelagoCheckedLocations());
             RandomizerIO.WriteSaveFile(saveSlot, savedInventory, checkedLocations);
             Resync();
         }
@@ -356,19 +360,6 @@ namespace OriBFArchipelago.Core
             Sein.World.Keys.MountHoru = savedInventory.Get(InventoryItem.HoruKey) >= 1;
             Sein.World.Events.WaterPurified = savedInventory.Get(InventoryItem.CleanWater) >= 1;
             Sein.World.Events.WindRestored = savedInventory.Get(InventoryItem.Wind) >= 1;
-
-            if (savedInventory.Get(InventoryItem.SpiritFlame) == 0 && Characters.Sein.PlayerAbilities.SpiritFlame.HasAbility)
-            {  //todo: this is temporary to be backwards compatible with v0.3.2
-                ModLogger.Debug("Collecting sein based on compatibilty");
-                RandomizerManager.CollectSein();
-            }
-
-            if (savedInventory.Get(InventoryItem.SpiritFlame) == 0 && RandomizerManager.IsSeinCollected())
-            {   //Failsafe untill sein is properly included in randomizer
-                savedInventory.Add(InventoryItem.SpiritFlame, 1);
-                RandomizerManager.CollectSein();
-                ModLogger.Debug("Collecting sein based on session data");
-            }
 
             foreach (InventoryItem skillName in RandomizerInventory.skills)
             {

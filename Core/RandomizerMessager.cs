@@ -20,6 +20,13 @@ namespace OriBFArchipelago.Core
 
         public static RandomizerMessager instance;
 
+        public enum MessagerState
+        {
+            None = 0,
+            Local = 1,
+            All = 2
+        }
+
         public class RandomizerMessage
         {
             public string message;
@@ -130,9 +137,9 @@ namespace OriBFArchipelago.Core
 
         public void AddMessage(string message)
         {
-            if (RandomizerSettings.Get(RandomizerSetting.MessagerState) != 0)
+            if (RandomizerSettings.MessageState != MessagerState.None)
             {
-                messageQueue.Enqueue(new RandomizerMessage(message, RandomizerSettings.Get(RandomizerSetting.MessageDuration)));
+                messageQueue.Enqueue(new RandomizerMessage(message, RandomizerSettings.MessageDuration));
                 latestMessagesQueue.Enqueue(new RandomizerMessage(message,float.MaxValue));
             }
         }
@@ -168,7 +175,7 @@ namespace OriBFArchipelago.Core
 
                 // always show the message if in verbose mode
                 // or, if not verbose, check for a player message part with the active player
-                if (RandomizerSettings.Get(RandomizerSetting.MessagerState) == 2 ||
+                if (RandomizerSettings.MessageState == MessagerState.All ||
                     part is PlayerMessagePart && ((PlayerMessagePart)part).IsActivePlayer)
                 {
                     showMessage = true;

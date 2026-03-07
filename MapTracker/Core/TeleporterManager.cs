@@ -1,4 +1,5 @@
 ﻿using Game;
+using OriBFArchipelago.ArchipelagoUI;
 using OriBFArchipelago.Core;
 using OriBFArchipelago.Helper;
 using OriBFArchipelago.MapTracker.Model;
@@ -12,10 +13,9 @@ namespace OriBFArchipelago.MapTracker.Core
     internal static class TeleporterManager
     {
         private static List<Teleporter> _teleporters;
-        private static Teleporter _lastUsedTeleporter;
-
         private static Vector3 _startingLocation = new Vector3(189, -219, 0);
-
+        private static Teleporter _teleporterObj;
+        private static GameMapTeleporter _gameTeleporterObj;
         public static Vector3 StartingLocationCoordinates
         {
             get { return _startingLocation; }
@@ -49,7 +49,6 @@ namespace OriBFArchipelago.MapTracker.Core
         {
             try
             {
-
                 if (!CanTeleport())
                     return;
 
@@ -67,7 +66,7 @@ namespace OriBFArchipelago.MapTracker.Core
 
         public static Teleporter GetLastTeleporter()
         {
-            return _lastUsedTeleporter;
+            return _teleporterObj;
         }
         public static void SetLastTeleporter(GameMapTeleporter gameMapTeleporter)
         {
@@ -80,7 +79,9 @@ namespace OriBFArchipelago.MapTracker.Core
                 if (RandoGuard.IsNull(teleporter, $"Failed to find teleporter with identifier:{gameMapTeleporter.Identifier}"))
                     return;
 
-                _lastUsedTeleporter = teleporter;
+                ArchipelagoOptionsScreen.LastUsedTeleporter = teleporter.GameIdentifier;
+                _teleporterObj = teleporter;
+                _gameTeleporterObj = gameMapTeleporter;
             }
             catch (Exception ex)
             {
@@ -88,16 +89,29 @@ namespace OriBFArchipelago.MapTracker.Core
             }
         }
 
+        public static void SetLastTeleporter(string identifier)
+        {
+            var teleporterObj = Teleporters.FirstOrDefault(d => d.GameIdentifier == identifier);
+            var gameTeleporterObj = TeleporterController.Instance.Teleporters.FirstOrDefault(d => d.Identifier == identifier);
+            if (teleporterObj != null && gameTeleporterObj != null && gameTeleporterObj.Activated)
+            {
+                _teleporterObj = teleporterObj;
+                _gameTeleporterObj = gameTeleporterObj;
+            }
+        }
+
         internal static void TeleportToLastTeleporter()
         {
+            if (_gameTeleporterObj == null)
+                return;
+
             if (!CanTeleport())
                 return;
 
-            if (RandoGuard.IsNullWithMessage(_lastUsedTeleporter, "You haven't used a teleporter yet in this seession."))
+            if (RandoGuard.IsNullWithMessage(ArchipelagoOptionsScreen.LastUsedTeleporter, "You haven't used a teleporter yet."))
                 return;
 
-            var teleporter = TeleporterController.Instance.Teleporters.FirstOrDefault(d => d.Identifier == _lastUsedTeleporter.GameIdentifier);
-            StartTeleport(teleporter);
+            StartTeleport(_gameTeleporterObj);
         }
 
 

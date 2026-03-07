@@ -19,6 +19,7 @@ namespace OriBFArchipelago.Core
             {
                 // Horu Fixes
                 ["mountHoruHubMid"] = BootstrapMountHoruHubMid,
+                ["mountHoruLaserPuzzle"] = BootstrapMountHoruLaserPuzzle,
 
                 // Valley Fixes
                 ["valleyOfTheWindBackground"] = BootstrapValleyOfTheWindBackground,
@@ -39,9 +40,13 @@ namespace OriBFArchipelago.Core
                 // Grotto Fixes
                 ["moonGrottoRopeBridge"] = BootstrapGrottoRopeBridge,
                 ["moonGrottoGumosHideoutB"] = BootstrapGumosHideoutB,
+                ["thornfeltSwampB"] = BootstrapThronfeltSwampB,
 
                 // Grove Fixes
-                ["spiritTreeRefined"] = BootstrapSpiritTreeRefined
+                ["spiritTreeRefined"] = BootstrapSpiritTreeRefined,
+
+                // Misty Fixes
+                ["mistyWoodsRopeBridge"] = BootstrapMistyWoodsRopeBridge
             };
         }
 
@@ -146,6 +151,31 @@ namespace OriBFArchipelago.Core
             doorSequence.Actions.Insert(3, conditionPickupAction);
             ActionSequence.Rename(doorSequence.Actions);
         }
+        
+        private static void BootstrapMountHoruLaserPuzzle(SceneRoot sceneRoot)
+        {
+            // Make the laser puzzle lasers turn off when location HoruR4 is collected
+            // Need to find all components because *for some reason* there are multiple lasers named the same exact thing
+            Component[] laserComponents = sceneRoot.transform.GetComponentsInChildren(typeof(BlockableLaser));
+
+            foreach (Component laserComponent in laserComponents)
+            {
+                GameObject laser = laserComponent.gameObject;
+                BlockableLaser blockableLaser = laser.GetComponent<BlockableLaser>();
+
+                ActivateLaserAction action = laser.AddComponent<ActivateLaserAction>();
+                action.Laser = blockableLaser;
+                action.ShouldActivate = false;
+
+                CheckedLocationCondition condition = laser.AddComponent<CheckedLocationCondition>();
+                condition.Location = "HoruR4";
+
+                TriggerWithCondition trigger = laser.AddComponent<TriggerWithCondition>();
+                trigger.Action = action;
+                trigger.Condition = condition;
+            }
+        }
+
         #endregion
 
         #region Ginso Fixes
@@ -401,6 +431,17 @@ namespace OriBFArchipelago.Core
             SetGrottoBridgeFallingAction fallingAction = InsertAction<SetGrottoBridgeFallingAction>(landSequence, 0, new MoonGuid(-1289139173, 680722594, 558787458, 1729657922), sceneRoot);
             fallingAction.IsTrue = false;
         }
+
+        private static void BootstrapThronfeltSwampB(SceneRoot sceneRoot)
+        {
+            GameObject doorSetup = sceneRoot.transform.Find("*gumoMortarsSetup/bombableSolidWallSetup").gameObject;
+            GameObject door = sceneRoot.transform.Find("*gumoMortarsSetup/bombableSolidWallSetup/bombableSolidWall").gameObject;
+            ActivateBasedOnCondition doorActivator = doorSetup.AddComponent<ActivateBasedOnCondition>();
+            ConstantCondition doorCondition = doorSetup.AddComponent<ConstantCondition>();
+            doorActivator.Condition = doorCondition;
+            doorActivator.Target = door;
+            doorCondition.IsTrue = false;
+        }
         #endregion
 
         #region Grove Fixes
@@ -409,6 +450,29 @@ namespace OriBFArchipelago.Core
             // Unlike most other pickups, which are permanent placeholders that spawn an object with a DestroyOnRestoreCheckpoint component,
             // this one is *just* an object with a DestroyOnRestoreCheckpoint component. Disable that to prevent its untimely demise.
             sceneRoot.transform.FindChild("mediumExpOrb").GetComponent<DestroyOnRestoreCheckpoint>().enabled = false;
+        }
+        #endregion
+
+        //mistyWoodsRopeBridge/*fallenTree
+        #region Misty Fixes
+        private static void BootstrapMistyWoodsRopeBridge(SceneRoot sceneRoot)
+        {
+            // Make the fallen tree only disappear once the mist has lifted
+            GameObject deactivateFallenTree = sceneRoot.transform.Find("*deactivateFallenTree").gameObject;
+            GameObject fallenTree = sceneRoot.transform.Find("*fallenTree").gameObject;
+
+            // destroy the existing trigger
+            UnityEngine.GameObject.Destroy(deactivateFallenTree.GetComponentInChildren<PlayerCollisionTrigger>().gameObject);
+
+            // set a new condition based upon the world state
+            SeinWorldStateCondition condition = deactivateFallenTree.AddComponent<SeinWorldStateCondition>();
+            condition.State = WorldState.MistLifted;
+            condition.IsTrue = true;
+
+            ActivateBasedOnCondition activator = deactivateFallenTree.AddComponent<ActivateBasedOnCondition>();
+            activator.Activate = false;
+            activator.Condition = condition;
+            activator.Target = fallenTree;
         }
         #endregion
     }
@@ -515,6 +579,16 @@ namespace OriBFArchipelago.Core
         public override void Perform(IContext context)
         {
             RandomizerManager.Connection.CheckLocation(Location);
+        }
+    }
+
+    public class CheckedLocationCondition : Condition
+    {
+        public string Location = "";
+
+        public override bool Validate(IContext context)
+        {
+            return RandomizerManager.Receiver.IsLocationChecked(Location, true);
         }
     }
 }
