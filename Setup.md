@@ -57,6 +57,6 @@ This prevents all other input into the game. Press "Done" when complete.
   - Make sure you acquire Sein and activate the first Teleporter before teleporting for the first time
   - You can freely teleport out of the Ginso escape sequence and come back to it later
   - You can freely teleport out of the Forlorn escape sequence. You won't be able to complete it later, but there aren't any checks besides starting the escape
-  - *Don't* teleport about of the Horu escape sequence if you can avoid it. This is a known issue. If you need to, try to do so at the beginning of the sequence. Otherwise, you may softlock yourself
+  - *Don't* teleport out of the Horu escape sequence if you can avoid it. This is a known issue. If you need to, try to do so at the beginning of the sequence. Otherwise, you may softlock yourself
 
 - Keybinds (including `Alt-T` to teleport) can be changed in the Keybinds.txt file. More information about this can be found [here](Keybinds.md)
