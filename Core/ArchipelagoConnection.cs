@@ -472,6 +472,68 @@ namespace OriBFArchipelago.Core
             return CheckGoalCompletion(showCompletionMessage);
         }
 
+        /// <summary>
+        /// Builds a human-readable, multi-line summary of the current goal progress.
+        /// Read-only: unlike <see cref="IsGoalComplete"/> this never pushes messages,
+        /// so it is safe to poll every frame (e.g. from the map overlay).
+        /// </summary>
+        public List<string> GetGoalProgressLines()
+        {
+            List<string> lines = new List<string>();
+
+            if (RandomizerManager.Options == null || RandomizerManager.Receiver == null)
+                return lines;
+
+            GoalOptions goal = RandomizerManager.Options.Goal;
+            bool hasGoal = false;
+
+            if ((goal & GoalOptions.AllSkillTrees) == GoalOptions.AllSkillTrees)
+            {
+                hasGoal = true;
+                AppendLocationGoal(lines, "Skill Trees", skillTreeLocations);
+            }
+            if ((goal & GoalOptions.AllMaps) == GoalOptions.AllMaps)
+            {
+                hasGoal = true;
+                AppendLocationGoal(lines, "Maps", mapLocations);
+            }
+            if ((goal & GoalOptions.WarmthFragments) == GoalOptions.WarmthFragments)
+            {
+                hasGoal = true;
+                int collected = RandomizerManager.Receiver.GetItemCount(InventoryItem.WarmthFragment);
+                int required = RandomizerManager.Options.WarmthFragmentsRequired;
+                int available = RandomizerManager.Options.WarmthFragmentsAvailable;
+                lines.Add($"Warmth Fragments: {collected}/{required}");
+                if (collected < required)
+                    lines.Add($"   {available - collected} remain in the multiworld");
+            }
+            if ((goal & GoalOptions.WorldTour) == GoalOptions.WorldTour)
+            {
+                hasGoal = true;
+                int collected = RandomizerManager.Receiver.GetItemCount(InventoryItem.Relic);
+                int required = RandomizerManager.Options.RelicCount;
+                lines.Add($"Relics: {collected}/{required}");
+            }
+
+            if (!hasGoal)
+                lines.Add("No goal required - reach the final escape.");
+
+            return lines;
+        }
+
+        private void AppendLocationGoal(List<string> lines, string label, List<string> goalLocations)
+        {
+            List<string> missing = goalLocations
+                .Where(loc => !RandomizerManager.Receiver.IsLocationChecked(loc, true, true))
+                .ToList();
+
+            int collected = goalLocations.Count - missing.Count;
+            lines.Add($"{label}: {collected}/{goalLocations.Count}");
+
+            if (missing.Count > 0)
+                lines.Add($"   Missing: {string.Join(", ", missing.ToArray())}");
+        }
+
         private bool CheckGoalCompletion(bool showCompletionMessage)
         {
             // Tracks all goals being complete. one incomplete goal will set this false
