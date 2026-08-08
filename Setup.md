@@ -45,10 +45,7 @@
 
 5. Fill out the server name, port, slot name, and (optional) password in the upper left text boxes
 
-6. If you are having problems with the game's UI moving as you type, press the "Edit" button. 
-This prevents all other input into the game. Press "Done" when complete.
-
-7. Start the profile and begin playing!
+6. Start the profile and begin playing!
 
 # Additional Notes
 - You can access the APWorld that goes along with this mod [here](https://github.com/c-ostic/Archipelago/releases)
