@@ -3,21 +3,17 @@ using OriBFArchipelago.MapTracker.Core;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using CoreInput = Core.Input;
 
 namespace OriBFArchipelago.ArchipelagoUI
 {
     /// <summary>
     /// World-map panel that lists every Archipelago setting selected in the yaml
-    /// (the parsed <see cref="RandomizerOptions"/>). Toggled with the right bumper
-    /// (or F6); shown in the bottom-right.
+    /// (the parsed <see cref="RandomizerOptions"/>). Toggled with the X button (both
+    /// info panels together) or F6; shown in the bottom-right.
     /// </summary>
     internal class ApSettingsPanel : MapPanel
     {
-        public override string HintLabel => "Settings";
-        public override string ControllerIcon => "<icon>S</>"; // Right Shoulder
         public override KeyCode ToggleKey => KeyCode.F6;
-        public override CoreInput.InputButtonProcessor ToggleButton => CoreInput.RightShoulder;
         public override bool AnchorBottomRight => true;
         public override string Title => "AP Settings";
 

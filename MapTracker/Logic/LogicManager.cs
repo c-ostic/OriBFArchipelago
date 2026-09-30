@@ -39,13 +39,7 @@ namespace OriBFArchipelago.MapTracker.Logic
                 if (RandomizerManager.Receiver.IsLocationChecked(trackerItem.Name, MaptrackerSettings.IconVisibilityLogic == IconVisibilityLogicEnum.Game, trackerItem.IsGoalRequiredItem()))
                     return false;
 
-                MaptrackerSettings.AddCheck(icon.Guid);
-
-                var checkIsInLogic = LogicChecker.IsPickupAccessible(trackerItem.Name, RandomizerManager.Options.LogicDifficulty, RandomizerManager.Receiver.GetAllItems(), RandomizerManager.Options);
-                if (checkIsInLogic)
-                    MaptrackerSettings.AddCheck(icon.Guid, checkIsInLogic);
-                return checkIsInLogic;
-
+                return LogicChecker.IsPickupAccessible(trackerItem.Name, RandomizerManager.Options.LogicDifficulty, RandomizerManager.Receiver.GetAllItems(), RandomizerManager.Options);
             }
             catch (Exception ex)
             {
@@ -111,6 +105,42 @@ namespace OriBFArchipelago.MapTracker.Logic
                 ModLogger.Error($"Error at IsUncollected: {ex}");
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Counts, in a single pass over every real check, how many uncollected checks
+        /// remain and how many of those are reachable now, storing the totals in
+        /// <see cref="MaptrackerSettings"/>. Called when the world map opens so the
+        /// "X out of Y are reachable" readout is accurate regardless of which icons have
+        /// been rendered or hovered. (LocationLookup holds only real checks - the ignored
+        /// wall/door icons are base-game map furniture and never appear here.)
+        /// </summary>
+        internal static void RecalculateCheckCounts()
+        {
+            int left = 0;
+            int inLogic = 0;
+            try
+            {
+                var options = RandomizerManager.Options;
+                var items = RandomizerManager.Receiver.GetAllItems();
+                bool useGameLogic = MaptrackerSettings.IconVisibilityLogic == IconVisibilityLogicEnum.Game;
+
+                foreach (var location in LocationLookup.GetLocations())
+                {
+                    if (RandomizerManager.Receiver.IsLocationChecked(location.Name, useGameLogic, location.IsGoalRequiredItem()))
+                        continue;
+
+                    left++;
+                    if (LogicChecker.IsPickupAccessible(location.Name, options.LogicDifficulty, items, options))
+                        inLogic++;
+                }
+            }
+            catch (Exception ex)
+            {
+                ModLogger.Error($"Error at RecalculateCheckCounts: {ex}");
+            }
+
+            MaptrackerSettings.SetCheckCounts(inLogic, left);
         }
 
         private static bool IsIgnoredIconType(WorldMapIconType iconType)
