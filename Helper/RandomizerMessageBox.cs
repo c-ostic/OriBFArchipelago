@@ -55,9 +55,10 @@ namespace OriBFArchipelago.Helper
 
             UpdatePromptText(_popupComponent.gameObject, _message);
 
-            // Swallow confirm/cancel so the player can't close it while connecting
-            _popupComponent.OnConfirm += () => { };
-            _popupComponent.OnCancel = () => { };
+            // Mark it so ConfirmOrCancelPatch blocks the A/Cancel buttons from closing it.
+            // (ConfirmOrCancel.FixedUpdate disables itself on button press regardless of the
+            // OnConfirm/OnCancel handlers, so swallowing the events alone isn't enough.)
+            _popupComponent.gameObject.AddComponent<NonDismissablePopup>();
 
             _popupComponent.enabled = true;
         }
@@ -208,4 +209,10 @@ namespace OriBFArchipelago.Helper
             return null;
         }
     }
+
+    /// <summary>
+    /// Marker for popups that must not be closable by the player (e.g. the "connecting" overlay).
+    /// <c>ConfirmOrCancelPatch</c> checks for this and blocks the confirm/cancel buttons.
+    /// </summary>
+    internal class NonDismissablePopup : MonoBehaviour { }
 }
