@@ -39,6 +39,12 @@ namespace OriBFArchipelago.Patches
                     case IconVisibilityEnum.Uncollected:
                         __result = LogicManager.IsUncollected(__instance);
                         return false;
+                    case IconVisibilityEnum.Rings:
+                        // Show every uncollected collectable check (in, out, or glitched logic);
+                        // hide non-collectable icons (walls/doors/floors) and collected checks.
+                        // The colored ring communicates the logic state.
+                        __result = IsRingVisible(__instance);
+                        return false;
                     case IconVisibilityEnum.Original:
                         return true;
                     case IconVisibilityEnum.None:
@@ -53,6 +59,24 @@ namespace OriBFArchipelago.Patches
                 return true;
             }
         }
+        /// <summary>
+        /// Visibility rule for the ring display mode: only uncollected, collectable checks are
+        /// shown (in-logic, harder-difficulty, or out-of-logic). Non-check icons and collected
+        /// checks are hidden.
+        /// </summary>
+        private static bool IsRingVisible(RuntimeWorldMapIcon icon)
+        {
+            switch (LogicManager.GetLogicState(icon))
+            {
+                case IconLogicState.InLogic:
+                case IconLogicState.PossibleAtHarder:
+                case IconLogicState.OutOfLogic:
+                    return true;
+                default: // NotACheck or Collected
+                    return false;
+            }
+        }
+
         private static bool IsDuplicateIcon(RuntimeWorldMapIcon icon)
         {
             List<MoonGuid> duplicateIcons = new List<MoonGuid>{
@@ -92,6 +116,9 @@ namespace OriBFArchipelago.Patches
                         hoverEffect.IconType = __instance;
                         hoverEffect.MapUI = AreaMapUI.Instance;
                         hoverEffect.Area = area;
+
+                        // Draw a logic-state ring (green/yellow/red/grey) around check icons.
+                        LogicIconRings.Apply(__instance, gameObject);
                     }
                 }
             }

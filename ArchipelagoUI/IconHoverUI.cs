@@ -34,6 +34,11 @@ namespace OriBFArchipelago.ArchipelagoUI
         private static bool _cachedInLogic;
         private static List<string> _cachedLines = new List<string>();
 
+        // When the item is out of logic at the current difficulty but reachable at a harder one,
+        // this holds that difficulty's name and its (colored) requirement lines.
+        private static string _cachedHarderDifficulty;
+        private static List<string> _cachedHarderLines = new List<string>();
+
         private GUIStyle textStyle;
 
         /// <summary>
@@ -144,6 +149,22 @@ namespace OriBFArchipelago.ArchipelagoUI
                     }
                 }
 
+                // If it's not reachable now but is on a harder difficulty, show that ruleset's
+                // requirements so the player knows what would unlock it and at what difficulty.
+                if (trackerItem != null && !collected && !_cachedInLogic && _cachedHarderDifficulty != null && _cachedHarderLines.Count > 0)
+                {
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label($"Possible on {_cachedHarderDifficulty}:", textStyle, GUILayout.ExpandWidth(false));
+                    GUILayout.EndHorizontal();
+
+                    foreach (var line in _cachedHarderLines)
+                    {
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label(line, textStyle, GUILayout.ExpandWidth(false));
+                        GUILayout.EndHorizontal();
+                    }
+                }
+
                 GUILayout.EndVertical();
                 GUILayout.EndArea();
             }
@@ -166,6 +187,8 @@ namespace OriBFArchipelago.ArchipelagoUI
             _cachedGuid = Icon.Guid;
             _cachedInLogic = false;
             _cachedLines = new List<string>();
+            _cachedHarderDifficulty = null;
+            _cachedHarderLines = new List<string>();
 
             try
             {
@@ -183,34 +206,69 @@ namespace OriBFArchipelago.ArchipelagoUI
                 var tokens = checker.GetCollectiveRequirements(trackerItem.Name, options.LogicDifficulty, inventory, options);
 
                 if (tokens.Count == 0)
-                {
                     _cachedLines.Add("Free");
-                    return;
-                }
+                else
+                    _cachedLines = FormatTokenLines(tokens, checker, inventory, options);
 
-                // Color each token by whether we currently have it, wrapping across lines so a
-                // long collective list stays inside the panel.
-                var parts = new List<string>();
-                foreach (var token in tokens)
-                {
-                    bool met = checker.IsRequirementSatisfied(token, inventory, options);
-                    string color = met ? MetColor : UnmetColor;
-                    parts.Add($"<color={color}>{LogicRequirementFormatter.FormatToken(token)}</color>");
-
-                    if (parts.Count == TokensPerLine)
-                    {
-                        _cachedLines.Add(string.Join(", ", parts.ToArray()));
-                        parts.Clear();
-                    }
-                }
-
-                if (parts.Count > 0)
-                    _cachedLines.Add(string.Join(", ", parts.ToArray()));
+                // Out of logic now: find the easiest harder difficulty that makes it reachable and
+                // show what it would take there.
+                if (!_cachedInLogic)
+                    ComputeHarderDifficulty(trackerItem, checker, inventory, options);
             }
             catch (Exception ex)
             {
                 ModLogger.Error($"RecomputeLogicCache: {ex}");
             }
+        }
+
+        /// <summary>
+        /// Finds the lowest difficulty above the current one at which the pickup becomes accessible,
+        /// and caches that difficulty's name and (colored) collective requirements.
+        /// </summary>
+        private void ComputeHarderDifficulty(Location trackerItem, LogicChecker checker, Dictionary<string, int> inventory, RandomizerOptions options)
+        {
+            foreach (DifficultyOptions diff in Enum.GetValues(typeof(DifficultyOptions)))
+            {
+                if (diff <= options.LogicDifficulty)
+                    continue;
+
+                if (!checker.IsPickupAccessible(trackerItem.Name, diff, inventory, options))
+                    continue;
+
+                _cachedHarderDifficulty = diff.ToString();
+                var harderTokens = checker.GetCollectiveRequirements(trackerItem.Name, diff, inventory, options);
+                _cachedHarderLines = harderTokens.Count == 0
+                    ? new List<string> { "Free" }
+                    : FormatTokenLines(harderTokens, checker, inventory, options);
+                return;
+            }
+        }
+
+        /// <summary>
+        /// Colors each requirement token met (green) / unmet (red) and wraps the list across lines
+        /// so a long collective requirement list stays inside the panel.
+        /// </summary>
+        private List<string> FormatTokenLines(List<string> tokens, LogicChecker checker, Dictionary<string, int> inventory, RandomizerOptions options)
+        {
+            var lines = new List<string>();
+            var parts = new List<string>();
+            foreach (var token in tokens)
+            {
+                bool met = checker.IsRequirementSatisfied(token, inventory, options);
+                string color = met ? MetColor : UnmetColor;
+                parts.Add($"<color={color}>{LogicRequirementFormatter.FormatToken(token)}</color>");
+
+                if (parts.Count == TokensPerLine)
+                {
+                    lines.Add(string.Join(", ", parts.ToArray()));
+                    parts.Clear();
+                }
+            }
+
+            if (parts.Count > 0)
+                lines.Add(string.Join(", ", parts.ToArray()));
+
+            return lines;
         }
     }
 }

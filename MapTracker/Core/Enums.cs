@@ -21,7 +21,8 @@
         Original = 1,
         In_Logic = 2,
         Uncollected = 3,
-        All = 4
+        All = 4,
+        Rings = 5
     }
 
     enum IconVisibilityLogicEnum
