@@ -8,6 +8,7 @@
 # Step 1: Install BepInEx
 1. Download and unzip BepInEx_x86_5.4.23.2.zip located [here](https://github.com/BepInEx/BepInEx/releases)
    - Note: Make sure you download the x86 version specifically even if your machine is x64
+   - Note for Linux: You need the windows version of BepInEx, since Ori is a Windows game
  
 2. Navigate to the Ori and the Blind Forest files
    - This can be done through steam using `Manage -> Browse local files` in the game settings for Ori
@@ -16,6 +17,7 @@
 
 4. Run Ori and the Blind Forest once for BepInEx to set up additional folders
    - Note: the game will be stuck on a black screen, this is expected and you will have to close the game manually
+   - Note for Linux: Add the following to the launch options in Steam: `WINEDLLOVERRIDES="winhttp.dll=n,b" %command%`
  
 5. Navigate into BepInEx\config and open BepInEx.cfg
 
