@@ -103,16 +103,9 @@ namespace OriBFArchipelago.Patches
             {
                 if (rbButtonHint == null) return;
 
-                if (TeleporterManager.GetLastTeleporter() != null)
-                {
-                    string buttonIcon = GetRBButtonIcon();
-                    SetButtonHintText(rbButtonHint, $"{buttonIcon}  Teleport to {TeleporterManager.GetLastTeleporter().FriendlyName}");
-                    rbButtonHint.SetActive(true);
-                }
-                else
-                {
-                    rbButtonHint.SetActive(false);
-                }
+                string buttonIcon = GetRBButtonIcon();
+                SetButtonHintText(rbButtonHint, $"{buttonIcon}  Teleport menu");
+                rbButtonHint.SetActive(true);
             }
 
             private string GetLBButtonIcon()
@@ -195,10 +188,9 @@ namespace OriBFArchipelago.Patches
                     lbButtonHint.SetActive(isVisible);
                 }
 
-                // Hide RB when inventory is closed
-                if (!isVisible && rbButtonHint != null)
+                if (rbButtonHint != null)
                 {
-                    rbButtonHint.SetActive(false);
+                    rbButtonHint.SetActive(isVisible);
                 }
             }
         }

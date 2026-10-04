@@ -35,6 +35,44 @@ namespace OriBFArchipelago.Helper
             Show(_message, _onConfirm, _onCancel, _position, _confirmText, _cancelText);
         }
 
+        /**
+         * Shows the native popup as a non-dismissable info box: just the message, no button
+         * prompts, and confirm/cancel are swallowed so it stays up until Destroy() is called.
+         * Used for the "connecting" overlay.
+         */
+        public void ShowInfo()
+        {
+            Destroy();
+
+            ConfirmOrCancel prefab = FindPopupPrefab();
+            if (prefab == null)
+                return;
+
+            _popupComponent = UnityEngine.Object.Instantiate(prefab);
+
+            if (_position.HasValue)
+                _popupComponent.transform.position = _position.Value;
+
+            UpdatePromptText(_popupComponent.gameObject, _message);
+
+            // Mark it so ConfirmOrCancelPatch blocks the A/Cancel buttons from closing it.
+            // (ConfirmOrCancel.FixedUpdate disables itself on button press regardless of the
+            // OnConfirm/OnCancel handlers, so swallowing the events alone isn't enough.)
+            _popupComponent.gameObject.AddComponent<NonDismissablePopup>();
+
+            _popupComponent.enabled = true;
+        }
+
+        /**
+         * Updates the message text of an already shown popup.
+         */
+        public void SetMessage(string message)
+        {
+            _message = message;
+            if (_popupComponent != null)
+                UpdatePromptText(_popupComponent.gameObject, message);
+        }
+
         private void Show(string message, Action onConfirm = null, Action onCancel = null, Vector3? position = null, string confirmText = null, string cancelText = null)
         {
             Destroy();
@@ -171,4 +209,10 @@ namespace OriBFArchipelago.Helper
             return null;
         }
     }
+
+    /// <summary>
+    /// Marker for popups that must not be closable by the player (e.g. the "connecting" overlay).
+    /// <c>ConfirmOrCancelPatch</c> checks for this and blocks the confirm/cancel buttons.
+    /// </summary>
+    internal class NonDismissablePopup : MonoBehaviour { }
 }

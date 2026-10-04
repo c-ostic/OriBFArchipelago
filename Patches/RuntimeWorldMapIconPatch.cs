@@ -36,6 +36,15 @@ namespace OriBFArchipelago.Patches
                     case IconVisibilityEnum.In_Logic:
                         __result = LogicManager.IsInLogic(__instance);
                         return false;
+                    case IconVisibilityEnum.Uncollected:
+                        __result = LogicManager.IsUncollected(__instance);
+                        return false;
+                    case IconVisibilityEnum.Rings:
+                        // Show every uncollected collectable check (in, out, or glitched logic);
+                        // hide non-collectable icons (walls/doors/floors) and collected checks.
+                        // The colored ring communicates the logic state.
+                        __result = IsRingVisible(__instance);
+                        return false;
                     case IconVisibilityEnum.Original:
                         return true;
                     case IconVisibilityEnum.None:
@@ -50,17 +59,56 @@ namespace OriBFArchipelago.Patches
                 return true;
             }
         }
+        /// <summary>
+        /// Visibility rule for the ring display mode: only uncollected, collectable checks are
+        /// shown (in-logic, harder-difficulty, or out-of-logic). Non-check icons and collected
+        /// checks are hidden.
+        /// </summary>
+        private static bool IsRingVisible(RuntimeWorldMapIcon icon)
+        {
+            switch (LogicManager.GetLogicState(icon))
+            {
+                case IconLogicState.InLogic:
+                case IconLogicState.PossibleAtHarder:
+                case IconLogicState.OutOfLogic:
+                    return true;
+                default: // NotACheck or Collected
+                    return false;
+            }
+        }
+
+        // First RuntimeWorldMapIcon seen per GUID. The game data contains some icons twice with
+        // the same GUID (e.g. LowerBlackrootLaserAbilityCell); later copies are hidden.
+        private static Dictionary<MoonGuid, RuntimeWorldMapIcon> firstIconByGuid;
+
+        /// <summary>Rebuilds the GUID-dedupe table; call when the map opens since runtime icons are recreated on area init.</summary>
+        internal static void RebuildDuplicateCache()
+        {
+            firstIconByGuid = new Dictionary<MoonGuid, RuntimeWorldMapIcon>();
+            if (GameWorld.Instance?.RuntimeAreas == null)
+                return;
+            foreach (var area in GameWorld.Instance.RuntimeAreas)
+                foreach (var icon in area.Icons)
+                {
+                    if (firstIconByGuid.ContainsKey(icon.Guid))
+                        ModLogger.Debug($"Duplicate map icon GUID {icon.Guid} ({icon.Icon} at {icon.Position}), hiding copy");
+                    else
+                        firstIconByGuid.Add(icon.Guid, icon);
+                }
+        }
+
         private static bool IsDuplicateIcon(RuntimeWorldMapIcon icon)
         {
             List<MoonGuid> duplicateIcons = new List<MoonGuid>{
                  new MoonGuid("1607939702 1149860266 185564807 -1906561306"), //duplicate icon on bash
-                 new MoonGuid("1725611206 1201986298 -435475044 -1944513031"), //duplicate icon on ability point in burrows
             };
-
 
             if (duplicateIcons.Contains(icon.Guid))
                 return true;
-            return false;
+
+            if (firstIconByGuid == null)
+                RebuildDuplicateCache();
+            return firstIconByGuid.TryGetValue(icon.Guid, out var first) && first != icon;
         }
 
         [HarmonyPatch("Show")]
@@ -89,6 +137,9 @@ namespace OriBFArchipelago.Patches
                         hoverEffect.IconType = __instance;
                         hoverEffect.MapUI = AreaMapUI.Instance;
                         hoverEffect.Area = area;
+
+                        // Draw a logic-state ring (green/yellow/red/grey) around check icons.
+                        LogicIconRings.Apply(__instance, gameObject);
                     }
                 }
             }

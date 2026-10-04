@@ -102,16 +102,20 @@ namespace OriBFArchipelago.MapTracker.Core
 
         internal static void TeleportToLastTeleporter()
         {
-            if (_gameTeleporterObj == null)
-                return;
+            try
+            {
+                if (RandoGuard.IsNullWithMessage(_gameTeleporterObj, "You haven't used a teleporter yet."))
+                    return;
 
-            if (!CanTeleport())
-                return;
+                if (!CanTeleport())
+                    return;
 
-            if (RandoGuard.IsNullWithMessage(ArchipelagoOptionsScreen.LastUsedTeleporter, "You haven't used a teleporter yet."))
-                return;
-
-            StartTeleport(_gameTeleporterObj);
+                StartTeleport(_gameTeleporterObj);
+            }
+            catch (System.Exception ex)
+            {
+                ModLogger.Error(ex.ToString());
+            }
         }
 
 
@@ -120,11 +124,10 @@ namespace OriBFArchipelago.MapTracker.Core
             if (RandoGuard.IsNullWithMessage(Characters.Sein, "You have to start a game before you can use this ability."))
                 return false;
 
-            if (!Characters.Sein.Active || Characters.Sein.Controller.IsSwimming || !Characters.Sein.Controller.CanMove)
+            if (!Characters.Sein.Active || !Characters.Sein.Controller.CanMove)
             {
                 RandomizerMessager.instance.AddMessage("You can not teleport from here. Get to a save place where you can freely stand.");
                 ModLogger.Debug($"Sein active: {Characters.Sein.Active}");
-                ModLogger.Debug($"Sein swimming: {Characters.Sein.Controller.IsSwimming}");
                 ModLogger.Debug($"Sein can move: {Characters.Sein.Controller.CanMove}");
                 return false;
             }

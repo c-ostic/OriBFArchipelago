@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using OriBFArchipelago.Core;
 using OriBFArchipelago.Helper;
 using OriBFArchipelago.MapTracker.Core;
 using UnityEngine;
@@ -66,41 +67,36 @@ namespace OriBFArchipelago.Patches
             if (CoreInput.LeftShoulder.OnPressed && !CoreInput.LeftShoulder.Used)
             {
                 CoreInput.LeftShoulder.Used = true;
-                ShowTeleportConfirmation(TeleportAction.ToStart, manager);
+                ShowTeleportConfirmation(manager);
             }
 
             if (UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.F3))
             {
-                ShowTeleportConfirmation(TeleportAction.ToStart, manager);
+                ShowTeleportConfirmation(manager);
             }
 
-            if (TeleporterManager.GetLastTeleporter() != null)
+            if (CoreInput.RightShoulder.OnPressed && !CoreInput.RightShoulder.Used)
             {
-                if (CoreInput.RightShoulder.OnPressed && !CoreInput.RightShoulder.Used)
-                {
-                    CoreInput.RightShoulder.Used = true;
-                    ShowTeleportConfirmation(TeleportAction.ToLastTeleporter, manager);
-                }
+                CoreInput.RightShoulder.Used = true;
+                OpenTeleportMap();
+            }
 
-                if (UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.F4))
-                {
-                    ShowTeleportConfirmation(TeleportAction.ToLastTeleporter, manager);
-                }
+            if (UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.F4))
+            {
+                OpenTeleportMap();
             }
         }
 
-        private static void ShowTeleportConfirmation(TeleportAction action, CleverMenuItemSelectionManager manager)
+        private static void ShowTeleportConfirmation(CleverMenuItemSelectionManager manager)
         {
-            string message = action == TeleportAction.ToStart
-                ? "{confirm}Teleport to start?\n{cancel}Cancel?"
-                : $"{{confirm}}Teleport to {TeleporterManager.GetLastTeleporter().FriendlyName}?\n{{cancel}}Cancel?";
+            string message = "Teleport to start?";
 
             Vector3 position = manager.transform.position;
             position.y += 2.0f;
 
             _confirmationBox = new RandomizerMessageBox(
                 message,
-                onConfirm: () => ExecuteTeleport(action, manager),
+                onConfirm: () => ExecuteTeleport(manager),
                 onCancel: () => CancelTeleport(manager),
                 position: position
             );
@@ -109,19 +105,20 @@ namespace OriBFArchipelago.Patches
             manager.IsSuspended = true;
         }
 
-        private static void ExecuteTeleport(TeleportAction action, CleverMenuItemSelectionManager manager)
+        private static void ExecuteTeleport(CleverMenuItemSelectionManager manager)
         {
             manager.IsSuspended = false;
+            TeleporterManager.TeleportToStart();
+        }
 
-            switch (action)
-            {
-                case TeleportAction.ToStart:
-                    TeleporterManager.TeleportToStart();
-                    break;
-                case TeleportAction.ToLastTeleporter:
-                    TeleporterManager.TeleportToLastTeleporter();
-                    break;
-            }
+        /**
+         * Closes the inventory screen and opens the teleporter map
+         * (the same map shown by the OpenTeleport keybind).
+         */
+        private static void OpenTeleportMap()
+        {
+            Game.UI.Menu.HideMenuScreen(true);
+            RandomizerController.Instance?.ShowTeleportMenu();
         }
 
         private static void CancelTeleport(CleverMenuItemSelectionManager manager)
@@ -129,13 +126,6 @@ namespace OriBFArchipelago.Patches
             manager.IsSuspended = false;
             _confirmationBox?.Destroy();
             _confirmationBox = null;
-        }
-
-        private enum TeleportAction
-        {
-            None = 0,
-            ToStart = 1,
-            ToLastTeleporter = 2
         }
     }
 }
