@@ -77,17 +77,38 @@ namespace OriBFArchipelago.Patches
             }
         }
 
+        // First RuntimeWorldMapIcon seen per GUID. The game data contains some icons twice with
+        // the same GUID (e.g. LowerBlackrootLaserAbilityCell); later copies are hidden.
+        private static Dictionary<MoonGuid, RuntimeWorldMapIcon> firstIconByGuid;
+
+        /// <summary>Rebuilds the GUID-dedupe table; call when the map opens since runtime icons are recreated on area init.</summary>
+        internal static void RebuildDuplicateCache()
+        {
+            firstIconByGuid = new Dictionary<MoonGuid, RuntimeWorldMapIcon>();
+            if (GameWorld.Instance?.RuntimeAreas == null)
+                return;
+            foreach (var area in GameWorld.Instance.RuntimeAreas)
+                foreach (var icon in area.Icons)
+                {
+                    if (firstIconByGuid.ContainsKey(icon.Guid))
+                        ModLogger.Debug($"Duplicate map icon GUID {icon.Guid} ({icon.Icon} at {icon.Position}), hiding copy");
+                    else
+                        firstIconByGuid.Add(icon.Guid, icon);
+                }
+        }
+
         private static bool IsDuplicateIcon(RuntimeWorldMapIcon icon)
         {
             List<MoonGuid> duplicateIcons = new List<MoonGuid>{
                  new MoonGuid("1607939702 1149860266 185564807 -1906561306"), //duplicate icon on bash
-                 new MoonGuid("1725611206 1201986298 -435475044 -1944513031"), //duplicate icon on ability point in burrows
             };
-
 
             if (duplicateIcons.Contains(icon.Guid))
                 return true;
-            return false;
+
+            if (firstIconByGuid == null)
+                RebuildDuplicateCache();
+            return firstIconByGuid.TryGetValue(icon.Guid, out var first) && first != icon;
         }
 
         [HarmonyPatch("Show")]

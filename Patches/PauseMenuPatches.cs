@@ -20,7 +20,10 @@ namespace OriBFArchipelago.Patches
                 // Recompute the reachable/remaining check totals up front so the
                 // "X out of Y are reachable" readout is correct as soon as the map opens.
                 if (screen == MenuScreenManager.Screens.WorldMap)
+                {
+                    RuntimeWorldMapIconPatch.RebuildDuplicateCache();
                     LogicManager.RecalculateCheckCounts();
+                }
             }
             catch
             {
