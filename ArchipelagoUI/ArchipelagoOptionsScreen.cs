@@ -13,6 +13,7 @@ namespace OriBFArchipelago.ArchipelagoUI
         private static string ConfigSavePath { get { return RandomizerIO.GetFilePath("Archipelago.cfg"); } }
         private static ConfigEntry<bool> _skipCutscenes { get; set; }
         private static ConfigEntry<string> _lastUsedTeleporter { get; set; }
+        private static ConfigEntry<bool> _rainbowDashTrail {  get; set; }
         private static ConfigEntry<bool> _doubleBashAssist {  get; set; }
         private static ConfigEntry<bool> _doubleBashTap { get; set; }
         private static ConfigEntry<bool> _grenadeJumpAssist { get; set; }
@@ -35,6 +36,7 @@ namespace OriBFArchipelago.ArchipelagoUI
             ModLogger.Debug("Initializing settings");
             _skipCutscenes = _config.Bind(CONFIGSECTION, "SkipCutscenes", false, "Sets skip cutscenes");
             _lastUsedTeleporter = _config.Bind(CONFIGSECTION, "LastTeleporterUsed", "none", "Sets last teleporter used");
+            _rainbowDashTrail = _config.Bind(CONFIGSECTION, "RainbowDashTrail", false, "Enable rainbow dash trail");
             _doubleBashAssist = _config.Bind(CONFIGSECTION, "DoubleBashAssist", true, "Enables double bash");
             _doubleBashTap = _config.Bind(CONFIGSECTION, "DoubleBashTap", false, "Enables double bash tap");
             _grenadeJumpAssist = _config.Bind(CONFIGSECTION, "GrenadeJumpAssist", true, "Enables grenade jump");
@@ -49,6 +51,7 @@ namespace OriBFArchipelago.ArchipelagoUI
             {
                 ModLogger.Debug("Setting up UI components");
                 AddToggle(_skipCutscenes, "Skip cutscenes", "Will skip nearly all cutscenes and remove the forced slow walk towards cutscenes.");
+                AddToggle(_rainbowDashTrail, "Rainbow Dash Trail", "Change Ori's dash trail to be a rainbow trail.");
                 AddToggle(_doubleBashAssist, "Double Bash Assist", "Enables a keybind to help perform a double bash trick.");
                 AddToggle(_doubleBashTap, "Double Bash Tap", "When enabled, tapping the Double Bash keybind instantly transitions to the second bash.");
                 AddToggle(_grenadeJumpAssist, "Grenade Jump Assist", "Enables a keybind to help perform a grenade jump trick.");
@@ -79,6 +82,7 @@ namespace OriBFArchipelago.ArchipelagoUI
                 _lastUsedTeleporter.Value = value;
             }
         }
+        internal static bool RainbowDashTrail => _rainbowDashTrail?.Value ?? false;
         internal static bool DoubleBashAssist => _doubleBashAssist?.Value ?? true;
         internal static bool DoubleBashTap => _doubleBashTap?.Value ?? false;
         internal static bool GrenadeJumpAssist => _grenadeJumpAssist?.Value ?? true;
