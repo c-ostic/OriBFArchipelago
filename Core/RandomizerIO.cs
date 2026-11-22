@@ -272,10 +272,10 @@ namespace OriBFArchipelago.Core
                     }
 
                     SlotData slotData = new SlotData();
-                    slotData.serverName = parts[1];
-                    slotData.slotName = parts[2];
+                    slotData.serverName = UnEscape(parts[1]);
+                    slotData.slotName = UnEscape(parts[2]);
                     slotData.port = int.Parse(parts[3]);
-                    slotData.password = parts[4];
+                    slotData.password = UnEscape(parts[4]);
 
                     data.Add(int.Parse(parts[0]), slotData);
                 }
@@ -325,11 +325,12 @@ namespace OriBFArchipelago.Core
 
                 foreach (KeyValuePair<int, SlotData> pair in data)
                 {
+                    // in case some values have commas, escape them
                     sb.Append($"{pair.Key},");
-                    sb.Append($"{pair.Value.serverName},");
-                    sb.Append($"{pair.Value.slotName},");
+                    sb.Append($"{Escape(pair.Value.serverName)},");
+                    sb.Append($"{Escape(pair.Value.slotName)},");
                     sb.Append($"{pair.Value.port},");
-                    sb.Append($"{pair.Value.password}\n");
+                    sb.Append($"{Escape(pair.Value.password)}\n");
                 }
 
                 // remove the last new line character
@@ -348,6 +349,23 @@ namespace OriBFArchipelago.Core
                 Console.WriteLine($"Could not write to slot data file: {e}");
                 return false;
             }
+        }
+
+        /**
+         * Escapes commas with &cma and ampersand with &amp
+         * Similar to XMLs escape characters
+         */
+        private static string Escape(string s)
+        {
+            return s.Replace("&", "&amp").Replace(",", "&cma");
+        }
+
+        /**
+         * Undoes the escaping from the previous method
+         */
+        private static string UnEscape(string s)
+        {
+            return s.Replace("&cma", ",").Replace("&amp", "&");
         }
 
         /**

@@ -64,7 +64,8 @@ namespace OriBFArchipelago.ArchipelagoUI
 
         private void LoadSettings()
         {
-            TeleporterManager.SetLastTeleporter(LastUsedTeleporter);
+            // Unneeded after most recent updates
+            // TeleporterManager.SetLastTeleporter(LastUsedTeleporter);
         }
 
         internal static bool SkipCutscenes => _skipCutscenes?.Value ?? false;

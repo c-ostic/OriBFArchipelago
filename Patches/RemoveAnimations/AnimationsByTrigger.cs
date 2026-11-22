@@ -213,7 +213,8 @@ namespace OriBFArchipelago.Patches.RemoveAnimations
             new("GinsoEscapeLeftSide","Explosions on the left side before ginso escape", [03,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,10,20,21,22,23,24,25,26,27,28,29,30,31,33,35,36], new MoonGuid("-1236483305 1284618203 -1974049373 -575868861")),
             new("GinsoEscapeRightSide","Explosions on the right side before ginso escape", [04,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,37,40], new MoonGuid("1191654416 1302123663 151424932 840401249")),
             new("GinsoWaterSequence", "Sequence to start the water escape of ginso tree", [02,03,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32], new MoonGuid("-1679049206 1134072076 -1860355956 -1662641344")),
-            new("EndOfGinsoEscape", "Exposition at the end of ginso escape and getting saved by gumon", [01, 02, 03, 10, 11, 12, 13, 14, 20, 29, 33, 37, 38, 40, 43, 44, 45, 46], new MoonGuid("-847281791 1241793475 1080917670 -1990575197")),
+            // If the player does not manually skip the cutscene at the top of the ginso tree, skipping this results in a softlock. Disabling for now
+            // new("EndOfGinsoEscape", "Exposition at the end of ginso escape and getting saved by gumon", [01, 02, 03, 10, 11, 12, 13, 14, 20, 29, 33, 37, 38, 40, 43, 44, 45, 46], new MoonGuid("-847281791 1241793475 1080917670 -1990575197")),
             new("SkipSkillTree", "Skips the exposition for the skilltree", [12], new MoonGuid("-314577372 1103920600 1985791414 -2110544796")),
             //Forlorn Cavern
             new("GumoSeal", "Insert gumo seal", [02,03,05,06,07,08,09,10,11,12,14,16], new MoonGuid("1987292132 1080256411 1972704413 111953066")),

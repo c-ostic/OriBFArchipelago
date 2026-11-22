@@ -220,13 +220,20 @@ namespace OriBFArchipelago.Core
          */
         public void InspectSaveSlot(int index)
         {
-            if (SaveSlotsUI.Instance is not null && index >= 0 && index < saveSlots.Count)
+            if (SaveSlotsUI.Instance is not null && saveSlots.ContainsKey(index))
             {
                 SlotData data = saveSlots[index];
                 slotName = data.slotName;
                 server = data.serverName;
                 port = data.port + "";
                 password = data.password;
+            }
+            else
+            {
+                slotName = "";
+                server = "";
+                port = "";
+                password = "";
             }
         }
 
