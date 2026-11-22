@@ -10,6 +10,9 @@ namespace OriBFArchipelago.MapTracker.Logic
         private Dictionary<string, Dictionary<string, Dictionary<string, List<List<string>>>>> _logic;
         //private OriOptions _options;
 
+        // The logical starting area for all reachability checks.
+        private const string StartLocation = "SunkenGladesRunaway";
+
         public LogicChecker()
         {
             _logic = new RulesDataReader().GetFullLogic();
@@ -32,6 +35,244 @@ namespace OriBFArchipelago.MapTracker.Logic
         }
 
         /// <summary>
+        /// Gathers the collective requirements to reach AND collect a pickup: it traces the
+        /// least-blocked route from the logical start to the pickup's container area (preferring
+        /// edges you can already satisfy, only crossing blocked ones when unavoidable), then
+        /// unions the requirements chosen along that route with the pickup's own access edge.
+        /// Returns the deduped list of raw requirement tokens (e.g. "Climb", "GinsoKey",
+        /// "HealthCell:4"); the caller formats/colors them. Empty if the pickup has no rules or
+        /// no route exists.
+        /// </summary>
+        public List<string> GetCollectiveRequirements(string pickupName, DifficultyOptions difficultyLevel, Dictionary<string, int> inventory, RandomizerOptions options)
+        {
+            string container = FindPickupLocation(pickupName);
+            if (container == null)
+                return new List<string>();
+
+            var collected = new List<string>();
+
+            // Requirements along the route from the start area to the container area.
+            foreach (var edge in FindLeastBlockedPath(StartLocation, container, difficultyLevel, inventory, options))
+            {
+                EdgeUnmetCost(edge.Key, edge.Value, difficultyLevel, inventory, options, out var bestSet);
+                if (bestSet != null)
+                    collected.AddRange(bestSet);
+            }
+
+            // The pickup's own access edge.
+            EdgeUnmetCost(container, pickupName, difficultyLevel, inventory, options, out var finalSet);
+            if (finalSet != null)
+                collected.AddRange(finalSet);
+
+            return Consolidate(collected);
+        }
+
+        /// <summary>
+        /// Dijkstra from start to target over area-to-area edges, where an edge's cost is the
+        /// smallest number of currently-unsatisfied requirements among its alternatives (0 if
+        /// already satisfiable). Returns the chosen route as an ordered list of (from, to) hops,
+        /// or an empty list if start == target or no route exists.
+        /// </summary>
+        private List<KeyValuePair<string, string>> FindLeastBlockedPath(string start, string target, DifficultyOptions difficulty, Dictionary<string, int> inventory, RandomizerOptions options)
+        {
+            var path = new List<KeyValuePair<string, string>>();
+            if (target == start || !_logic.ContainsKey(start))
+                return path;
+
+            var dist = new Dictionary<string, int>();
+            var prev = new Dictionary<string, string>();
+            var visited = new HashSet<string>();
+            dist[start] = 0;
+
+            while (true)
+            {
+                // Pick the unvisited node with the smallest known distance.
+                string current = null;
+                int best = int.MaxValue;
+                foreach (var kv in dist)
+                {
+                    if (visited.Contains(kv.Key) || kv.Value >= best)
+                        continue;
+                    best = kv.Value;
+                    current = kv.Key;
+                }
+
+                if (current == null)
+                    break;
+                if (current == target)
+                    break;
+                visited.Add(current);
+
+                if (!_logic.ContainsKey(current))
+                    continue;
+
+                foreach (var connection in _logic[current])
+                {
+                    string dest = connection.Key;
+                    // Only traverse edges to other areas (not pickups).
+                    if (!_logic.ContainsKey(dest) || visited.Contains(dest))
+                        continue;
+
+                    int weight = EdgeUnmetCost(current, dest, difficulty, inventory, options, out _);
+                    if (weight == int.MaxValue)
+                        continue;
+
+                    int candidate = dist[current] + weight;
+                    if (!dist.ContainsKey(dest) || candidate < dist[dest])
+                    {
+                        dist[dest] = candidate;
+                        prev[dest] = current;
+                    }
+                }
+            }
+
+            if (!prev.ContainsKey(target))
+                return path; // no route found
+
+            // Reconstruct start -> target and return as ordered hops.
+            var chain = new List<string>();
+            string node = target;
+            while (node != start && prev.ContainsKey(node))
+            {
+                chain.Add(node);
+                node = prev[node];
+            }
+            chain.Add(start);
+            chain.Reverse();
+
+            for (int i = 0; i + 1 < chain.Count; i++)
+                path.Add(new KeyValuePair<string, string>(chain[i], chain[i + 1]));
+
+            return path;
+        }
+
+        /// <summary>
+        /// Cost of an edge = the fewest currently-unsatisfied requirements among its alternative
+        /// sets (0 if satisfiable now). Impossible sets (containing "None"/"OpenWorld") are
+        /// skipped. Outputs the chosen (lowest-cost) requirement set. Returns int.MaxValue if
+        /// there is no viable set.
+        /// </summary>
+        private int EdgeUnmetCost(string from, string to, DifficultyOptions difficulty, Dictionary<string, int> inventory, RandomizerOptions options, out List<string> bestSet)
+        {
+            bestSet = null;
+            if (!_logic.ContainsKey(from) || !_logic[from].ContainsKey(to))
+                return int.MaxValue;
+
+            int best = int.MaxValue;
+            foreach (var set in GetDifficultyRequirements(from, to, difficulty))
+            {
+                int unmet = 0;
+                bool impossible = false;
+                foreach (var req in set)
+                {
+                    if (req == "None" || req == "OpenWorld" || IsIrrelevantStone(req, options))
+                    {
+                        // Not applicable under the current settings (e.g. a generic MapStone
+                        // requirement while area-specific mapstone logic is active). Skip the set
+                        // so the display picks the variant that actually matches the settings.
+                        impossible = true;
+                        break;
+                    }
+                    if (LogicRequirementFormatter.IsMeta(req))
+                        continue; // Free/Open - always satisfied, no cost
+                    if (!CanSatisfyRequirement(req, inventory, options))
+                        unmet++;
+                }
+
+                if (impossible)
+                    continue;
+                if (unmet < best)
+                {
+                    best = unmet;
+                    bestSet = set;
+                }
+                if (best == 0)
+                    break;
+            }
+
+            return best;
+        }
+
+        /// <summary>
+        /// True when a keystone/mapstone requirement variant does not match the active settings:
+        /// the generic "KeyStone"/"MapStone" tokens only apply under Anywhere logic, and the
+        /// area-specific variants (e.g. "ValleyMapStone", "GladesKeyStone") only apply otherwise.
+        /// Used to pick the requirement variant the player actually plays with.
+        /// </summary>
+        private static bool IsIrrelevantStone(string requirement, RandomizerOptions options)
+        {
+            int colon = requirement.IndexOf(':');
+            string name = colon >= 0 ? requirement.Substring(0, colon) : requirement;
+
+            if (name == "MapStone")
+                return options.MapStoneLogic != MapStoneOptions.Anywhere;
+            if (name.EndsWith("MapStone"))
+                return options.MapStoneLogic == MapStoneOptions.Anywhere;
+
+            if (name == "KeyStone")
+                return options.KeyStoneLogic != KeyStoneOptions.Anywhere;
+            if (name.EndsWith("KeyStone"))
+                return options.KeyStoneLogic == KeyStoneOptions.Anywhere;
+
+            return false;
+        }
+
+        /// <summary>
+        /// Dedupes a flat list of requirement tokens, dropping meta tokens and, for counted
+        /// resources with the same name (e.g. "HealthCell:3" and "HealthCell:4"), keeping the
+        /// highest count.
+        /// </summary>
+        private List<string> Consolidate(List<string> tokens)
+        {
+            var plain = new List<string>();
+            var counted = new Dictionary<string, int>();
+            var countedOrder = new List<string>();
+
+            foreach (var token in tokens)
+            {
+                if (LogicRequirementFormatter.IsMeta(token))
+                    continue;
+
+                int colon = token.IndexOf(':');
+                if (colon >= 0)
+                {
+                    string name = token.Substring(0, colon);
+                    int value;
+                    if (!int.TryParse(token.Substring(colon + 1), out value))
+                        value = 0;
+
+                    if (!counted.ContainsKey(name))
+                    {
+                        counted[name] = value;
+                        countedOrder.Add(name);
+                    }
+                    else if (value > counted[name])
+                    {
+                        counted[name] = value;
+                    }
+                }
+                else if (!plain.Contains(token))
+                {
+                    plain.Add(token);
+                }
+            }
+
+            var result = new List<string>(plain);
+            foreach (var name in countedOrder)
+                result.Add($"{name}:{counted[name]}");
+            return result;
+        }
+
+        /// <summary>
+        /// Check whether a single requirement token is satisfied by the given inventory/options.
+        /// Exposed so the UI can color each requirement met/unmet.
+        /// </summary>
+        public bool IsRequirementSatisfied(string requirement, Dictionary<string, int> inventory, RandomizerOptions options)
+        {
+            return CanSatisfyRequirement(requirement, inventory, options);
+        }
+
+        /// <summary>
         /// Check if a pickup is accessible with the given inventory at a specific difficulty level
         /// </summary>
         public bool IsPickupAccessible(string pickupName, DifficultyOptions difficultyLevel, Dictionary<string, int> inventory, RandomizerOptions options)
@@ -41,7 +282,7 @@ namespace OriBFArchipelago.MapTracker.Logic
                 return false;
 
             // First check if we can reach the location containing the pickup
-            if (!IsLocationReachable(location, "SunkenGladesRunaway", difficultyLevel, inventory, options))
+            if (!IsLocationReachable(location, StartLocation, difficultyLevel, inventory, options))
                 return false;
 
             // Now check if we can access the pickup itself

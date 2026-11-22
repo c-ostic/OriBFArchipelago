@@ -10,9 +10,6 @@ namespace OriBFArchipelago.MapTracker.Core
     internal class MaptrackerSettings
     {
         private static string OldSaveSlotFilePath { get { return Paths.ConfigPath + $"/MapTrackerSlot{SaveSlotsUI.Instance.CurrentSaveSlot.SaveSlotIndex}.cfg"; } }
-        private static Dictionary<MoonGuid, bool> Checks { get; set; }
-
-
 
         public static bool HideNonCollectableIcons { get { return MapTrackerOptionsScreen.HideNonCollectableIcons; } }
         public static bool EnableIconInfocUI { get { return MapTrackerOptionsScreen.EnableIconInfocUI; } }
@@ -22,20 +19,16 @@ namespace OriBFArchipelago.MapTracker.Core
         public static bool DisableMapSway { get { return MapTrackerOptionsScreen.DisableMapSway; } }
 
 
-        public static int ChecksInLogic { get { return Checks.Select(d => d.Value).Count(d => d); } }
-        public static int ChecksLeft { get { return Checks.Count; } }
+        // Computed in one pass when the world map opens (see LogicManager.RecalculateCheckCounts).
+        public static int ChecksInLogic { get; private set; }
+        public static int ChecksLeft { get; private set; }
         public static bool AllAreasDiscovered { get; set; }
-       
-        internal static void AddCheck(MoonGuid guid, bool isInLogic = false)
+
+        /// <summary>Stores the reachable / remaining check totals for the world-map readout.</summary>
+        internal static void SetCheckCounts(int inLogic, int left)
         {
-            if (!Checks.ContainsKey(guid))
-                Checks.Add(guid, isInLogic);
-            else if (!Checks[guid] && isInLogic)
-                Checks[guid] = isInLogic;
-        }
-        internal static void ResetCheckCount()
-        {
-            Checks = [];
+            ChecksInLogic = inLogic;
+            ChecksLeft = left;
         }
         internal static void Delete()
         {

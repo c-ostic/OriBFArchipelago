@@ -54,7 +54,30 @@ namespace OriBFArchipelago.Core
         public Dictionary<string, object> SlotData { get; private set; }
 
         /**
-         * Creates an Archipelago session and sets up events to listen to
+         * Represents the state of an asynchronous connection attempt.
+         * Written on a background thread, read on the main (Unity) thread.
+         */
+        public enum ConnectionStatus
+        {
+            None,
+            Connecting,
+            Connected,
+            Failed
+        }
+
+        // Current state of the connection attempt. Polled by the main thread.
+        public ConnectionStatus Status { get; private set; }
+
+        // Human readable result of the last connection attempt (success or failure)
+        public string StatusMessage { get; private set; }
+
+        // true while an in-game reconnect attempt is running, so Update() can
+        // report the result once it completes
+        private bool reconnecting;
+
+        /**
+         * Creates an Archipelago session and sets up events to listen to.
+         * Does not connect; call BeginConnect() to start connecting in the background.
          */
         public bool Init(string hostname, int port, string user, string password)
         {
@@ -75,18 +98,49 @@ namespace OriBFArchipelago.Core
             queueDeath = false;
             currentDeathCount = 0;
 
-            return Connect();
+            Status = ConnectionStatus.None;
+
+            return true;
         }
 
         /**
-         * Tries to reconnect to the archipelago server
+         * Starts connecting to the archipelago server on a background thread.
+         * The blocking login no longer runs on the main thread, so the game keeps
+         * rendering and status messages such as "Attempting to connect" show up.
+         * Poll Status to find out when the attempt has finished.
+         */
+        public void BeginConnect()
+        {
+            Status = ConnectionStatus.Connecting;
+
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    Connect();
+                }
+                catch (Exception e)
+                {
+                    // Never leave Status stuck on Connecting, or the poller would hang forever
+                    Console.WriteLine("Unexpected error while connecting to archipelago: " + e);
+                    Connected = false;
+                    StatusMessage = $"Failed to connect to {hostname} as {slotName}";
+                    Status = ConnectionStatus.Failed;
+                }
+            });
+        }
+
+        /**
+         * Tries to reconnect to the archipelago server in the background.
+         * The result is reported from Update() once the attempt finishes.
          */
         public void Reconnect()
         {
-            if (session is not null)
+            if (session is not null && Status != ConnectionStatus.Connecting)
             {
+                reconnecting = true;
                 Disconnect();
-                Connect();
+                BeginConnect();
             }
         }
 
@@ -102,7 +156,10 @@ namespace OriBFArchipelago.Core
         }
 
         /**
-         * Tries to connect to a slot on the Archipelago server
+         * Tries to connect to a slot on the Archipelago server.
+         * This performs a blocking network call and is intended to run on a
+         * background thread (see BeginConnect). It does not touch the UI directly;
+         * instead it records the outcome in Status/StatusMessage for the main thread.
          */
         private bool Connect()
         {
@@ -119,7 +176,6 @@ namespace OriBFArchipelago.Core
                 result = new LoginFailure(e.GetBaseException().Message);
             }
 
-            RandomizerMessager.instance.Clear();
             if (!result.Successful)
             {
                 LoginFailure failure = (LoginFailure)result;
@@ -133,28 +189,42 @@ namespace OriBFArchipelago.Core
                     errorMessage += $"\n    {error}";
                 }
                 Console.WriteLine(errorMessage);
-                RandomizerMessager.instance.AddMessage($"Failed to connect to {hostname} as {slotName}");
+
+                Connected = false;
+                StatusMessage = $"Failed to connect to {hostname} as {slotName}";
+                Status = ConnectionStatus.Failed;
             }
             else
             {
                 // Successfully connected, `ArchipelagoSession` (assume statically defined as `session` from now on) can now be used to interact with the server and the returned `LoginSuccessful` contains some useful information about the initial connection (e.g. a copy of the slot data as `loginSuccess.SlotData`)
                 var loginSuccess = (LoginSuccessful)result;
                 Console.WriteLine($"Successfully connected to {hostname} as {slotName}");
-                RandomizerMessager.instance.AddMessage($"Successfully connected to {hostname} as {slotName}");
                 SlotData = loginSuccess.SlotData;
 
-                session.DataStorage[Scope.Slot, MAP_LOCATION_DATA_KEY].Initialize(new string[0]);
-                session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].Initialize(new string[0]);
-                session.DataStorage[Scope.Slot, POSITION_DATA_KEY].Initialize(new float[0]);
-                session.DataStorage[Scope.Slot, GOAL_LOCATION_DATA_KEY].Initialize(new string[0]);
-
-
-                RecheckLocations();
-                UpdateMapLocations();
+                // NOTE: the post-login setup that touches the shared receiver state runs on the
+                // main thread in FinalizeConnection() so it can't race with the game loop.
+                Connected = true;
+                StatusMessage = $"Successfully connected to {hostname} as {slotName}";
+                Status = ConnectionStatus.Connected;
             }
 
-            Connected = result.Successful;
             return Connected;
+        }
+
+        /**
+         * Performs the post-login setup that must run on the main (Unity) thread because it
+         * reads the shared receiver state (RecheckLocations / UpdateMapLocations). Call this
+         * once, on the main thread, after a successful connection.
+         */
+        public void FinalizeConnection()
+        {
+            session.DataStorage[Scope.Slot, MAP_LOCATION_DATA_KEY].Initialize(new string[0]);
+            session.DataStorage[Scope.Slot, FOUND_RELICS_DATA_KEY].Initialize(new string[0]);
+            session.DataStorage[Scope.Slot, POSITION_DATA_KEY].Initialize(new float[0]);
+            session.DataStorage[Scope.Slot, GOAL_LOCATION_DATA_KEY].Initialize(new string[0]);
+
+            RecheckLocations();
+            UpdateMapLocations();
         }
 
         /**
@@ -162,6 +232,19 @@ namespace OriBFArchipelago.Core
          */
         public void Update()
         {
+            // Report the result of an in-game reconnect once its background attempt finishes
+            if (reconnecting && Status != ConnectionStatus.Connecting)
+            {
+                reconnecting = false;
+                if (Status == ConnectionStatus.Connected)
+                {
+                    // Runs on the main thread here, so it can safely read the receiver state
+                    FinalizeConnection();
+                }
+                RandomizerMessager.instance.Clear();
+                RandomizerMessager.instance.AddMessage(StatusMessage);
+            }
+
             // Kills the player if a death link is queued
             if (queueDeath &&
                 Characters.Sein.Active &&
@@ -470,6 +553,68 @@ namespace OriBFArchipelago.Core
                 return false;
 
             return CheckGoalCompletion(showCompletionMessage);
+        }
+
+        /// <summary>
+        /// Builds a human-readable, multi-line summary of the current goal progress.
+        /// Read-only: unlike <see cref="IsGoalComplete"/> this never pushes messages,
+        /// so it is safe to poll every frame (e.g. from the map overlay).
+        /// </summary>
+        public List<string> GetGoalProgressLines()
+        {
+            List<string> lines = new List<string>();
+
+            if (RandomizerManager.Options == null || RandomizerManager.Receiver == null)
+                return lines;
+
+            GoalOptions goal = RandomizerManager.Options.Goal;
+            bool hasGoal = false;
+
+            if ((goal & GoalOptions.AllSkillTrees) == GoalOptions.AllSkillTrees)
+            {
+                hasGoal = true;
+                AppendLocationGoal(lines, "Skill Trees", skillTreeLocations);
+            }
+            if ((goal & GoalOptions.AllMaps) == GoalOptions.AllMaps)
+            {
+                hasGoal = true;
+                AppendLocationGoal(lines, "Maps", mapLocations);
+            }
+            if ((goal & GoalOptions.WarmthFragments) == GoalOptions.WarmthFragments)
+            {
+                hasGoal = true;
+                int collected = RandomizerManager.Receiver.GetItemCount(InventoryItem.WarmthFragment);
+                int required = RandomizerManager.Options.WarmthFragmentsRequired;
+                int available = RandomizerManager.Options.WarmthFragmentsAvailable;
+                lines.Add($"Warmth Fragments: {collected}/{required}");
+                if (collected < required)
+                    lines.Add($"   {available - collected} remain in the multiworld");
+            }
+            if ((goal & GoalOptions.WorldTour) == GoalOptions.WorldTour)
+            {
+                hasGoal = true;
+                int collected = RandomizerManager.Receiver.GetItemCount(InventoryItem.Relic);
+                int required = RandomizerManager.Options.RelicCount;
+                lines.Add($"Relics: {collected}/{required}");
+            }
+
+            if (!hasGoal)
+                lines.Add("No goal required - reach the final escape.");
+
+            return lines;
+        }
+
+        private void AppendLocationGoal(List<string> lines, string label, List<string> goalLocations)
+        {
+            List<string> missing = goalLocations
+                .Where(loc => !RandomizerManager.Receiver.IsLocationChecked(loc, true, true))
+                .ToList();
+
+            int collected = goalLocations.Count - missing.Count;
+            lines.Add($"{label}: {collected}/{goalLocations.Count}");
+
+            if (missing.Count > 0)
+                lines.Add($"   Missing: {string.Join(", ", missing.ToArray())}");
         }
 
         private bool CheckGoalCompletion(bool showCompletionMessage)

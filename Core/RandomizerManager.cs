@@ -6,6 +6,7 @@ using UnityEngine;
 using CatlikeCoding.TextBox;
 using HarmonyLib;
 using OriBFArchipelago.MapTracker.Core;
+using OriBFArchipelago.Helper;
 using System.Collections;
 using UnityEngine.Networking.Match;
 
@@ -32,6 +33,20 @@ namespace OriBFArchipelago.Core
 
         private bool failedToStart, archipelagoIOFocussed;
         private Dictionary<int, SlotData> saveSlots;
+
+        // Tracks an in-progress asynchronous connection attempt started from the save select screen
+        private bool connecting;
+        // Set true right before we re-run the original save slot action so the level actually loads
+        private bool connectionApproved;
+        // Native Ori popup shown while connecting
+        private RandomizerMessageBox connectingBox;
+        // Menu selection managers suspended while connecting, restored once the attempt finishes
+        private readonly List<CleverMenuItemSelectionManager> suspendedMenus = new List<CleverMenuItemSelectionManager>();
+        // Details of the save slot start we're resuming once the connection succeeds
+        private bool pendingIsNew;
+        private DifficultyMode pendingDifficulty;
+        private int pendingSaveSlot;
+        private int pendingParsedPort;
 
         // strings associated with the gui buttons in OnGUI
         private string slotName = "", server = "", port = "", password = "";
@@ -62,6 +77,12 @@ namespace OriBFArchipelago.Core
 
         private void Update()
         {
+            // Drive the asynchronous connection attempt started from the save select screen
+            if (connecting)
+            {
+                ProcessPendingConnection();
+            }
+
             // Call the update method on the receiver while in game
             if (RandomizerSettings.InGame)
             {
@@ -75,6 +96,67 @@ namespace OriBFArchipelago.Core
                 FindObjectOfType<SaveSlotsUI>().Active = true;
                 failedToStart = false;
             }
+        }
+
+        /**
+         * Polls the background connection attempt and, once it finishes, either
+         * resumes loading the save slot (success) or re-enables the save select ui (failure).
+         */
+        private void ProcessPendingConnection()
+        {
+            // still waiting on the background thread
+            if (connection.Status == ArchipelagoConnection.ConnectionStatus.Connecting)
+                return;
+
+            connecting = false;
+            RestoreMenus();
+            connectingBox?.Destroy();
+            connectingBox = null;
+            RandomizerMessager.instance.Clear();
+            RandomizerMessager.instance.AddMessage(connection.StatusMessage);
+
+            if (connection.Status == ArchipelagoConnection.ConnectionStatus.Connected)
+            {
+                FinishSuccessfulStart();
+            }
+            else // Failed / None
+            {
+                Console.WriteLine("Could not connect to archipelago server");
+                connection = null;
+                receiver = null;
+                failedToStart = true;
+            }
+        }
+
+        /**
+         * Suspends every visible menu selection manager so the player can't interact with the
+         * menu behind the connecting overlay. The game's CleverMenuItemSelectionManager.FixedUpdate
+         * early-returns while IsSuspended is set, which blocks all menu input.
+         */
+        private void SuspendMenus()
+        {
+            suspendedMenus.Clear();
+            foreach (CleverMenuItemSelectionManager manager in FindObjectsOfType<CleverMenuItemSelectionManager>())
+            {
+                if (manager.IsVisible && !manager.IsSuspended)
+                {
+                    manager.IsSuspended = true;
+                    suspendedMenus.Add(manager);
+                }
+            }
+        }
+
+        /**
+         * Restores the menu selection managers suspended by SuspendMenus.
+         */
+        private void RestoreMenus()
+        {
+            foreach (CleverMenuItemSelectionManager manager in suspendedMenus)
+            {
+                if (manager != null)
+                    manager.IsSuspended = false;
+            }
+            suspendedMenus.Clear();
         }
 
         /**
@@ -156,13 +238,34 @@ namespace OriBFArchipelago.Core
             return true;
         }
         /**
-         * Called when attempting to start a save slot
-         * Returns false if there is a problem with the save slot data or archipelago connection
+         * Called when attempting to start a save slot.
+         *
+         * Connecting to the archipelago server can take a while (or hang), so it is done
+         * asynchronously on a background thread. This method returns false to keep the player
+         * on the save select screen while connecting - so messages such as "Attempting to
+         * connect" and "Failed to connect" actually show up instead of the client hanging.
+         * Once the background attempt succeeds, ProcessPendingConnection re-runs the original
+         * save slot action (with connectionApproved set) to actually load the level.
+         *
+         * Returns true only to let the original game method run: either because the save slot
+         * data is invalid (nothing for us to do) or because the connection already succeeded.
          */
-
-
-        public bool StartSaveSlot(bool isNew)
+        public bool BeginStartSaveSlot(bool isNew, DifficultyMode difficulty)
         {
+            // Second pass: the connection already succeeded and we're re-running the original
+            // action so the game loads the level. Let it through.
+            if (connectionApproved)
+            {
+                connectionApproved = false;
+                return true;
+            }
+
+            // Ignore repeated presses while a connection attempt is already in progress
+            if (connecting)
+            {
+                return false;
+            }
+
             string missingFields = string.Join(", ", new[] { string.IsNullOrEmpty(slotName) ? "slotname" : null, string.IsNullOrEmpty(server) ? "server" : null, string.IsNullOrEmpty(port) ? "port" : null }.Where(f => f != null).ToArray());
 
             if (!string.IsNullOrEmpty(missingFields))
@@ -171,11 +274,9 @@ namespace OriBFArchipelago.Core
                 failedToStart = true;
                 return false;
             }
-            RandomizerMessager.instance.AddMessage($"Attempting to connect to {server}:{port} {slotName}");
+
             int saveSlot = SaveSlotsUI.Instance.CurrentSlotIndex;
             Console.WriteLine($"Starting save slot {saveSlot}");
-
-            bool canStart = true;
 
             // Attempt to load the this slots data first
             receiver = new RandomizerReceiver();
@@ -186,53 +287,78 @@ namespace OriBFArchipelago.Core
                 return false;
             }
 
-            // Attempt to connect to archipelago only if the save slot was loaded correctly
-            connection = new ArchipelagoConnection();
+            RandomizerMessager.instance.AddMessage($"Attempting to connect to {server}:{port} {slotName}");
+
+            // Start connecting to archipelago in the background so the game keeps rendering
             int.TryParse(port, out int parsedPort);
-            if (!canStart || !connection.Init(server, parsedPort, slotName, password))
-            {
-                canStart = false;
-                Console.WriteLine("Could not connect to archipelago server");
-            }
+            connection = new ArchipelagoConnection();
+            connection.Init(server, parsedPort, slotName, password);
+
+            // Remember what we need to resume the load once the connection succeeds
+            pendingIsNew = isNew;
+            pendingDifficulty = difficulty;
+            pendingSaveSlot = saveSlot;
+            pendingParsedPort = parsedPort;
+            connecting = true;
+
+            // Block menu input while connecting, then show the native Ori popup with the status
+            SuspendMenus();
+            connectingBox = new RandomizerMessageBox($"Attempting to connect to\n{server}:{port}\nas {slotName}");
+            connectingBox.ShowInfo();
+
+            connection.BeginConnect();
+
+            // Don't load the level yet; ProcessPendingConnection resumes once connected
+            return false;
+        }
+
+        /**
+         * Called from ProcessPendingConnection once the background connection has succeeded.
+         * Runs the game-state setup that must happen on the main thread and then re-runs the
+         * original save slot action so the level loads.
+         */
+        private void FinishSuccessfulStart()
+        {
+            // Post-login setup that reads the receiver state - safe here on the main thread
+            connection.FinalizeConnection();
 
             receiver.SyncArchipelagoCheckedLocations(connection.GetArchipelagoCheckedLocations());
 
-            // Check if the game can start
-            if (canStart)
+            RandomizerSettings.InGame = true;
+            RandomizerSettings.InSaveSelect = false;
+
+            SlotData updatedData = new SlotData();
+            updatedData.slotName = slotName;
+            updatedData.serverName = server;
+            updatedData.port = pendingParsedPort;
+            updatedData.password = password;
+
+            saveSlots[pendingSaveSlot] = updatedData;
+            RandomizerIO.WriteSlotData(saveSlots);
+
+            options = new RandomizerOptions(connection.SlotData);
+            if (options.Goal == GoalOptions.WarmthFragments || options.Goal == GoalOptions.WorldTour)
             {
-                // If so, set necessary flags and update the slot data
-                RandomizerSettings.InGame = true;
-                RandomizerSettings.InSaveSelect = false;
+                ModLogger.Debug("Checking goal locations");
 
-                SlotData updatedData = new SlotData();
-                updatedData.slotName = slotName;
-                updatedData.serverName = server;
-                updatedData.port = parsedPort;
-                updatedData.password = password;
+                if (options.GoalLocations == null)
+                    connection.SetGoalLocationsInOptions();
+            }
+            if (options.DeathLinkLogic != DeathLinkOptions.Disabled)
+            {
+                connection.EnableDeathLink(true);
+            }
 
-                saveSlots[saveSlot] = updatedData;
-                RandomizerIO.WriteSlotData(saveSlots);
-
-                options = new RandomizerOptions(connection.SlotData);
-                if (options.Goal == GoalOptions.WarmthFragments || options.Goal == GoalOptions.WorldTour)
-                {
-                    ModLogger.Debug("Checking goal locations");
-
-                    if (options.GoalLocations == null)
-                        connection.SetGoalLocationsInOptions();
-                }
-                if (options.DeathLinkLogic != DeathLinkOptions.Disabled)
-                {
-                    connection.EnableDeathLink(true);
-                }
+            // Re-run the original save slot action, now connected, so the level actually loads
+            connectionApproved = true;
+            if (pendingIsNew)
+            {
+                SaveSlotsUI.Instance.SetDifficulty(pendingDifficulty);
             }
             else
             {
-                // Otherwise, trip failedToStart flag so UI can be re-enabled
-                failedToStart = true;
+                SaveSlotsUI.Instance.UsedSaveSlotSelected();
             }
-
-            return canStart;
         }
 
         /**
@@ -276,8 +402,7 @@ namespace OriBFArchipelago.Core
     {
         private static bool Prefix()
         {
-            var canStart = RandomizerManager.instance.StartSaveSlot(false);
-            return canStart;
+            return RandomizerManager.instance.BeginStartSaveSlot(false, DifficultyMode.Normal);
         }
     }
 
@@ -287,10 +412,9 @@ namespace OriBFArchipelago.Core
     [HarmonyPatch(typeof(SaveSlotsUI), nameof(SaveSlotsUI.SetDifficulty))]
     internal class NewGamePatch
     {
-        private static bool Prefix()
+        private static bool Prefix(DifficultyMode difficulty)
         {
-            var canStart = RandomizerManager.instance.StartSaveSlot(true);
-            return canStart;
+            return RandomizerManager.instance.BeginStartSaveSlot(true, difficulty);
         }
     }
 

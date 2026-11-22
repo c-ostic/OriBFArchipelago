@@ -51,7 +51,20 @@ namespace OriBFArchipelago.Core
 
         private void OpenTeleportMenu()
         {
-            if (Characters.Sein.Active && !Characters.Sein.IsSuspended && Characters.Sein.Controller.CanMove && !UI.MainMenuVisible)
+            if (!UI.MainMenuVisible)
+            {
+                ShowTeleportMenu();
+            }
+        }
+
+        /**
+         * Opens the teleporter map (the same map shown by the OpenTeleport keybind).
+         * Unlike OpenTeleportMenu, this does not check UI.MainMenuVisible, so it can be
+         * called from a menu screen after that screen has been closed.
+         */
+        public void ShowTeleportMenu()
+        {
+            if (Characters.Sein.Active && !Characters.Sein.IsSuspended && Characters.Sein.Controller.CanMove)
             {
                 if (TeleporterController.CanTeleport(null))
                 {
