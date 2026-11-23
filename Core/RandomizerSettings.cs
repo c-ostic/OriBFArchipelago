@@ -24,6 +24,7 @@ namespace OriBFArchipelago.Core
         public static bool InGame { get; set; }
         public static int ActiveSaveSlot { get; set; }
         public static bool SeenInfoMessage => MapTrackerOptionsScreen.SeenTrackerInfoPopup;
+        public static bool RainbowDashTrail => ArchipelagoOptionsScreen.RainbowDashTrail;
         public static bool DoubleBashAssist => ArchipelagoOptionsScreen.DoubleBashAssist;
         public static bool DoubleBashTap => ArchipelagoOptionsScreen.DoubleBashTap;
         public static bool GrenadeJumpAssist => ArchipelagoOptionsScreen.GrenadeJumpAssist;
